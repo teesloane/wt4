@@ -32,6 +32,12 @@ defmodule Weakty.Tags.Tag do
       source_attribute_on_join_resource :tag_id
       destination_attribute_on_join_resource :link_id
     end
+
+    many_to_many :posts, Weakty.Posts.Post do
+      through Weakty.Posts.PostTag
+      source_attribute_on_join_resource :tag_id
+      destination_attribute_on_join_resource :post_id
+    end
   end
 
   identities do

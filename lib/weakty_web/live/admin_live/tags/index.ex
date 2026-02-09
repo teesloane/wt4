@@ -228,7 +228,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
 
   defp load_tags(socket) do
     tags = Weakty.Tags.Tag.list_tags!()
-    tags = Ash.load!(tags, [:links])
+    tags = Ash.load!(tags, [:links, :posts])
     assign(socket, :tags, tags)
   end
 end

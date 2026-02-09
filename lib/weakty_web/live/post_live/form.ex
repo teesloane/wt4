@@ -286,9 +286,9 @@ defmodule WeaktyWeb.PostLive.Form do
 
           # Update the post with tags
           post
-          |> Ash.Changeset.for_update(:update, %{})
+          |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Posts)
           |> Ash.Changeset.set_argument(:tags, tags_param)
-          |> Ash.update()
+          |> Ash.update!(domain: Weakty.Posts)
         end
 
         {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
