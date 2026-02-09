@@ -54,8 +54,16 @@ defmodule Weakty.Links.Link do
     end
   end
 
+  identities do
+    identity :unique_slug, [:slug]
+  end
+
   actions do
     defaults [:read, :destroy]
+
+    read :get_by_slug do
+      get_by :slug
+    end
 
     create :create do
       accept [:url, :title, :commentary, :slug, :user_id]

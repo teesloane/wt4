@@ -79,8 +79,16 @@ defmodule Weakty.Posts.Post do
     end
   end
 
+  identities do
+    identity :unique_slug, [:slug]
+  end
+
   actions do
     defaults [:read]
+
+    read :get_by_slug do
+      get_by :slug
+    end
 
     destroy :destroy do
       require_atomic? false

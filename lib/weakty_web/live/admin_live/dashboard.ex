@@ -41,7 +41,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="card bg-base-200 shadow-xl">
+        <div class="card bg-base-200 shadow-sm">
           <div class="card-body">
             <h2 class="card-title">Quick Actions</h2>
             <div class="flex flex-col gap-2">
@@ -65,7 +65,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
           </div>
         </div>
 
-        <div class="card bg-base-200 shadow-xl">
+        <div class="card bg-base-200 shadow-sm">
           <div class="card-body">
             <h2 class="card-title">Recent Activity</h2>
             <div class="space-y-2">
@@ -76,7 +76,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
                     <%= for post <- @recent_posts do %>
                       <li>
                         <.link
-                          navigate={~p"/posts/#{post.id}"}
+                          navigate={~p"/posts/#{post.slug}"}
                           class="link link-hover text-base-content/70"
                         >
                           <%= post.title %>

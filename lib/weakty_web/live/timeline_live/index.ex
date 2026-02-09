@@ -15,7 +15,7 @@ defmodule WeaktyWeb.TimelineLive.Index do
 
       <div class="space-y-4">
         <%= for entity <- @entities do %>
-          <div class="card bg-base-200 shadow-xl">
+          <div class="card bg-base-200 shadow-sm">
             <div class="card-body">
               <div class="flex items-center gap-2 text-sm opacity-60">
                 <span class="badge badge-outline"><%= entity.entity_type %></span>

@@ -281,7 +281,7 @@ defmodule WeaktyWeb.LinkLive.Index do
 
       <div class="space-y-4">
         <%= for link <- @links do %>
-          <div class="card bg-base-200 shadow-xl">
+          <div class="card bg-base-200 shadow-sm">
             <div class="card-body">
               <h2 class="card-title">
                 <a href={link.url} target="_blank" class="link">

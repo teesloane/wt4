@@ -7,11 +7,12 @@ defmodule WeaktyWeb.PostLive.Form do
   @impl true
   def mount(params, _session, socket) do
     post =
-      case params["id"] do
+      case params["slug"] do
         nil -> nil
-        id ->
+        slug ->
           Weakty.Posts.Post
-          |> Ash.get!(id)
+          |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
+          |> Ash.read_one!()
           |> Ash.load!(:tags)
       end
 

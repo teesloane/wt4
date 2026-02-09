@@ -4,8 +4,11 @@ defmodule WeaktyWeb.PostLive.Show do
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_optional}
 
   @impl true
-  def mount(%{"id" => id}, _session, socket) do
-    post = Ash.get!(Weakty.Posts.Post, id) |> Ash.load!(:user)
+  def mount(%{"slug" => slug}, _session, socket) do
+    post = Weakty.Posts.Post
+      |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
+      |> Ash.read_one!()
+      |> Ash.load!(:user)
 
     # Check if user can view this post
     can_view? =
@@ -74,7 +77,7 @@ defmodule WeaktyWeb.PostLive.Show do
       <%= if @current_user && @current_user.id == @post.user_id do %>
         <div class="divider my-8"></div>
         <div class="flex gap-2">
-          <.link navigate={~p"/posts/#{@post.id}/edit"} class="btn btn-primary">
+          <.link navigate={~p"/admin/posts/#{@post.slug}/edit"} class="btn btn-primary">
             Edit Post
           </.link>
           <%= if @post.status == :draft do %>
@@ -108,13 +111,19 @@ defmodule WeaktyWeb.PostLive.Show do
   @impl true
   def handle_event("publish", _params, socket) do
     Weakty.Posts.Post.publish_post(socket.assigns.post)
-    post = Ash.get!(Weakty.Posts.Post, socket.assigns.post.id) |> Ash.load!(:user)
+    post = Weakty.Posts.Post
+      |> Ash.Query.for_read(:get_by_slug, %{slug: socket.assigns.post.slug})
+      |> Ash.read_one!()
+      |> Ash.load!(:user)
     {:noreply, assign(socket, post: post)}
   end
 
   def handle_event("unpublish", _params, socket) do
     Weakty.Posts.Post.unpublish_post(socket.assigns.post)
-    post = Ash.get!(Weakty.Posts.Post, socket.assigns.post.id) |> Ash.load!(:user)
+    post = Weakty.Posts.Post
+      |> Ash.Query.for_read(:get_by_slug, %{slug: socket.assigns.post.slug})
+      |> Ash.read_one!()
+      |> Ash.load!(:user)
     {:noreply, assign(socket, post: post)}
   end
 

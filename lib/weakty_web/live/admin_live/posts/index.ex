@@ -76,7 +76,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
       </div>
 
       <%= if @posts == [] do %>
-        <div class="card bg-base-200 shadow-xl">
+        <div class="card bg-base-200 shadow-sm">
           <div class="card-body items-center text-center">
             <.icon name="hero-document-text" class="w-16 h-16 text-base-content/30" />
             <h2 class="card-title">No posts yet</h2>
@@ -143,14 +143,14 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                   <td onclick="event.stopPropagation()">
                     <div class="flex gap-2">
                       <.link
-                        navigate={~p"/admin/posts/#{post.id}/edit"}
+                        navigate={~p"/admin/posts/#{post.slug}/edit"}
                         class="btn btn-ghost btn-xs"
                         title="Edit"
                       >
                         <.icon name="hero-pencil" class="w-4 h-4" />
                       </.link>
                       <.link
-                        navigate={~p"/posts/#{post.id}"}
+                        navigate={~p"/posts/#{post.slug}"}
                         class="btn btn-ghost btn-xs"
                         title="View"
                       >

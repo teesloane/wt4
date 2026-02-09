@@ -6,73 +6,108 @@
   <body>
     <ul id="FMivkHdI">
       <li id="3C" data-type="heading">
-        <p>New Weakty</p>
-      </li>
-      <li id="6q" data-type="task">
-        <p>Tables</p>
+        <p><strong>Features</strong></p>
         <ul>
-          <li id="2F" data-type="task">
-            <p>Posts | Pages</p>
-          </li>
-          <li id="HO" data-type="task">
-            <p>Tags</p>
-          </li>
-          <li id="pP" data-type="task">
-            <p>TIL</p>
-          </li>
-          <li id="60" data-type="task">
-            <p>Bookmarks</p>
-          </li>
-          <li id="jo" data-type="task">
-            <p>Media Log (Music, Books, Video, Games, etc</p>
+          <li id="Yr" data-type="task">
+            <p>Posts</p>
             <ul>
-              <li id="zI" data-type="task">
-                <p>started</p>
+              <li id="Bo" data-type="task">
+                <p>overhaul /posts</p>
+                <ul>
+                  <li id="Wc" data-type="task">
+                    <p>remove "new post"</p>
+                  </li>
+                  <li id="WE" data-type="task">
+                    <p>improve styling on the cards</p>
+                  </li>
+                  <li id="Vu" data-type="task">
+                    <p>remove buttons from cards for unpublish, edit and delete</p>
+                  </li>
+                  <li id="hA" data-type="task">
+                    <p>insure that delete works on psots</p>
+                  </li>
+                  <li id="6M" data-type="task">
+                    <p>remove filters of "all" "published" and "drafts</p>
+                  </li>
+                </ul>
               </li>
-              <li id="hc" data-type="task">
-                <p>finished</p>
+              <li id="ev" data-type="task">
+                <p>Admin Posts</p>
+                <ul>
+                  <li id="Vv" data-type="task">
+                    <p>clicking on the post takes you to it via :id, but it should be :slug</p>
+                    <ul>
+                      <li id="0IH" data-type="task">
+                        <p>basically, need to replicate the behaviour from when clicking the "pencil" edit icon.</p>
+                      </li>
+                    </ul>
+                  </li>
+                  <li id="cEH" data-type="task">
+                    <p>New Post view</p>
+                    <ul>
+                      <li id="mFg" data-type="task">
+                        <p>Improve styles</p>
+                      </li>
+                      <li id="B56" data-type="task">
+                        <p>change featured image url to be an image upload</p>
+                      </li>
+                      <li id="xKp" data-type="task">
+                        <p>get tags working</p>
+                      </li>
+                      <li id="cu4" data-type="task">
+                        <p>figure out what the "public" checkbox is for posts</p>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
               </li>
-              <li id="kx" data-type="task">
-                <p>Title</p>
-              </li>
-              <li id="wV" data-type="task">
-                <p>Rating</p>
-              </li>
-              <li id="PT" data-type="task">
-                <p>Comments</p>
+              <li id="NjK" data-type="task">
+                <p>Enable import from Ghost</p>
+                <ul>
+                  <li id="jzB" data-type="task">
+                    <p>Paste json for ghost into Claude and ask it to identify the shape of the posts array (don’t post the whole thing it’ll eat up tokens</p>
+                  </li>
+                </ul>
               </li>
             </ul>
           </li>
-          <li id="eT" data-type="task">
-            <p>Photoroll</p>
+          <li id="ol6" data-type="task">
+            <p>Projects</p>
+            <ul>
+              <li id="s5m" data-type="task">
+                <p>Different than posts:</p>
+                <ul>
+                  <li id="_lK" data-type="task">
+                    <p>"start" and "end" date</p>
+                  </li>
+                  <li id="UVp" data-type="task">
+                    <p>"gallery" images</p>
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </li>
-          <li id="kN" data-type="task">
-            <p>Update / Now page</p>
+          <li id="uxu" data-type="task">
+            <p>Now/Updates</p>
+            <ul>
+              <li id="DgT" data-type="task">
+                <p>could live in the "posts" table but will need a type of "now"</p>
+              </li>
+              <li id="90G" data-type="task">
+                <p>Identify other "post types".</p>
+              </li>
+            </ul>
           </li>
-          <li id="tU" data-type="task">
-            <p>Link list (links from around the web)</p>
+        </ul>
+      </li>
+      <li id="cS" data-type="heading">
+        <p>Bugs</p>
+        <ul>
+          <li id="V0a" data-type="task">
+            <p>adding "tags" doesn’t work for posts, links, etc</p>
           </li>
-          <li id="It" data-type="task">
+          <li id="-ap" data-type="task">
             <p/>
-          </li>
-        </ul>
-      </li>
-      <li id="DG">
-        <p>Design</p>
-        <ul>
-          <li id="6A" data-type="task">
-            <p>generate a theme: https://daisyui.com/theme-generator/ and replace in app.css</p>
-          </li>
-        </ul>
-      </li>
-      <li id="2y">
-        <p>Questions</p>
-        <ul>
-          <li id="kT" data-type="task">
-            <p>Figure out the difference between the two "scope" / routes in router.ex</p>
-          </li>
-          <li id="q_" data-type="task">
-            <p>consider not truncating content on entity? (it’s at 280)</p>
           </li>
         </ul>
       </li>

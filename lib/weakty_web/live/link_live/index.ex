@@ -30,7 +30,7 @@ defmodule WeaktyWeb.LinkLive.Index do
 
       <div class="space-y-4">
         <%= for link <- @links do %>
-          <div class="card bg-base-200 shadow-xl">
+          <div class="card bg-base-200 shadow-sm">
             <div class="card-body">
               <h2 class="card-title">
                 <a href={link.url} target="_blank" class="link">
@@ -43,14 +43,14 @@ defmodule WeaktyWeb.LinkLive.Index do
               <div class="card-actions justify-end">
                 <button
                   phx-click="edit"
-                  phx-value-id={link.id}
+                  phx-value-slug={link.slug}
                   class="btn btn-sm btn-ghost"
                 >
                   Edit
                 </button>
                 <button
                   phx-click="delete"
-                  phx-value-id={link.id}
+                  phx-value-slug={link.slug}
                   data-confirm="Are you sure?"
                   class="btn btn-sm btn-error"
                 >
@@ -66,8 +66,10 @@ defmodule WeaktyWeb.LinkLive.Index do
   end
 
   @impl true
-  def handle_event("delete", %{"id" => id}, socket) do
-    link = Ash.get!(Weakty.Links.Link, id)
+  def handle_event("delete", %{"slug" => slug}, socket) do
+    link = Weakty.Links.Link
+      |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
+      |> Ash.read_one!()
     Ash.destroy!(link)
 
     links =
@@ -79,10 +81,10 @@ defmodule WeaktyWeb.LinkLive.Index do
   end
 
   def handle_event("new_link", _, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/links/new")}
+    {:noreply, push_navigate(socket, to: ~p"/admin/links/new")}
   end
 
-  def handle_event("edit", %{"id" => id}, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/links/#{id}/edit")}
+  def handle_event("edit", %{"slug" => slug}, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/admin/links/#{slug}/edit")}
   end
 end

@@ -2,7 +2,7 @@ defmodule WeaktyWeb.PostLive.Index do
   use WeaktyWeb, :live_view
   require Ash.Query
 
-  on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
+  on_mount {WeaktyWeb.LiveUserAuth, :live_user_optional}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,36 +22,6 @@ defmodule WeaktyWeb.PostLive.Index do
       <div class="mb-8">
         <div class="flex justify-between items-center">
           <h1 class="text-3xl font-bold">Posts</h1>
-          <button
-            phx-click="new_post"
-            class="btn btn-primary"
-          >
-            New Post
-          </button>
-        </div>
-
-        <div class="tabs tabs-boxed mt-6">
-          <a
-            class={["tab", if(@tab == :all, do: "tab-active")]}
-            phx-click="change_tab"
-            phx-value-tab="all"
-          >
-            All
-          </a>
-          <a
-            class={["tab", if(@tab == :published, do: "tab-active")]}
-            phx-click="change_tab"
-            phx-value-tab="published"
-          >
-            Published
-          </a>
-          <a
-            class={["tab", if(@tab == :drafts, do: "tab-active")]}
-            phx-click="change_tab"
-            phx-value-tab="drafts"
-          >
-            Drafts
-          </a>
         </div>
       </div>
 
@@ -64,21 +34,18 @@ defmodule WeaktyWeb.PostLive.Index do
           </div>
         <% else %>
           <%= for post <- @posts do %>
-            <div class="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow">
+            <div class="card bg-base-100 cursor-pointer shadow-sm hover:shadow-md transition-shadow">
               <div class="card-body">
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
                     <h2 class="card-title text-2xl">
-                      <.link navigate={~p"/posts/#{post.id}"} class="link link-hover">
+                      <.link navigate={~p"/posts/#{post.slug}"} class="link link-hover">
                         <%= post.title %>
                       </.link>
                     </h2>
                     <%= if post.excerpt do %>
                       <p class="text-base-content/70 mt-2"><%= post.excerpt %></p>
                     <% end %>
-                  </div>
-                  <div class={["badge badge-lg", if(post.status == :published, do: "badge-success", else: "badge-warning")]}>
-                    <%= post.status %>
                   </div>
                 </div>
 
@@ -96,40 +63,6 @@ defmodule WeaktyWeb.PostLive.Index do
                   <% end %>
                 </div>
 
-                <div class="card-actions justify-end mt-4">
-                  <%= if post.status == :draft do %>
-                    <button
-                      phx-click="publish"
-                      phx-value-id={post.id}
-                      class="btn btn-sm btn-success"
-                    >
-                      Publish
-                    </button>
-                  <% else %>
-                    <button
-                      phx-click="unpublish"
-                      phx-value-id={post.id}
-                      class="btn btn-sm btn-warning"
-                    >
-                      Unpublish
-                    </button>
-                  <% end %>
-                  <button
-                    phx-click="edit"
-                    phx-value-id={post.id}
-                    class="btn btn-sm btn-ghost"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    phx-click="delete"
-                    phx-value-id={post.id}
-                    data-confirm="Are you sure you want to delete this post?"
-                    class="btn btn-sm btn-error"
-                  >
-                    Delete
-                  </button>
-                </div>
               </div>
             </div>
           <% end %>
@@ -148,12 +81,14 @@ defmodule WeaktyWeb.PostLive.Index do
     {:noreply, push_navigate(socket, to: ~p"/posts/new")}
   end
 
-  def handle_event("edit", %{"id" => id}, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/posts/#{id}/edit")}
+  def handle_event("edit", %{"slug" => slug}, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/admin/posts/#{slug}/edit")}
   end
 
-  def handle_event("delete", %{"id" => id}, socket) do
-    post = Ash.get!(Weakty.Posts.Post, id)
+  def handle_event("delete", %{"slug" => slug}, socket) do
+    post = Weakty.Posts.Post
+      |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
+      |> Ash.read_one!()
     Ash.destroy!(post)
 
     {:noreply, load_posts(socket, socket.assigns.tab)}
@@ -175,19 +110,10 @@ defmodule WeaktyWeb.PostLive.Index do
 
   defp load_posts(socket, tab) do
     posts =
-      case tab do
-        :published ->
-          Weakty.Posts.Post.list_published_posts!()
-
-        :drafts ->
-          Weakty.Posts.Post.list_drafts!()
-
-        _ ->
           Weakty.Posts.Post
           |> Ash.Query.sort(updated_at: :desc)
           |> Ash.read!()
-      end
-      |> Enum.filter(&(&1.user_id == socket.assigns.current_user.id))
+
 
     assign(socket, posts: posts, tab: tab)
   end

@@ -90,7 +90,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
 
     <div class="p-8">
       <%= if @tags == [] do %>
-        <div class="card bg-base-200 shadow-xl">
+        <div class="card bg-base-200 shadow-sm">
           <div class="card-body items-center text-center">
             <.icon name="hero-tag" class="w-16 h-16 text-base-content/30" />
             <h2 class="card-title">No tags yet</h2>
