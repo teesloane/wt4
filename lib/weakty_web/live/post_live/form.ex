@@ -29,7 +29,11 @@ defmodule WeaktyWeb.PostLive.Form do
       |> Form.validate(%{})
       |> to_form()
 
-    {:ok, assign(socket, form: form, post: post, preview: false)}
+    {:ok,
+     socket
+     |> assign(form: form, post: post, preview: false)
+     |> assign(:current_path, "/admin/posts"),
+     layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true

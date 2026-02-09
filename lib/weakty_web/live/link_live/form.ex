@@ -33,7 +33,11 @@ defmodule WeaktyWeb.LinkLive.Form do
         |> Form.validate(%{})
         |> to_form()
 
-      {:ok, assign(socket, form: form, link: link, tags: existing_tags, tag_input: "")}
+      {:ok,
+       socket
+       |> assign(form: form, link: link, tags: existing_tags, tag_input: "")
+       |> assign(:current_path, "/admin/links"),
+       layout: {WeaktyWeb.Layouts, :admin}}
     else
       {:ok, redirect(socket, to: "/sign-in")}
     end

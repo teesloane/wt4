@@ -33,13 +33,8 @@ defmodule WeaktyWeb.Router do
 
     ash_authentication_live_session :authenticated_routes do
       live "/links", LinkLive.Index, :index
-      live "/links/new", LinkLive.Form, :new
-      live "/links/:id/edit", LinkLive.Form, :edit
-
       live "/posts", PostLive.Index, :index
-      live "/posts/new", PostLive.Form, :new
       live "/posts/:id", PostLive.Show, :show
-      live "/posts/:id/edit", PostLive.Form, :edit
       # in each liveview, add one of the following at the top of the module:
       #
       # If an authenticated user must be present:
@@ -50,6 +45,22 @@ defmodule WeaktyWeb.Router do
       #
       # If an authenticated user must *not* be present:
       # on_mount {WeaktyWeb.LiveUserAuth, :live_no_user}
+    end
+  end
+
+  scope "/admin", WeaktyWeb do
+    pipe_through :browser
+
+    ash_authentication_live_session :admin_routes,
+      on_mount: [{WeaktyWeb.LiveUserAuth, :live_user_required}] do
+      live "/", AdminLive.Dashboard, :index
+      live "/posts", AdminLive.Posts.Index, :index
+      live "/posts/new", PostLive.Form, :new
+      live "/posts/:id/edit", PostLive.Form, :edit
+      live "/links", AdminLive.Links.Index, :index
+      live "/links/new", LinkLive.Form, :new
+      live "/links/:id/edit", LinkLive.Form, :edit
+      live "/tags", AdminLive.Tags.Index, :index
     end
   end
 
@@ -127,7 +138,7 @@ defmodule WeaktyWeb.Router do
   if Application.compile_env(:weakty, :dev_routes) do
     import AshAdmin.Router
 
-    scope "/admin" do
+    scope "/dev_admin" do
       pipe_through :browser
 
       ash_admin "/"
