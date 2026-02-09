@@ -9,8 +9,14 @@ defmodule WeaktyWeb.PostLive.Form do
     post =
       case params["id"] do
         nil -> nil
-        id -> Ash.get!(Weakty.Posts.Post, id)
+        id ->
+          Weakty.Posts.Post
+          |> Ash.get!(id)
+          |> Ash.load!(:tags)
       end
+
+    # Extract existing tag names if editing
+    existing_tags = if post, do: Enum.map(post.tags || [], & &1.name), else: []
 
     form =
       if post do
@@ -31,7 +37,7 @@ defmodule WeaktyWeb.PostLive.Form do
 
     {:ok,
      socket
-     |> assign(form: form, post: post, preview: false)
+     |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "")
      |> assign(:current_path, "/admin/posts"),
      layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -137,6 +143,50 @@ defmodule WeaktyWeb.PostLive.Form do
             ><%= @form[:markdown].value %></textarea>
           </div>
 
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Tags</span>
+            </label>
+
+            <%= if length(@tags) > 0 do %>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <%= for tag <- @tags do %>
+                  <div class="badge badge-lg gap-2">
+                    <%= tag %>
+                    <button
+                      type="button"
+                      phx-click="remove_tag"
+                      phx-value-tag={tag}
+                      class="btn btn-xs btn-circle btn-ghost"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="join w-full">
+              <input
+                type="text"
+                value={@tag_input}
+                phx-change="update_tag_input"
+                name="tag_input"
+                placeholder="Add a tag (press Enter)"
+                class="input input-bordered join-item w-full"
+                phx-keydown="add_tag"
+                phx-key="Enter"
+              />
+              <button
+                type="button"
+                phx-click="add_tag"
+                class="btn btn-primary join-item"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+
           <div class="divider"></div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,10 +258,40 @@ defmodule WeaktyWeb.PostLive.Form do
     {:noreply, assign(socket, preview: !socket.assigns.preview)}
   end
 
+  def handle_event("update_tag_input", %{"tag_input" => value}, socket) do
+    {:noreply, assign(socket, tag_input: value)}
+  end
+
+  def handle_event("add_tag", _params, socket) do
+    tag = String.trim(socket.assigns.tag_input)
+
+    if tag != "" and tag not in socket.assigns.tags do
+      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "")}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_event("remove_tag", %{"tag" => tag}, socket) do
+    {:noreply, assign(socket, tags: List.delete(socket.assigns.tags, tag))}
+  end
+
   def handle_event("save", %{"form" => params}, socket) do
+    # First, create/update the post without tags
     case Form.submit(socket.assigns.form, params: params) do
-      {:ok, _post} ->
-        {:noreply, push_navigate(socket, to: ~p"/posts")}
+      {:ok, post} ->
+        # Then add tags as a separate step
+        if length(socket.assigns.tags) > 0 do
+          tags_param = Enum.map(socket.assigns.tags, &%{name: &1})
+
+          # Update the post with tags
+          post
+          |> Ash.Changeset.for_update(:update, %{})
+          |> Ash.Changeset.set_argument(:tags, tags_param)
+          |> Ash.update()
+        end
+
+        {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
 
       {:error, form} ->
         {:noreply, assign(socket, form: to_form(form))}
