@@ -64,7 +64,13 @@ defmodule Weakty.Links.Link do
         allow_nil? true
       end
 
-      change manage_relationship(:tags, :tags, type: :append_and_remove, value_is_key: :name, on_lookup: :relate, on_no_match: :create)
+      change manage_relationship(:tags, :tags,
+        type: :append_and_remove,
+        value_is_key: :name,
+        on_lookup: {:relate, :read, :read, []},
+        on_no_match: {:create, :create, :create, []},
+        use_identities: [:unique_name]
+      )
 
       change fn changeset, _context ->
         if Ash.Changeset.get_attribute(changeset, :slug) do
@@ -87,7 +93,13 @@ defmodule Weakty.Links.Link do
         allow_nil? true
       end
 
-      change manage_relationship(:tags, :tags, type: :append_and_remove, value_is_key: :name, on_lookup: :relate, on_no_match: :create)
+      change manage_relationship(:tags, :tags,
+        type: :append_and_remove,
+        value_is_key: :name,
+        on_lookup: {:relate, :read, :read, []},
+        on_no_match: {:create, :create, :create, []},
+        use_identities: [:unique_name]
+      )
     end
   end
 
