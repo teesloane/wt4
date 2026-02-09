@@ -11,22 +11,19 @@
           <li id="Yr" data-type="task">
             <p>Posts</p>
             <ul>
-              <li id="Bo" data-type="task">
+              <li id="Bo" data-done="2026-02-09T20:52:29Z" data-type="task">
                 <p>overhaul /posts</p>
                 <ul>
-                  <li id="Wc" data-type="task">
+                  <li id="Wc" data-done="2026-02-09T20:52:11Z" data-type="task">
                     <p>remove "new post"</p>
                   </li>
-                  <li id="WE" data-type="task">
+                  <li id="WE" data-done="2026-02-09T20:52:12Z" data-type="task">
                     <p>improve styling on the cards</p>
                   </li>
-                  <li id="Vu" data-type="task">
+                  <li id="Vu" data-done="2026-02-09T20:52:17Z" data-type="task">
                     <p>remove buttons from cards for unpublish, edit and delete</p>
                   </li>
-                  <li id="hA" data-type="task">
-                    <p>insure that delete works on psots</p>
-                  </li>
-                  <li id="6M" data-type="task">
+                  <li id="6M" data-done="2026-02-09T20:52:22Z" data-type="task">
                     <p>remove filters of "all" "published" and "drafts</p>
                   </li>
                 </ul>
