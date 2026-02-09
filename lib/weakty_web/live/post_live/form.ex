@@ -277,23 +277,48 @@ defmodule WeaktyWeb.PostLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
+    IO.puts("\n=== POST SAVE EVENT ===")
+    IO.inspect(socket.assigns.tags, label: "Tags to save")
+
     # First, create/update the post without tags
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
+        IO.inspect(post.id, label: "Created/updated post ID")
+
         # Then add tags as a separate step
         if length(socket.assigns.tags) > 0 do
           tags_param = Enum.map(socket.assigns.tags, &%{name: &1})
+          IO.inspect(tags_param, label: "Tags param")
 
           # Update the post with tags
-          post
-          |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Posts)
-          |> Ash.Changeset.set_argument(:tags, tags_param)
-          |> Ash.update!(domain: Weakty.Posts)
+          result =
+            post
+            |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Posts)
+            |> Ash.Changeset.set_argument(:tags, tags_param)
+            |> Ash.update(domain: Weakty.Posts)
+
+          IO.inspect(result, label: "Update result")
+
+          case result do
+            {:ok, updated_post} ->
+              IO.puts("Tags updated successfully")
+              # Load tags to verify
+              loaded = Ash.load!(updated_post, :tags)
+              IO.inspect(loaded.tags, label: "Loaded tags")
+
+            {:error, error} ->
+              IO.puts("ERROR updating tags:")
+              IO.inspect(error)
+          end
+        else
+          IO.puts("No tags to save")
         end
 
         {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
 
       {:error, form} ->
+        IO.puts("ERROR creating/updating post:")
+        IO.inspect(form.errors)
         {:noreply, assign(socket, form: to_form(form))}
     end
   end
