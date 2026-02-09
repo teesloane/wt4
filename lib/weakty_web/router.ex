@@ -35,6 +35,11 @@ defmodule WeaktyWeb.Router do
       live "/links", LinkLive.Index, :index
       live "/links/new", LinkLive.Form, :new
       live "/links/:id/edit", LinkLive.Form, :edit
+
+      live "/posts", PostLive.Index, :index
+      live "/posts/new", PostLive.Form, :new
+      live "/posts/:id", PostLive.Show, :show
+      live "/posts/:id/edit", PostLive.Form, :edit
       # in each liveview, add one of the following at the top of the module:
       #
       # If an authenticated user must be present:
