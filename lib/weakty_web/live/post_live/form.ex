@@ -281,45 +281,75 @@ defmodule WeaktyWeb.PostLive.Form do
     IO.inspect(socket.assigns.tags, label: "Tags to save")
 
     # First, create/update the post without tags
-    case Form.submit(socket.assigns.form, params: params) do
+    result = Form.submit(socket.assigns.form, params: params)
+
+    case result do
       {:ok, post} ->
         IO.inspect(post.id, label: "Created/updated post ID")
-
-        # Then add tags as a separate step
-        if length(socket.assigns.tags) > 0 do
-          tags_param = Enum.map(socket.assigns.tags, &%{name: &1})
-          IO.inspect(tags_param, label: "Tags param")
-
-          # Update the post with tags
-          result =
-            post
-            |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Posts)
-            |> Ash.Changeset.set_argument(:tags, tags_param)
-            |> Ash.update(domain: Weakty.Posts)
-
-          IO.inspect(result, label: "Update result")
-
-          case result do
-            {:ok, updated_post} ->
-              IO.puts("Tags updated successfully")
-              # Load tags to verify
-              loaded = Ash.load!(updated_post, :tags)
-              IO.inspect(loaded.tags, label: "Loaded tags")
-
-            {:error, error} ->
-              IO.puts("ERROR updating tags:")
-              IO.inspect(error)
-          end
-        else
-          IO.puts("No tags to save")
-        end
-
+        handle_tag_update(post, socket.assigns.tags)
         {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
 
       {:error, form} ->
-        IO.puts("ERROR creating/updating post:")
+        IO.puts("Form validation error:")
         IO.inspect(form.errors)
-        {:noreply, assign(socket, form: to_form(form))}
+
+        # Check if there's a resource in the form source (means post was created despite error)
+        post_from_error =
+          case form.source do
+            %{resource: %Weakty.Posts.Post{} = post} -> post
+            %{data: %Weakty.Posts.Post{} = post} -> post
+            _ -> nil
+          end
+
+        cond do
+          # Post was created despite form error - use it for tags
+          post_from_error && post_from_error.id ->
+            IO.puts("Post was created despite form error, updating tags...")
+            IO.inspect(post_from_error.id, label: "Post ID from error")
+            handle_tag_update(post_from_error, socket.assigns.tags)
+            {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
+
+          # Editing existing post - reload it
+          socket.assigns.post ->
+            IO.puts("Reloading existing post for tag update...")
+            post = Ash.get!(Weakty.Posts.Post, socket.assigns.post.id)
+            handle_tag_update(post, socket.assigns.tags)
+            {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
+
+          # Creating new post - form validation actually failed
+          true ->
+            {:noreply, assign(socket, form: to_form(form))}
+        end
+    end
+  end
+
+  defp handle_tag_update(post, tags) do
+    if length(tags) > 0 do
+      tags_param = Enum.map(tags, &%{name: &1})
+      IO.inspect(tags_param, label: "Tags param")
+
+      # Update the post with tags
+      result =
+        post
+        |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Posts)
+        |> Ash.Changeset.set_argument(:tags, tags_param)
+        |> Ash.update(domain: Weakty.Posts)
+
+      IO.inspect(result, label: "Update result")
+
+      case result do
+        {:ok, updated_post} ->
+          IO.puts("Tags updated successfully")
+          # Load tags to verify
+          loaded = Ash.load!(updated_post, :tags)
+          IO.inspect(loaded.tags, label: "Loaded tags")
+
+        {:error, error} ->
+          IO.puts("ERROR updating tags:")
+          IO.inspect(error)
+      end
+    else
+      IO.puts("No tags to save")
     end
   end
 
