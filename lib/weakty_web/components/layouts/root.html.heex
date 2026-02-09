@@ -27,12 +27,37 @@
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
+
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>
   </head>
   <body>
+    <nav class="border-b border-base-300">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex gap-6 items-center">
+          <.link navigate={~p"/"} class="font-bold text-lg">
+            weakty
+          </.link>
+          <.link navigate={~p"/links"} class="link link-hover">
+            links
+          </.link>
+          <.link navigate={~p"/archive"} class="link link-hover">
+            archive
+          </.link>
+          <.link navigate={~p"/writing"} class="link link-hover">
+            writing
+          </.link>
+          <.link navigate={~p"/projects"} class="link link-hover">
+            projects
+          </.link>
+          <.link navigate={~p"/about"} class="link link-hover">
+            about
+          </.link>
+        </div>
+        <WeaktyWeb.Layouts.theme_toggle />
+      </div>
+    </nav>
     {@inner_content}
   </body>
 </html>

@@ -289,6 +289,12 @@ defmodule Weakty.Accounts.User do
     attribute :confirmed_at, :utc_datetime_usec
   end
 
+  relationships do
+    has_many :links, Weakty.Links.Link do
+      destination_attribute :user_id
+    end
+  end
+
   identities do
     identity :unique_email, [:email]
   end

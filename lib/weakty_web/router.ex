@@ -30,7 +30,11 @@ defmodule WeaktyWeb.Router do
   scope "/", WeaktyWeb do
     pipe_through :browser
 
+
     ash_authentication_live_session :authenticated_routes do
+      live "/links", LinkLive.Index, :index
+      live "/links/new", LinkLive.Form, :new
+      live "/links/:id/edit", LinkLive.Form, :edit
       # in each liveview, add one of the following at the top of the module:
       #
       # If an authenticated user must be present:
