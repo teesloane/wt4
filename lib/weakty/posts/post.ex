@@ -71,6 +71,12 @@ defmodule Weakty.Posts.Post do
       allow_nil? false
       attribute_writable? true
     end
+
+    many_to_many :tags, Weakty.Tags.Tag do
+      through Weakty.Posts.PostTag
+      source_attribute_on_join_resource :post_id
+      destination_attribute_on_join_resource :tag_id
+    end
   end
 
   actions do
@@ -83,6 +89,18 @@ defmodule Weakty.Posts.Post do
     create :create do
       accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
               :status, :featured, :public, :published_at, :user_id]
+
+      argument :tags, {:array, :map} do
+        allow_nil? true
+      end
+
+      change manage_relationship(:tags, :tags,
+        type: :append_and_remove,
+        value_is_key: :name,
+        on_lookup: {:relate, :read, :read, []},
+        on_no_match: {:create, :create, :create, []},
+        use_identities: [:unique_name]
+      )
 
       change fn changeset, _context ->
         # Auto-generate slug from title if not provided
@@ -118,6 +136,18 @@ defmodule Weakty.Posts.Post do
       accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
               :status, :featured, :public, :published_at]
       require_atomic? false
+
+      argument :tags, {:array, :map} do
+        allow_nil? true
+      end
+
+      change manage_relationship(:tags, :tags,
+        type: :append_and_remove,
+        value_is_key: :name,
+        on_lookup: {:relate, :read, :read, []},
+        on_no_match: {:create, :create, :create, []},
+        use_identities: [:unique_name]
+      )
 
       change fn changeset, _context ->
         # Set published_at when status changes to published
