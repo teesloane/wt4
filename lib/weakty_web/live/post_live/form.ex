@@ -292,14 +292,21 @@ defmodule WeaktyWeb.PostLive.Form do
       {:error, form} ->
         IO.puts("Form validation error:")
         IO.inspect(form.errors)
+        IO.puts("Form source:")
+        IO.inspect(form.source, label: "form.source", limit: :infinity, printable_limit: :infinity)
+        IO.puts("Form source keys:")
+        if is_map(form.source), do: IO.inspect(Map.keys(form.source), label: "keys")
 
         # Check if there's a resource in the form source (means post was created despite error)
         post_from_error =
           case form.source do
             %{resource: %Weakty.Posts.Post{} = post} -> post
             %{data: %Weakty.Posts.Post{} = post} -> post
+            %Ash.Changeset{data: %Weakty.Posts.Post{} = post} -> post
             _ -> nil
           end
+
+        IO.inspect(post_from_error, label: "post_from_error")
 
         cond do
           # Post was created despite form error - use it for tags
