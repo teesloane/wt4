@@ -272,6 +272,11 @@ defmodule Weakty.Accounts.User do
     bypass AshAuthentication.Checks.AshAuthenticationInteraction do
       authorize_if always()
     end
+
+    # Allow reading user information (needed for loading authors on posts)
+    policy action_type(:read) do
+      authorize_if always()
+    end
   end
 
   attributes do

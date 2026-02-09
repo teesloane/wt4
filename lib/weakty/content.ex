@@ -3,7 +3,7 @@ defmodule Weakty.Content do
     extensions: [AshAdmin.Domain]
 
   admin do
-    show? true
+    show? false
   end
 
   resources do
