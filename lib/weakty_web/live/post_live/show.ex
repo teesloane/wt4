@@ -10,20 +10,7 @@ defmodule WeaktyWeb.PostLive.Show do
       |> Ash.read_one!()
       |> Ash.load!(:user)
 
-    # Check if user can view this post
-    can_view? =
-      post.public ||
-        (socket.assigns[:current_user] &&
-           socket.assigns.current_user.id == post.user_id)
-
-    if can_view? do
-      {:ok, assign(socket, post: post)}
-    else
-      {:ok,
-       socket
-       |> put_flash(:error, "You don't have permission to view this post")
-       |> push_navigate(to: ~p"/")}
-    end
+    {:ok, assign(socket, post: post)}
   end
 
   @impl true
@@ -31,23 +18,8 @@ defmodule WeaktyWeb.PostLive.Show do
     ~H"""
     <article class="mx-auto max-w-4xl px-4 py-8">
       <div class="mb-8">
-        <.link navigate={~p"/posts"} class="btn btn-ghost btn-sm mb-4">
-          ← Back to Posts
-        </.link>
 
-        <div class="flex items-center gap-2 mb-4">
-          <div class={["badge", if(@post.status == :published, do: "badge-success", else: "badge-warning")]}>
-            <%= @post.status %>
-          </div>
-          <%= if @post.featured do %>
-            <div class="badge badge-primary">Featured</div>
-          <% end %>
-          <%= if @post.public do %>
-            <div class="badge badge-info">Public</div>
-          <% end %>
-        </div>
-
-        <h1 class="text-4xl font-bold mb-4"><%= @post.title %></h1>
+        <h1 class="text-4xl mt-8 font-bold mb-4"><%= @post.title %></h1>
 
         <div class="text-base-content/60 mb-6">
           <%= if @post.published_at do %>

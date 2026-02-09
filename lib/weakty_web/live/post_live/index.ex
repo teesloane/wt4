@@ -9,11 +9,6 @@ defmodule WeaktyWeb.PostLive.Index do
     {:ok, load_posts(socket, :all)}
   end
 
-  @impl true
-  def handle_params(params, _url, socket) do
-    tab = params["tab"] || "all"
-    {:noreply, load_posts(socket, String.to_atom(tab))}
-  end
 
   @impl true
   def render(assigns) do
@@ -72,50 +67,9 @@ defmodule WeaktyWeb.PostLive.Index do
     """
   end
 
-  @impl true
-  def handle_event("change_tab", %{"tab" => tab}, socket) do
-    {:noreply, push_patch(socket, to: ~p"/posts?tab=#{tab}")}
-  end
-
-  def handle_event("new_post", _, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/posts/new")}
-  end
-
-  def handle_event("edit", %{"slug" => slug}, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/admin/posts/#{slug}/edit")}
-  end
-
-  def handle_event("delete", %{"slug" => slug}, socket) do
-    post = Weakty.Posts.Post
-      |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
-      |> Ash.read_one!()
-    Ash.destroy!(post)
-
-    {:noreply, load_posts(socket, socket.assigns.tab)}
-  end
-
-  def handle_event("publish", %{"id" => id}, socket) do
-    post = Ash.get!(Weakty.Posts.Post, id)
-    Weakty.Posts.Post.publish_post(post)
-
-    {:noreply, load_posts(socket, socket.assigns.tab)}
-  end
-
-  def handle_event("unpublish", %{"id" => id}, socket) do
-    post = Ash.get!(Weakty.Posts.Post, id)
-    Weakty.Posts.Post.unpublish_post(post)
-
-    {:noreply, load_posts(socket, socket.assigns.tab)}
-  end
 
   defp load_posts(socket, tab) do
-    posts =
-          Weakty.Posts.Post
-          |> Ash.Query.sort(updated_at: :desc)
-          |> Ash.read!()
-
-
-    assign(socket, posts: posts, tab: tab)
+    assign(socket, posts: Weakty.Posts.Post.list_published_posts!())
   end
 
   defp format_date(datetime) do
