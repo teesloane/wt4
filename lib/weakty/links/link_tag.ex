@@ -29,6 +29,7 @@ defmodule Weakty.Links.LinkTag do
     defaults [:read, :destroy]
 
     create :create do
+      primary? true
       accept [:link_id, :tag_id]
     end
   end

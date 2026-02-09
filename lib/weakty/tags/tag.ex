@@ -43,6 +43,7 @@ defmodule Weakty.Tags.Tag do
     defaults [:read, :destroy]
 
     create :create do
+      primary? true
       accept [:name, :slug]
 
       # Auto-generate slug from name if not provided
@@ -61,6 +62,7 @@ defmodule Weakty.Tags.Tag do
     end
 
     update :update do
+      primary? true
       accept [:name, :slug]
     end
   end

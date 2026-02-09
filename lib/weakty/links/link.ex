@@ -60,6 +60,12 @@ defmodule Weakty.Links.Link do
     create :create do
       accept [:url, :title, :commentary, :slug, :user_id]
 
+      argument :tags, {:array, :map} do
+        allow_nil? true
+      end
+
+      change manage_relationship(:tags, :tags, type: :append_and_remove, value_is_key: :name, on_lookup: :relate, on_no_match: :create)
+
       change fn changeset, _context ->
         if Ash.Changeset.get_attribute(changeset, :slug) do
           changeset
@@ -76,6 +82,12 @@ defmodule Weakty.Links.Link do
 
     update :update do
       accept [:url, :title, :commentary]
+
+      argument :tags, {:array, :map} do
+        allow_nil? true
+      end
+
+      change manage_relationship(:tags, :tags, type: :append_and_remove, value_is_key: :name, on_lookup: :relate, on_no_match: :create)
     end
   end
 
