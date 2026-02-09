@@ -72,7 +72,7 @@ defmodule Weakty.Content.Entity do
     end
 
     attribute :published_at, :utc_datetime_usec do
-      allow_nil? false
+      allow_nil? true
       public? true
     end
 
