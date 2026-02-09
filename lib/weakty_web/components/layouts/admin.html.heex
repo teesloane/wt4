@@ -1,0 +1,8 @@
+<div class="flex h-screen overflow-hidden">
+  <WeaktyWeb.AdminComponents.admin_sidebar current_path={@current_path} />
+
+  <main class="flex-1 overflow-auto bg-base-100">
+    <.flash_group flash={@flash} />
+    <%= @inner_content %>
+  </main>
+</div>
