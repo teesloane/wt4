@@ -46,6 +46,12 @@ defmodule Weakty.Links.Link do
       allow_nil? false
       attribute_writable? true
     end
+
+    many_to_many :tags, Weakty.Tags.Tag do
+      through Weakty.Links.LinkTag
+      source_attribute_on_join_resource :link_id
+      destination_attribute_on_join_resource :tag_id
+    end
   end
 
   actions do

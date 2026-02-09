@@ -7,5 +7,6 @@ defmodule Weakty.Links do
 
   resources do
     resource Weakty.Links.Link
+    resource Weakty.Links.LinkTag
   end
 end

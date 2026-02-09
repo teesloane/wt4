@@ -36,6 +36,14 @@ defmodule WeaktyWeb.TimelineLive.Index do
               <%= if entity.content do %>
                   <p class="text-base-content/70"><%= entity.content %></p>
               <% end %>
+
+              <%= if entity.tags && length(entity.tags) > 0 do %>
+                <div class="flex flex-wrap gap-2 mt-2">
+                  <%= for tag <- entity.tags do %>
+                    <span class="badge badge-sm badge-ghost"><%= tag %></span>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
           </div>
         <% end %>

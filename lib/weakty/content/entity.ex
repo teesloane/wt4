@@ -66,6 +66,11 @@ defmodule Weakty.Content.Entity do
       public? true
     end
 
+    attribute :tags, {:array, :string} do
+      public? true
+      default []
+    end
+
     attribute :published_at, :utc_datetime_usec do
       allow_nil? false
       public? true
@@ -89,12 +94,12 @@ defmodule Weakty.Content.Entity do
 
     create :create do
       accept [:entity_type, :source_id, :title, :content, :url, :slug, :source_path,
-              :hero_url, :thumbnail_url, :rating, :status, :favourite,
+              :hero_url, :thumbnail_url, :rating, :status, :favourite, :tags,
               :published_at, :public]
       upsert? true
       upsert_identity :unique_source
       upsert_fields [:title, :content, :url, :slug, :source_path,
-                      :hero_url, :thumbnail_url, :rating, :status, :favourite,
+                      :hero_url, :thumbnail_url, :rating, :status, :favourite, :tags,
                       :published_at, :public, :updated_at]
     end
 

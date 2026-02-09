@@ -15,6 +15,9 @@ defmodule Weakty.Changes.SyncEntity do
     Ash.Changeset.after_action(changeset, fn _changeset, record ->
       max_len = opts[:content_max_length] || 280
 
+      # Load tags if the record has a tags relationship
+      tags = load_tags(record)
+
       entity_params = %{
         entity_type: opts[:entity_type],
         source_id: record.id,
@@ -28,6 +31,7 @@ defmodule Weakty.Changes.SyncEntity do
         rating: resolve_value(record, opts[:rating]),
         status: resolve_value(record, opts[:status]),
         favourite: resolve_value(record, opts[:favourite]) || false,
+        tags: tags,
         public: resolve_value(record, opts[:public] || :public) || false,
         published_at: resolve_value(record, opts[:published_at] || :inserted_at)
       }
@@ -37,6 +41,21 @@ defmodule Weakty.Changes.SyncEntity do
         {:error, error} -> {:error, error}
       end
     end)
+  end
+
+  defp load_tags(record) do
+    # Try to load the tags relationship and extract tag names
+    case Ash.load(record, :tags) do
+      {:ok, loaded_record} ->
+        case Map.get(loaded_record, :tags) do
+          nil -> []
+          tags when is_list(tags) -> Enum.map(tags, & &1.name)
+          _ -> []
+        end
+
+      {:error, _} ->
+        []
+    end
   end
 
   defp resolve_value(_record, nil), do: nil
