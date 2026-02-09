@@ -65,7 +65,8 @@ config :weakty,
   generators: [timestamp_type: :utc_datetime],
   ash_domains: [
   Weakty.Accounts,
-  Weakty.Links
+  Weakty.Links,
+  Weakty.Content
   ],
   ash_authentication: [return_error_on_invalid_magic_link_token?: true]
 

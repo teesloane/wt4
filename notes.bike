@@ -57,6 +57,25 @@
           </li>
         </ul>
       </li>
+      <li id="DG">
+        <p>Design</p>
+        <ul>
+          <li id="6A" data-type="task">
+            <p>generate a theme: https://daisyui.com/theme-generator/ and replace in app.css</p>
+          </li>
+        </ul>
+      </li>
+      <li id="2y">
+        <p>Questions</p>
+        <ul>
+          <li id="kT" data-type="task">
+            <p>Figure out the difference between the two "scope" / routes in router.ex</p>
+          </li>
+          <li id="q_" data-type="task">
+            <p>consider not truncating content on entity? (it’s at 280)</p>
+          </li>
+        </ul>
+      </li>
     </ul>
   </body>
 </html>

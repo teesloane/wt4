@@ -27,6 +27,11 @@ defmodule Weakty.Links.Link do
       public? true
     end
 
+    attribute :slug, :string do
+      allow_nil? false
+      public? true
+    end
+
     attribute :public, :boolean do
       allow_nil? false
       default false
@@ -47,7 +52,20 @@ defmodule Weakty.Links.Link do
     defaults [:read, :destroy]
 
     create :create do
-      accept [:url, :title, :commentary, :user_id]
+      accept [:url, :title, :commentary, :slug, :user_id]
+
+      change fn changeset, _context ->
+        if Ash.Changeset.get_attribute(changeset, :slug) do
+          changeset
+        else
+          case Ash.Changeset.get_attribute(changeset, :title) do
+            nil -> changeset
+            title ->
+              slug = title |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
+              Ash.Changeset.force_change_attribute(changeset, :slug, slug)
+          end
+        end
+      end
     end
 
     update :update do
@@ -67,5 +85,22 @@ defmodule Weakty.Links.Link do
     policy always() do
       authorize_if always()
     end
+  end
+
+  changes do
+    change {Weakty.Changes.SyncEntity,
+      entity_type: :link,
+      title: :title,
+      content: :commentary,
+      url: :url,
+      slug: :slug,
+      source_path: "/links",
+      public: :public,
+      published_at: :inserted_at
+    }, on: [:create, :update]
+
+    change {Weakty.Changes.DestroyEntity,
+      entity_type: :link
+    }, on: [:destroy]
   end
 end
