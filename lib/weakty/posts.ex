@@ -7,5 +7,6 @@ defmodule Weakty.Posts do
 
   resources do
     resource Weakty.Posts.Post
+    resource Weakty.Posts.PostTag
   end
 end
