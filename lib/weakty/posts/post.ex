@@ -1,0 +1,205 @@
+defmodule Weakty.Posts.Post do
+  use Ash.Resource,
+    domain: Weakty.Posts,
+    data_layer: AshSqlite.DataLayer,
+    extensions: [AshAdmin.Resource],
+    authorizers: [Ash.Policy.Authorizer]
+
+  sqlite do
+    table "posts"
+    repo Weakty.Repo
+  end
+
+  attributes do
+    uuid_primary_key :id
+
+    attribute :title, :string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :slug, :string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :markdown, :string do
+      allow_nil? false
+      public? true
+    end
+
+    attribute :html, :string do
+      public? true
+    end
+
+    attribute :featured_image, :string do
+      public? true
+    end
+
+    attribute :excerpt, :string do
+      public? true
+    end
+
+    attribute :status, :atom do
+      allow_nil? false
+      default :draft
+      public? true
+      constraints one_of: [:draft, :published]
+    end
+
+    attribute :featured, :boolean do
+      allow_nil? false
+      default false
+      public? true
+    end
+
+    attribute :public, :boolean do
+      allow_nil? false
+      default false
+      public? true
+    end
+
+    attribute :published_at, :utc_datetime_usec do
+      public? true
+    end
+
+    timestamps()
+  end
+
+  relationships do
+    belongs_to :user, Weakty.Accounts.User do
+      allow_nil? false
+      attribute_writable? true
+    end
+  end
+
+  actions do
+    defaults [:read]
+
+    destroy :destroy do
+      require_atomic? false
+    end
+
+    create :create do
+      accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
+              :status, :featured, :public, :published_at, :user_id]
+
+      change fn changeset, _context ->
+        # Auto-generate slug from title if not provided
+        if Ash.Changeset.get_attribute(changeset, :slug) do
+          changeset
+        else
+          case Ash.Changeset.get_attribute(changeset, :title) do
+            nil -> changeset
+            title ->
+              slug = title
+                |> String.downcase()
+                |> String.replace(~r/[^a-z0-9]+/, "-")
+                |> String.trim("-")
+              Ash.Changeset.force_change_attribute(changeset, :slug, slug)
+          end
+        end
+      end
+
+      change fn changeset, _context ->
+        # Set published_at when status changes to published
+        status = Ash.Changeset.get_attribute(changeset, :status)
+        published_at = Ash.Changeset.get_attribute(changeset, :published_at)
+
+        if status == :published && is_nil(published_at) do
+          Ash.Changeset.force_change_attribute(changeset, :published_at, DateTime.utc_now())
+        else
+          changeset
+        end
+      end
+    end
+
+    update :update do
+      accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
+              :status, :featured, :public, :published_at]
+      require_atomic? false
+
+      change fn changeset, _context ->
+        # Set published_at when status changes to published
+        if Ash.Changeset.changing_attribute?(changeset, :status) do
+          status = Ash.Changeset.get_attribute(changeset, :status)
+          published_at = Ash.Changeset.get_attribute(changeset, :published_at)
+
+          if status == :published && is_nil(published_at) do
+            Ash.Changeset.force_change_attribute(changeset, :published_at, DateTime.utc_now())
+          else
+            changeset
+          end
+        else
+          changeset
+        end
+      end
+    end
+
+    update :publish do
+      accept []
+      require_atomic? false
+
+      change fn changeset, _context ->
+        changeset
+        |> Ash.Changeset.force_change_attribute(:status, :published)
+        |> Ash.Changeset.force_change_attribute(:published_at, DateTime.utc_now())
+      end
+    end
+
+    update :unpublish do
+      accept []
+      require_atomic? false
+
+      change fn changeset, _context ->
+        Ash.Changeset.force_change_attribute(changeset, :status, :draft)
+      end
+    end
+
+    read :published do
+      prepare build(sort: [published_at: :desc])
+      filter expr(status == :published)
+    end
+
+    read :drafts do
+      prepare build(sort: [updated_at: :desc])
+      filter expr(status == :draft)
+    end
+  end
+
+  code_interface do
+    define :list_posts, action: :read
+    define :list_published_posts, action: :published
+    define :list_drafts, action: :drafts
+    define :get_post, action: :read, get?: true
+    define :create_post, action: :create
+    define :update_post, action: :update
+    define :publish_post, action: :publish
+    define :unpublish_post, action: :unpublish
+    define :delete_post, action: :destroy
+  end
+
+  policies do
+    policy always() do
+      authorize_if always()
+    end
+  end
+
+  changes do
+    change {Weakty.Changes.SyncEntity,
+      entity_type: :post,
+      title: :title,
+      content: :markdown,
+      slug: :slug,
+      source_path: "/posts",
+      hero_url: :featured_image,
+      public: :public,
+      published_at: :published_at,
+      status: :status
+    }, on: [:create, :update]
+
+    change {Weakty.Changes.DestroyEntity,
+      entity_type: :post
+    }, on: [:destroy]
+  end
+end
