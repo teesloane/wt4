@@ -35,6 +35,8 @@ defmodule WeaktyWeb.Router do
       live "/links", LinkLive.Index, :index
       live "/posts", PostLive.Index, :index
       live "/posts/:slug", PostLive.Show, :show
+      live "/media-logs", MediaLogLive.Index, :index
+      live "/media-logs/:slug", MediaLogLive.Show, :show
       # in each liveview, add one of the following at the top of the module:
       #
       # If an authenticated user must be present:
@@ -60,6 +62,9 @@ defmodule WeaktyWeb.Router do
       live "/links", AdminLive.Links.Index, :index
       live "/links/new", LinkLive.Form, :new
       live "/links/:slug/edit", LinkLive.Form, :edit
+      live "/media-logs", AdminLive.MediaLogs.Index, :index
+      live "/media-logs/new", MediaLogLive.Form, :new
+      live "/media-logs/:slug/edit", MediaLogLive.Form, :edit
       live "/tags", AdminLive.Tags.Index, :index
     end
   end

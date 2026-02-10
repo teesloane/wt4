@@ -68,6 +68,21 @@ defmodule WeaktyWeb.AdminComponents do
 
           <li>
             <.link
+              navigate="/admin/media-logs"
+              class={[
+                if(String.starts_with?(@current_path, "/admin/media-logs"),
+                  do: "active",
+                  else: ""
+                )
+              ]}
+            >
+              <.icon name="hero-book-open" class="w-5 h-5" />
+              Media Logs
+            </.link>
+          </li>
+
+          <li>
+            <.link
               navigate="/admin/tags"
               class={[
                 if(String.starts_with?(@current_path, "/admin/tags"), do: "active", else: "")

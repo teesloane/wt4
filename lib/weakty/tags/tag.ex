@@ -38,6 +38,12 @@ defmodule Weakty.Tags.Tag do
       source_attribute_on_join_resource :tag_id
       destination_attribute_on_join_resource :post_id
     end
+
+    many_to_many :media_logs, Weakty.MediaLogs.MediaLog do
+      through Weakty.MediaLogs.MediaLogTag
+      source_attribute_on_join_resource :tag_id
+      destination_attribute_on_join_resource :media_log_id
+    end
   end
 
   identities do
