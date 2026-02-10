@@ -42,8 +42,8 @@ defmodule WeaktyWeb.PostLive.Show do
         <% end %>
       </div>
 
-      <div class="prose prose-lg max-w-none">
-        <%= raw(render_markdown(@post.markdown)) %>
+      <div class="prose prose-lg">
+        <%= raw(@post.html) %>
       </div>
 
       <%= if @current_user && @current_user.id == @post.user_id do %>

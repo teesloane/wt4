@@ -155,6 +155,7 @@ defmodule GhostImporter do
       featured: parse_boolean(ghost_post["featured"]),
       public: parse_visibility(ghost_post["visibility"]),
       published_at: parse_datetime(ghost_post["published_at"]),
+      post_type: parse_post_type(ghost_post["type"]),
       user_id: user_id
     }
 
@@ -182,6 +183,10 @@ defmodule GhostImporter do
   defp parse_status("published"), do: :published
   defp parse_status("draft"), do: :draft
   defp parse_status(_), do: :draft
+
+  defp parse_post_type("post"), do: :post
+  defp parse_post_type("page"), do: :page
+  defp parse_post_type(_), do: :post
 
   defp parse_boolean(1), do: true
   defp parse_boolean(0), do: false

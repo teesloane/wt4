@@ -63,6 +63,12 @@ defmodule Weakty.Posts.Post do
       public? true
     end
 
+    attribute :post_type, Weakty.Posts.PostType do
+      allow_nil? false
+      public? true
+      default :post
+    end
+
     timestamps()
   end
 
@@ -96,7 +102,7 @@ defmodule Weakty.Posts.Post do
 
     create :create do
       accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
-              :status, :featured, :public, :published_at, :user_id]
+              :status, :featured, :public, :published_at, :user_id, :post_type]
 
       argument :tags, {:array, :map} do
         allow_nil? true
@@ -142,7 +148,7 @@ defmodule Weakty.Posts.Post do
 
     update :update do
       accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
-              :status, :featured, :public, :published_at]
+              :status, :featured, :public, :published_at, :post_type]
       require_atomic? false
 
       argument :tags, {:array, :map} do
