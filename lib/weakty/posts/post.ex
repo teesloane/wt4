@@ -144,6 +144,8 @@ defmodule Weakty.Posts.Post do
           changeset
         end
       end
+
+      change Weakty.Posts.Changes.ConvertMarkdownToHtml
     end
 
     update :update do
@@ -178,6 +180,8 @@ defmodule Weakty.Posts.Post do
           changeset
         end
       end
+
+      change Weakty.Posts.Changes.ConvertMarkdownToHtml
     end
 
     update :publish do
