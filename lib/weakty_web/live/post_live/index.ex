@@ -69,7 +69,7 @@ defmodule WeaktyWeb.PostLive.Index do
 
 
   defp load_posts(socket, tab) do
-    assign(socket, posts: Weakty.Posts.Post.list_published_posts!())
+    assign(socket, posts: Weakty.Posts.Post.list_published_posts_only!())
   end
 
   defp format_date(datetime) do

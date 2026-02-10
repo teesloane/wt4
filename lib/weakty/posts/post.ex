@@ -213,12 +213,36 @@ defmodule Weakty.Posts.Post do
       prepare build(sort: [updated_at: :desc])
       filter expr(status == :draft)
     end
+
+    read :posts do
+      prepare build(sort: [published_at: :desc])
+      filter expr(post_type == :post)
+    end
+
+    read :updates do
+      prepare build(sort: [published_at: :desc])
+      filter expr(post_type == :update)
+    end
+
+    read :published_posts do
+      prepare build(sort: [published_at: :desc])
+      filter expr(status == :published and post_type == :post)
+    end
+
+    read :published_updates do
+      prepare build(sort: [published_at: :desc])
+      filter expr(status == :published and post_type == :update)
+    end
   end
 
   code_interface do
     define :list_posts, action: :read
     define :list_published_posts, action: :published
     define :list_drafts, action: :drafts
+    define :list_posts_only, action: :posts
+    define :list_updates_only, action: :updates
+    define :list_published_posts_only, action: :published_posts
+    define :list_published_updates, action: :published_updates
     define :get_post, action: :read, get?: true
     define :create_post, action: :create
     define :update_post, action: :update
