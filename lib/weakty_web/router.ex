@@ -32,6 +32,7 @@ defmodule WeaktyWeb.Router do
 
 
     ash_authentication_live_session :authenticated_routes do
+      live "/now", UpdateLive.Index, :index
       live "/links", LinkLive.Index, :index
       live "/posts", PostLive.Index, :index
       live "/posts/:slug", PostLive.Show, :show
