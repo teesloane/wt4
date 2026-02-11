@@ -44,6 +44,20 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     end
   end
 
+  def handle_event("filter_media_type", %{"media_type" => media_type}, socket) do
+    {:noreply,
+     push_patch(socket,
+       to: ~p"/admin/media-logs?type=#{media_type}&status=#{socket.assigns.status_filter}"
+     )}
+  end
+
+  def handle_event("filter_status", %{"status" => status}, socket) do
+    {:noreply,
+     push_patch(socket,
+       to: ~p"/admin/media-logs?type=#{socket.assigns.media_type_filter}&status=#{status}"
+     )}
+  end
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -57,72 +71,31 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     </.admin_header>
 
     <div class="p-8">
-      <!-- Media Type Filter -->
-      <div class="mb-4 flex gap-2">
-        <.link
-          patch={~p"/admin/media-logs?type=all&status=#{@status_filter}"}
-          class={["btn btn-sm", if(@media_type_filter == "all", do: "btn-active", else: "btn-ghost")]}
+      <!-- Filters -->
+      <div class="mb-6 flex gap-3">
+        <select
+          phx-change="filter_media_type"
+          name="media_type"
+          class="select select-bordered select-sm w-48"
         >
-          All Media
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=book&status=#{@status_filter}"}
-          class={["btn btn-sm", if(@media_type_filter == "book", do: "btn-active", else: "btn-ghost")]}
-        >
-          Books
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=comic&status=#{@status_filter}"}
-          class={["btn btn-sm", if(@media_type_filter == "comic", do: "btn-active", else: "btn-ghost")]}
-        >
-          Comics
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=movie&status=#{@status_filter}"}
-          class={["btn btn-sm", if(@media_type_filter == "movie", do: "btn-active", else: "btn-ghost")]}
-        >
-          Movies
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=music&status=#{@status_filter}"}
-          class={["btn btn-sm", if(@media_type_filter == "music", do: "btn-active", else: "btn-ghost")]}
-        >
-          Music
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=video_game&status=#{@status_filter}"}
-          class={["btn btn-sm", if(@media_type_filter == "video_game", do: "btn-active", else: "btn-ghost")]}
-        >
-          Games
-        </.link>
-      </div>
+          <option value="all" selected={@media_type_filter == "all"}>All Media Types</option>
+          <option value="book" selected={@media_type_filter == "book"}>Books</option>
+          <option value="comic" selected={@media_type_filter == "comic"}>Comics</option>
+          <option value="movie" selected={@media_type_filter == "movie"}>Movies</option>
+          <option value="music" selected={@media_type_filter == "music"}>Music</option>
+          <option value="video_game" selected={@media_type_filter == "video_game"}>Games</option>
+        </select>
 
-      <!-- Status Filter -->
-      <div class="mb-4 flex gap-2">
-        <.link
-          patch={~p"/admin/media-logs?type=#{@media_type_filter}&status=all"}
-          class={["btn btn-sm btn-outline", if(@status_filter == "all", do: "btn-active", else: "")]}
+        <select
+          phx-change="filter_status"
+          name="status"
+          class="select select-bordered select-sm w-48"
         >
-          All Status
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=#{@media_type_filter}&status=consuming"}
-          class={["btn btn-sm btn-outline", if(@status_filter == "consuming", do: "btn-active", else: "")]}
-        >
-          Currently Consuming
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=#{@media_type_filter}&status=consumed"}
-          class={["btn btn-sm btn-outline", if(@status_filter == "consumed", do: "btn-active", else: "")]}
-        >
-          Consumed
-        </.link>
-        <.link
-          patch={~p"/admin/media-logs?type=#{@media_type_filter}&status=want_to_consume"}
-          class={["btn btn-sm btn-outline", if(@status_filter == "want_to_consume", do: "btn-active", else: "")]}
-        >
-          Want to Consume
-        </.link>
+          <option value="all" selected={@status_filter == "all"}>All Status</option>
+          <option value="consuming" selected={@status_filter == "consuming"}>Currently Consuming</option>
+          <option value="consumed" selected={@status_filter == "consumed"}>Consumed</option>
+          <option value="want_to_consume" selected={@status_filter == "want_to_consume"}>Want to Consume</option>
+        </select>
       </div>
 
       <%= if @media_logs == [] do %>
