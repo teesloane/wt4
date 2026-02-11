@@ -116,7 +116,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                 </h3>
 
                 <p class="text-base-content/60 text-sm mb-2">
-                  By <%= if post.user, do: post.user.email |> String.split("@") |> hd(), else: "Unknown" %>
+                  By <%= if post.user, do: post.user.email |> to_string() |> String.split("@") |> hd(), else: "Unknown" %>
                   in <%= post.post_type || "post" %>
                   - <%= if post.status == :published && post.published_at do %>
                     <%= Calendar.strftime(post.published_at, "%d %b %Y") %>
