@@ -103,24 +103,15 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
               <%= for post <- @posts do %>
                 <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}>
                   <td>
-                    <div class="flex items-center gap-3">
-                      <%= if post.featured_image do %>
-                        <div class="avatar">
-                          <div class="mask mask-squircle w-12 h-12">
-                            <img src={post.featured_image} alt={post.title} />
-                          </div>
+                    <div>
+                      <div class="font-bold"><%= post.title %></div>
+                      <%= if post.tags && post.tags != [] do %>
+                        <div class="text-sm opacity-50 flex gap-1 mt-1">
+                          <%= for tag <- Enum.take(post.tags, 3) do %>
+                            <span class="badge badge-xs"><%= tag.name %></span>
+                          <% end %>
                         </div>
                       <% end %>
-                      <div>
-                        <div class="font-bold"><%= post.title %></div>
-                        <%= if post.tags && post.tags != [] do %>
-                          <div class="text-sm opacity-50 flex gap-1 mt-1">
-                            <%= for tag <- Enum.take(post.tags, 3) do %>
-                              <span class="badge badge-xs"><%= tag.name %></span>
-                            <% end %>
-                          </div>
-                        <% end %>
-                      </div>
                     </div>
                   </td>
                   <td>
