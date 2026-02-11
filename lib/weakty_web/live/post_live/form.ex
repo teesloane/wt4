@@ -36,11 +36,23 @@ defmodule WeaktyWeb.PostLive.Form do
       |> Form.validate(%{})
       |> to_form()
 
-    {:ok,
-     socket
-     |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "")
-     |> assign(:current_path, "/admin/posts"),
-     layout: {WeaktyWeb.Layouts, :admin}}
+    socket =
+      socket
+      |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "")
+      |> assign(:current_path, "/admin/posts")
+      |> assign(:content_images, (post && post.content_images) || [])
+      |> allow_upload(:featured_image,
+        accept: ~w(.jpg .jpeg .png .gif .webp),
+        max_entries: 1,
+        max_file_size: 5_000_000
+      )
+      |> allow_upload(:content_images,
+        accept: ~w(.jpg .jpeg .png .gif .webp),
+        max_entries: 10,
+        max_file_size: 5_000_000
+      )
+
+    {:ok, socket, layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
@@ -70,7 +82,7 @@ defmodule WeaktyWeb.PostLive.Form do
         </div>
 
         <%= if @preview do %>
-          <div class="prose prose-lg max-w-none">
+          <div class="prose max-w-none">
             <h1><%= @form[:title].value %></h1>
             <%= if @form[:featured_image].value do %>
               <img src={@form[:featured_image].value} alt={@form[:title].value} class="w-full rounded-lg" />
@@ -212,18 +224,86 @@ defmodule WeaktyWeb.PostLive.Form do
               <span class="label-text text-sm font-semibold">Featured Image</span>
             </label>
             <%= if @form[:featured_image].value do %>
-              <div class="mb-2">
+              <div class="mb-2 relative group">
                 <img src={@form[:featured_image].value} alt="Featured" class="w-full rounded-lg" />
+                <button
+                  type="button"
+                  phx-click="remove_featured_image"
+                  class="absolute top-2 right-2 btn btn-error btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ✕
+                </button>
               </div>
             <% end %>
-            <input
-              type="url"
-              form="post-form"
-              name={@form[:featured_image].name}
-              value={@form[:featured_image].value}
-              class="input input-bordered input-sm w-full text-sm"
-              placeholder="https://example.com/image.jpg"
-            />
+
+            <div class="space-y-2">
+              <label for={@uploads.featured_image.ref} class="btn btn-sm btn-ghost w-full cursor-pointer">
+                <.icon name="hero-photo" class="w-4 h-4 mr-2" />
+                <%= if @form[:featured_image].value, do: "Change Image", else: "Upload Image" %>
+              </label>
+              <.live_file_input upload={@uploads.featured_image} class="hidden" />
+
+              <%= for entry <- @uploads.featured_image.entries do %>
+                <div class="text-xs text-base-content/60">
+                  Uploading: <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Hidden input to preserve existing value -->
+            <input type="hidden" form="post-form" name={@form[:featured_image].name} value={@form[:featured_image].value} />
+          </div>
+
+          <!-- Content Images -->
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Content Images</span>
+            </label>
+
+            <%= if length(@content_images) > 0 do %>
+              <div class="grid grid-cols-2 gap-2 mb-2">
+                <%= for {image_url, index} <- Enum.with_index(@content_images) do %>
+                  <div class="relative group">
+                    <img src={image_url} alt="Content" class="w-full h-24 object-cover rounded-lg" />
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        phx-click="copy_image_markdown"
+                        phx-value-url={image_url}
+                        class="btn btn-xs btn-ghost"
+                        title="Copy markdown"
+                      >
+                        <.icon name="hero-clipboard" class="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        phx-click="remove_content_image"
+                        phx-value-index={index}
+                        class="btn btn-xs btn-error"
+                      >
+                        <.icon name="hero-trash" class="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <label for={@uploads.content_images.ref} class="btn btn-sm btn-ghost w-full cursor-pointer">
+              <.icon name="hero-photo" class="w-4 h-4 mr-2" />
+              Upload Images
+            </label>
+            <.live_file_input upload={@uploads.content_images} class="hidden" />
+
+            <%= for entry <- @uploads.content_images.entries do %>
+              <div class="text-xs text-base-content/60 mt-1">
+                <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
+              </div>
+            <% end %>
+
+            <div class="text-xs text-base-content/60 mt-1">
+              Click image thumbnails to copy markdown syntax
+            </div>
           </div>
 
           <!-- Excerpt -->
@@ -318,9 +398,62 @@ defmodule WeaktyWeb.PostLive.Form do
     {:noreply, assign(socket, tags: List.delete(socket.assigns.tags, tag))}
   end
 
+  def handle_event("remove_featured_image", _params, socket) do
+    form = Form.validate(socket.assigns.form, %{"featured_image" => nil})
+    {:noreply, assign(socket, form: to_form(form))}
+  end
+
+  def handle_event("remove_content_image", %{"index" => index_str}, socket) do
+    index = String.to_integer(index_str)
+    content_images = List.delete_at(socket.assigns.content_images, index)
+    {:noreply, assign(socket, content_images: content_images)}
+  end
+
+  def handle_event("copy_image_markdown", %{"url" => url}, socket) do
+    # Send JavaScript command to copy to clipboard
+    {:noreply, push_event(socket, "copy-to-clipboard", %{text: "![](#{url})"})}
+  end
+
+  def handle_event("validate", %{"_target" => ["featured_image"]}, socket) do
+    # Auto-upload featured image when selected
+    uploaded_files =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, ~p"/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    case uploaded_files do
+      [url | _] ->
+        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
+        {:noreply, assign(socket, form: to_form(form))}
+
+      [] ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("validate", %{"_target" => ["content_images"]}, socket) do
+    # Auto-upload content images when selected
+    uploaded_files =
+      consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
+        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, ~p"/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    content_images = socket.assigns.content_images ++ uploaded_files
+    {:noreply, assign(socket, content_images: content_images)}
+  end
+
   def handle_event("save", %{"form" => params}, socket) do
     IO.puts("\n=== POST SAVE EVENT ===")
     IO.inspect(socket.assigns.tags, label: "Tags to save")
+
+    # Add content_images to params
+    params = Map.put(params, "content_images", socket.assigns.content_images)
 
     # First, create/update the post without tags
     result = Form.submit(socket.assigns.form, params: params)
@@ -421,4 +554,9 @@ defmodule WeaktyWeb.PostLive.Form do
   end
 
   defp format_datetime_for_input(_), do: ""
+
+  defp ext(entry) do
+    [ext | _] = MIME.extensions(entry.client_type)
+    ext
+  end
 end

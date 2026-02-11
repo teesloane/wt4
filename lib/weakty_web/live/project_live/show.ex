@@ -66,7 +66,7 @@ defmodule WeaktyWeb.ProjectLive.Show do
         <% end %>
       </div>
 
-      <div class="prose prose-lg max-w-none">
+      <div class="prose max-w-none">
         <%= raw(@project.html) %>
       </div>
 

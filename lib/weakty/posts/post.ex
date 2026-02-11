@@ -36,6 +36,11 @@ defmodule Weakty.Posts.Post do
       public? true
     end
 
+    attribute :content_images, {:array, :string} do
+      public? true
+      default []
+    end
+
     attribute :excerpt, :string do
       public? true
     end
@@ -101,7 +106,7 @@ defmodule Weakty.Posts.Post do
     end
 
     create :create do
-      accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
+      accept [:title, :slug, :markdown, :html, :featured_image, :content_images, :excerpt,
               :status, :featured, :public, :published_at, :user_id, :post_type]
 
       argument :tags, {:array, :map} do
@@ -149,7 +154,7 @@ defmodule Weakty.Posts.Post do
     end
 
     update :update do
-      accept [:title, :slug, :markdown, :html, :featured_image, :excerpt,
+      accept [:title, :slug, :markdown, :html, :featured_image, :content_images, :excerpt,
               :status, :featured, :public, :published_at, :post_type]
       require_atomic? false
 

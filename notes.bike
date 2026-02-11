@@ -5,6 +5,15 @@
   </head>
   <body>
     <ul id="FMivkHdI">
+      <li id="5T">
+        <p>Next batch of features:</p>
+      </li>
+      <li id="WN" data-type="task">
+        <p>Implement "image uploading" such that anywhere a "featured image" is used, we can upload a file for it, and we will store the string of the location on the server to it. I’m not sure if Ash has image uploading functionality but I know phoenix does.</p>
+      </li>
+      <li id="LOX" data-type="task">
+        <p><span>Set up all posts / tags, media, etc - all public content tables to have </span><a href="https://ogp.me/">open graph metadata</a><span> generated based on their contents.</span></p>
+      </li>
       <li id="3C" data-type="heading">
         <p><strong>Features</strong></p>
         <ul>

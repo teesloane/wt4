@@ -123,7 +123,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
 
       <%= if @media_log.notes do %>
         <div class="divider"></div>
-        <div class="prose prose-lg max-w-none">
+        <div class="prose max-w-none">
           <h2>Notes</h2>
           <p class="whitespace-pre-wrap"><%= @media_log.notes %></p>
         </div>

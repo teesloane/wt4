@@ -38,22 +38,33 @@ defmodule WeaktyWeb.ProjectLive.Form do
       |> Form.validate(%{})
       |> to_form()
 
-    {:ok,
-     socket
-     |> assign(
-       form: form,
-       project: project,
-       preview: false,
-       tags: existing_tags,
-       tag_input: "",
-       links: existing_links,
-       link_name: "",
-       link_url: "",
-       images: existing_images,
-       image_url: ""
-     )
-     |> assign(:current_path, "/admin/projects"),
-     layout: {WeaktyWeb.Layouts, :admin}}
+    socket =
+      socket
+      |> assign(
+        form: form,
+        project: project,
+        preview: false,
+        tags: existing_tags,
+        tag_input: "",
+        links: existing_links,
+        link_name: "",
+        link_url: "",
+        images: existing_images,
+        image_url: ""
+      )
+      |> assign(:current_path, "/admin/projects")
+      |> allow_upload(:featured_image,
+        accept: ~w(.jpg .jpeg .png .gif .webp),
+        max_entries: 1,
+        max_file_size: 5_000_000
+      )
+      |> allow_upload(:content_images,
+        accept: ~w(.jpg .jpeg .png .gif .webp),
+        max_entries: 10,
+        max_file_size: 5_000_000
+      )
+
+    {:ok, socket, layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
@@ -83,7 +94,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
         </div>
 
         <%= if @preview do %>
-          <div class="prose prose-lg max-w-none">
+          <div class="prose max-w-none">
             <h1><%= @form[:title].value %></h1>
             <%= if @form[:featured_image].value do %>
               <img src={@form[:featured_image].value} alt={@form[:title].value} class="w-full rounded-lg" />
@@ -269,39 +280,48 @@ defmodule WeaktyWeb.ProjectLive.Form do
             </label>
 
             <%= if length(@images) > 0 do %>
-              <div class="space-y-2 mb-3">
-                <%= for {image, idx} <- Enum.with_index(@images) do %>
-                  <div class="relative">
-                    <img src={image} alt="Project image" class="w-full rounded" />
-                    <button
-                      type="button"
-                      phx-click="remove_image"
-                      phx-value-index={idx}
-                      class="btn btn-xs btn-circle btn-error absolute top-2 right-2"
-                    >
-                      ✕
-                    </button>
+              <div class="grid grid-cols-2 gap-2 mb-2">
+                <%= for {image_url, index} <- Enum.with_index(@images) do %>
+                  <div class="relative group">
+                    <img src={image_url} alt="Content" class="w-full h-24 object-cover rounded-lg" />
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        phx-click="copy_image_markdown"
+                        phx-value-url={image_url}
+                        class="btn btn-xs btn-ghost"
+                        title="Copy markdown"
+                      >
+                        <.icon name="hero-clipboard" class="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        phx-click="remove_image"
+                        phx-value-index={index}
+                        class="btn btn-xs btn-error"
+                      >
+                        <.icon name="hero-trash" class="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 <% end %>
               </div>
             <% end %>
 
-            <div class="space-y-2">
-              <input
-                type="url"
-                value={@image_url}
-                phx-keyup="update_image_url"
-                name="image_url"
-                placeholder="Image URL"
-                class="input input-bordered input-sm w-full text-sm"
-              />
-              <button
-                type="button"
-                phx-click="add_image"
-                class="btn btn-sm btn-ghost w-full"
-              >
-                Add Image
-              </button>
+            <label for={@uploads.content_images.ref} class="btn btn-sm btn-ghost w-full cursor-pointer">
+              <.icon name="hero-photo" class="w-4 h-4 mr-2" />
+              Upload Images
+            </label>
+            <.live_file_input upload={@uploads.content_images} class="hidden" />
+
+            <%= for entry <- @uploads.content_images.entries do %>
+              <div class="text-xs text-base-content/60 mt-1">
+                <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
+              </div>
+            <% end %>
+
+            <div class="text-xs text-base-content/60 mt-1">
+              Click image thumbnails to copy markdown syntax
             </div>
           </div>
 
@@ -360,18 +380,34 @@ defmodule WeaktyWeb.ProjectLive.Form do
               <span class="label-text text-sm font-semibold">Featured Image</span>
             </label>
             <%= if @form[:featured_image].value do %>
-              <div class="mb-2">
+              <div class="mb-2 relative group">
                 <img src={@form[:featured_image].value} alt="Featured" class="w-full rounded-lg" />
+                <button
+                  type="button"
+                  phx-click="remove_featured_image"
+                  class="absolute top-2 right-2 btn btn-error btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ✕
+                </button>
               </div>
             <% end %>
-            <input
-              type="url"
-              form="project-form"
-              name={@form[:featured_image].name}
-              value={@form[:featured_image].value}
-              class="input input-bordered input-sm w-full text-sm"
-              placeholder="https://example.com/image.jpg"
-            />
+
+            <div class="space-y-2">
+              <label for={@uploads.featured_image.ref} class="btn btn-sm btn-ghost w-full cursor-pointer">
+                <.icon name="hero-photo" class="w-4 h-4 mr-2" />
+                <%= if @form[:featured_image].value, do: "Change Image", else: "Upload Image" %>
+              </label>
+              <.live_file_input upload={@uploads.featured_image} class="hidden" />
+
+              <%= for entry <- @uploads.featured_image.entries do %>
+                <div class="text-xs text-base-content/60">
+                  Uploading: <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
+                </div>
+              <% end %>
+            </div>
+
+            <!-- Hidden input to preserve existing value -->
+            <input type="hidden" form="project-form" name={@form[:featured_image].name} value={@form[:featured_image].value} />
           </div>
 
           <!-- Excerpt -->
@@ -533,6 +569,47 @@ defmodule WeaktyWeb.ProjectLive.Form do
     {:noreply, assign(socket, images: List.delete_at(socket.assigns.images, index))}
   end
 
+  def handle_event("remove_featured_image", _params, socket) do
+    form = Form.validate(socket.assigns.form, %{"featured_image" => nil})
+    {:noreply, assign(socket, form: to_form(form))}
+  end
+
+  def handle_event("copy_image_markdown", %{"url" => url}, socket) do
+    {:noreply, push_event(socket, "copy-to-clipboard", %{text: "![](#{url})"})}
+  end
+
+  def handle_event("validate", %{"_target" => ["featured_image"]}, socket) do
+    uploaded_files =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, ~p"/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    case uploaded_files do
+      [url | _] ->
+        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
+        {:noreply, assign(socket, form: to_form(form))}
+
+      [] ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("validate", %{"_target" => ["content_images"]}, socket) do
+    uploaded_files =
+      consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
+        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, ~p"/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    images = socket.assigns.images ++ uploaded_files
+    {:noreply, assign(socket, images: images)}
+  end
+
   def handle_event("save", %{"form" => params}, socket) do
     # Add links and images to params
     params = params
@@ -601,4 +678,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
   end
 
   defp format_datetime_for_input(_), do: ""
+
+  defp ext(entry) do
+    [ext | _] = MIME.extensions(entry.client_type)
+    ext
+  end
 end

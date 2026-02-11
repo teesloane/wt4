@@ -26,6 +26,15 @@ import {hooks as colocatedHooks} from "phoenix-colocated/weakty"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+// Handle copy-to-clipboard events
+window.addEventListener("phx:copy-to-clipboard", (e) => {
+  const text = e.detail.text
+  navigator.clipboard.writeText(text).then(() => {
+    console.log("Copied to clipboard:", text)
+  })
+})
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
