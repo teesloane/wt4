@@ -101,7 +101,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
             </thead>
             <tbody>
               <%= for post <- @posts do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/posts/#{post.id}/edit")}>
+                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}>
                   <td>
                     <div class="flex items-center gap-3">
                       <%= if post.featured_image do %>

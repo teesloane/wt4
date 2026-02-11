@@ -55,9 +55,6 @@
                   <li id="cEH" data-type="task">
                     <p>New Post view</p>
                     <ul>
-                      <li id="mFg" data-type="task">
-                        <p>Improve styles</p>
-                      </li>
                       <li id="B56" data-type="task">
                         <p>change featured image url to be an image upload</p>
                       </li>
@@ -122,6 +119,9 @@
             <ul>
               <li id="4t6" data-type="task">
                 <p>Write script that imports books from obsidian</p>
+              </li>
+              <li id="A4" data-type="task">
+                <p>Display content to the public</p>
               </li>
             </ul>
           </li>
