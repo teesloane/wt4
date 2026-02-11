@@ -46,7 +46,7 @@ defmodule WeaktyWeb.PostLive.Index do
   end
 
 
-  defp load_posts(socket, tab) do
+  defp load_posts(socket, _tab) do
     assign(socket, posts: Weakty.Posts.Post.list_published_posts_only!())
   end
 

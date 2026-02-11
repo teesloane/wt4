@@ -24,16 +24,22 @@
               </li>
             </ul>
           </li>
+          <li id="w5" data-type="task">
+            <p>open graph stuff</p>
+          </li>
           <li id="Yr" data-type="task">
             <p>Posts</p>
             <ul>
+              <li id="6V">
+                <p/>
+              </li>
               <li id="ev" data-type="task">
                 <p>Admin Posts</p>
                 <ul>
-                  <li id="9OS" data-type="task">
+                  <li id="9OS" data-done="2026-02-11T12:26:15Z" data-type="task">
                     <p>Update the ghost script to instead take in the html and convert that to markdown instead of just putting plain text into the table under the markdown column.</p>
                     <ul>
-                      <li id="dII" data-type="task">
+                      <li id="dII" data-done="2026-02-11T12:26:14Z" data-type="task">
                         <p><span>Could use </span><a href="https://github.com/kasvith/htmd?tab=readme-ov-file">this html -&gt; markdown convehttps://github.com/kasvith/htmd?tab=readme-ov-filerter</a><span> (requires rust)</span></p>
                       </li>
                     </ul>
@@ -84,27 +90,11 @@
               </li>
             </ul>
           </li>
-          <li id="ol6" data-type="task">
-            <p>Projects</p>
-            <ul>
-              <li id="5W" data-type="task">
-                <p>let’s build out a "project" table, that is similar to posts, except it’s for displaying portfolio esque based work. What do you think the fields might be?</p>
-              </li>
-              <li id="s5m" data-type="task">
-                <p>Different than posts:</p>
-                <ul>
-                  <li id="_lK" data-type="task">
-                    <p>"start" and "end" date</p>
-                  </li>
-                  <li id="UVp" data-type="task">
-                    <p>"gallery" images</p>
-                  </li>
-                </ul>
-              </li>
-            </ul>
+          <li id="df" data-type="task">
+            <p> Newsletters</p>
           </li>
           <li id="SZ-" data-type="task">
-            <p>Media </p>
+            <p>Media</p>
             <ul>
               <li id="4t6" data-type="task">
                 <p>Write script that imports books from obsidian</p>
@@ -114,14 +104,38 @@
               </li>
             </ul>
           </li>
-          <li id="uxu" data-done="2026-02-10T02:41:56Z" data-type="task">
-            <p>Now/Updates</p>
+          <li id="DP" data-type="task">
+            <p>Archive</p>
             <ul>
-              <li id="DgT" data-done="2026-02-10T02:41:55Z" data-type="task">
-                <p>could live in the "posts" table but will need a type of "now"</p>
+              <li id="uxu" data-done="2026-02-10T02:41:56Z" data-type="task">
+                <p>Now/Updates</p>
+                <ul>
+                  <li id="DgT" data-done="2026-02-10T02:41:55Z" data-type="task">
+                    <p>could live in the "posts" table but will need a type of "now"</p>
+                  </li>
+                  <li id="90G" data-done="2026-02-10T02:41:55Z" data-type="task">
+                    <p>Identify other "post types".</p>
+                  </li>
+                </ul>
               </li>
-              <li id="90G" data-done="2026-02-10T02:41:55Z" data-type="task">
-                <p>Identify other "post types".</p>
+              <li id="ol6" data-done="2026-02-11T12:26:45Z" data-type="task">
+                <p>Projects</p>
+                <ul>
+                  <li id="5W" data-done="2026-02-11T12:26:42Z" data-type="task">
+                    <p>let’s build out a "project" table, that is similar to posts, except it’s for displaying portfolio esque based work. What do you think the fields might be?</p>
+                  </li>
+                  <li id="s5m" data-done="2026-02-11T12:26:43Z" data-type="task">
+                    <p>Different than posts:</p>
+                    <ul>
+                      <li id="_lK" data-type="task">
+                        <p>"start" and "end" date</p>
+                      </li>
+                      <li id="UVp" data-type="task">
+                        <p>"gallery" images</p>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
               </li>
             </ul>
           </li>

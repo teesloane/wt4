@@ -116,16 +116,6 @@ defmodule WeaktyWeb.PostLive.Show do
     {:noreply, push_navigate(socket, to: ~p"/posts")}
   end
 
-  defp render_markdown(nil), do: ""
-  defp render_markdown(""), do: ""
-
-  defp render_markdown(markdown) do
-    case MDEx.to_html(markdown) do
-      {:ok, html} -> html
-      {:error, _} -> "<p>Error rendering markdown</p>"
-    end
-  end
-
   defp format_date(datetime) do
     Calendar.strftime(datetime, "%d %b %Y")
   end
