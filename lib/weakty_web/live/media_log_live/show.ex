@@ -11,7 +11,11 @@ defmodule WeaktyWeb.MediaLogLive.Show do
       |> Ash.read_one!()
       |> Ash.load!([:user, :tags])
 
-    {:ok, assign(socket, media_log: media_log)}
+    {:ok,
+     socket
+     |> assign(media_log: media_log)
+     |> assign(og_content: media_log)
+     |> assign(page_title: media_log.title)}
   end
 
   @impl true

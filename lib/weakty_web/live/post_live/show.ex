@@ -10,7 +10,11 @@ defmodule WeaktyWeb.PostLive.Show do
       |> Ash.read_one!()
       |> Ash.load!(:user)
 
-    {:ok, assign(socket, post: post)}
+    {:ok,
+     socket
+     |> assign(post: post)
+     |> assign(og_content: post)
+     |> assign(page_title: post.title)}
   end
 
   @impl true
