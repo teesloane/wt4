@@ -88,82 +88,51 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
           </div>
         </div>
       <% else %>
-        <div class="overflow-x-auto">
-          <table class="table table-zebra">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Excerpt</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%= for post <- @posts do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}>
-                  <td>
-                    <div>
-                      <div class="font-bold"><%= post.title %></div>
-                      <%= if post.tags && post.tags != [] do %>
-                        <div class="text-sm opacity-50 flex gap-1 mt-1">
-                          <%= for tag <- Enum.take(post.tags, 3) do %>
-                            <span class="badge badge-xs"><%= tag.name %></span>
-                          <% end %>
-                        </div>
-                      <% end %>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="text-sm text-base-content/70 max-w-md truncate">
-                      <%= post.excerpt %>
-                    </div>
-                  </td>
-                  <td>
-                    <.status_badge status={post.status} />
-                  </td>
-                  <td>
-                    <%= if post.status == :published && post.published_at do %>
-                      <div class="text-sm">
-                        <%= Calendar.strftime(post.published_at, "%b %d, %Y") %>
-                      </div>
-                    <% else %>
-                      <div class="text-sm text-base-content/60">
-                        Updated <%= Calendar.strftime(post.updated_at, "%b %d, %Y") %>
-                      </div>
-                    <% end %>
-                  </td>
-                  <td onclick="event.stopPropagation()">
-                    <div class="flex gap-2">
-                      <.link
-                        navigate={~p"/admin/posts/#{post.slug}/edit"}
-                        class="btn btn-ghost btn-xs"
-                        title="Edit"
-                      >
-                        <.icon name="hero-pencil" class="w-4 h-4" />
-                      </.link>
-                      <.link
-                        navigate={~p"/posts/#{post.slug}"}
-                        class="btn btn-ghost btn-xs"
-                        title="View"
-                      >
-                        <.icon name="hero-eye" class="w-4 h-4" />
-                      </.link>
-                      <button
-                        phx-click="delete"
-                        phx-value-id={post.id}
-                        data-confirm="Are you sure you want to delete this post?"
-                        class="btn btn-ghost btn-xs text-error"
-                        title="Delete"
-                      >
-                        <.icon name="hero-trash" class="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+        <div class="space-y-4">
+          <%= for post <- @posts do %>
+            <div
+              class="flex gap-4 p-4 bg-base-100 rounded-lg hover:bg-base-200 cursor-pointer transition-colors"
+              phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}
+            >
+              <!-- Featured Image Thumbnail -->
+              <div class="flex-shrink-0">
+                <%= if post.featured_image do %>
+                  <img
+                    src={post.featured_image}
+                    alt={post.title}
+                    class="w-40 h-32 object-cover rounded-lg"
+                  />
+                <% else %>
+                  <div class="w-40 h-32 bg-base-200 rounded-lg flex items-center justify-center">
+                    <.icon name="hero-photo" class="w-12 h-12 text-base-content/20" />
+                  </div>
+                <% end %>
+              </div>
+
+              <!-- Post Details -->
+              <div class="flex-1 min-w-0">
+                <h3 class="text-xl font-bold text-base-content mb-2">
+                  <%= post.title %>
+                </h3>
+
+                <p class="text-base-content/60 text-sm mb-2">
+                  By <%= if post.user, do: post.user.email |> String.split("@") |> hd(), else: "Unknown" %>
+                  in <%= post.post_type || "post" %>
+                  - <%= if post.status == :published && post.published_at do %>
+                    <%= Calendar.strftime(post.published_at, "%d %b %Y") %>
+                  <% else %>
+                    <%= Calendar.strftime(post.updated_at, "%d %b %Y") %>
+                  <% end %>
+                </p>
+
+                <%= if post.status == :draft do %>
+                  <p class="text-pink-500 font-medium text-sm">Draft</p>
+                <% else %>
+                  <p class="text-base-content/60 text-sm">Published</p>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
         </div>
       <% end %>
     </div>
@@ -178,8 +147,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
         _ -> Weakty.Posts.Post.list_posts!()
       end
 
-    # Load tags relationship
-    posts = Ash.load!(posts, :tags)
+    # Load tags and user relationships
+    posts = Ash.load!(posts, [:tags, :user])
 
     # Sort only in "all posts" mode: published by date, then drafts at top
     posts =
