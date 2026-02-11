@@ -117,7 +117,7 @@ defmodule WeaktyWeb.PostLive.Form do
       </div>
 
       <!-- Sidebar -->
-      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4">
+      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
         <h2 class="text-xl font-bold mb-6">Post settings</h2>
 
         <div class="space-y-6">

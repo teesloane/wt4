@@ -8,7 +8,7 @@ defmodule WeaktyWeb.AdminComponents do
 
   def admin_sidebar(assigns) do
     ~H"""
-    <aside class={["w-64 bg-base-200 border-r border-base-300 flex flex-col h-screen", @class]}>
+    <aside class={["w-64 bg-base-200 border-r border-base-300 flex flex-col h-screen", @class]} style="font-family: 'IBM Plex Sans', sans-serif;">
       <div class="p-6 border-b border-base-300">
         <.link navigate="/" class="text-xl font-bold">Weakty</.link>
       </div>
