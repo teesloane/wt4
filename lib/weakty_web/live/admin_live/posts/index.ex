@@ -179,6 +179,19 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
     # Load tags relationship
     posts = Ash.load!(posts, :tags)
 
+    # Sort only in "all posts" mode: drafts first, then by published_at (most recent first)
+    posts =
+      if socket.assigns.filter == "all" do
+        Enum.sort_by(posts, fn post ->
+          case post.status do
+            :draft -> {0, post.updated_at || ~U[1970-01-01 00:00:00Z]}
+            _ -> {1, post.published_at || ~U[1970-01-01 00:00:00Z]}
+          end
+        end, :desc)
+      else
+        posts
+      end
+
     assign(socket, :posts, posts)
   end
 end
