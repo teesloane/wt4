@@ -17,7 +17,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <article class="mx-auto max-w-4xl px-4 py-8">
+    <article class="mx-auto max-w-3xl px-4 py-12">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <!-- Thumbnail Column -->
         <div class="md:col-span-1">

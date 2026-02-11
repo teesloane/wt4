@@ -17,48 +17,49 @@ defmodule WeaktyWeb.LinkLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-4xl px-4 py-8">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold">My Links</h1>
+    <div class="max-w-3xl mx-auto px-6 py-16">
+      <div class="mb-16 text-center">
+        <h1 class="text-4xl font-normal mb-6 uppercase tracking-wide averia">
+          Links
+        </h1>
         <button
           phx-click="new_link"
-          class="btn btn-primary mt-4"
+          class="btn btn-sm"
         >
-          Add New Link
+          Add New
         </button>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-10">
         <%= for link <- @links do %>
-          <div class="card bg-base-200 shadow-sm">
-            <div class="card-body">
-              <h2 class="card-title">
-                <a href={link.url} target="_blank" class="link">
-                  <%= link.title %>
-                </a>
-              </h2>
-              <%= if link.commentary do %>
-                <p><%= link.commentary %></p>
-              <% end %>
-              <div class="card-actions justify-end">
-                <button
-                  phx-click="edit"
-                  phx-value-slug={link.slug}
-                  class="btn btn-sm btn-ghost"
-                >
-                  Edit
-                </button>
-                <button
-                  phx-click="delete"
-                  phx-value-slug={link.slug}
-                  data-confirm="Are you sure?"
-                  class="btn btn-sm btn-error"
-                >
-                  Delete
-                </button>
-              </div>
+          <article class="border-b border-base-300 pb-10 last:border-b-0">
+            <h2 class="text-2xl font-normal mb-3 averia">
+              <a href={link.url} target="_blank" rel="noopener noreferrer" class="hover:opacity-70 transition-opacity">
+                <%= link.title %>
+              </a>
+            </h2>
+            <%= if link.commentary do %>
+              <p class="opacity-80 leading-relaxed mb-4"><%= link.commentary %></p>
+            <% end %>
+            <div class="flex gap-3 text-sm opacity-60">
+              <button
+                phx-click="edit"
+                phx-value-slug={link.slug}
+                class="hover:opacity-100 transition-opacity"
+              >
+                Edit
+              </button>
+              <span>·</span>
+              <button
+                phx-click="delete"
+                phx-value-slug={link.slug}
+                data-confirm="Are you sure?"
+                class="hover:text-error transition-colors"
+              >
+                Delete
+              </button>
             </div>
-          </div>
+          </article>
         <% end %>
       </div>
     </div>

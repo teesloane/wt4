@@ -13,53 +13,31 @@ defmodule WeaktyWeb.PostLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-6xl px-4 py-8">
-      <div class="mb-8">
-        <div class="flex justify-between items-center">
-          <h1 class="text-3xl font-bold">Posts</h1>
-        </div>
-      </div>
-
-      <div class="space-y-4">
+    <div class="max-w-3xl mx-auto px-6 py-16">
+      <div class="space-y-12">
         <%= if Enum.empty?(@posts) do %>
-          <div class="card bg-base-200">
-            <div class="card-body text-center">
-              <p class="text-base-content/60">No posts found</p>
-            </div>
-          </div>
+          <p class="text-base-content/60 text-center py-12">No posts found</p>
         <% else %>
           <%= for post <- @posts do %>
-            <div class="card bg-base-100 cursor-pointer shadow-sm hover:shadow-md transition-shadow">
-              <div class="card-body">
-                <div class="flex justify-between items-start">
-                  <div class="flex-1">
-                    <h2 class="card-title text-2xl">
-                      <.link navigate={~p"/posts/#{post.slug}"} class="link link-hover">
-                        <%= post.title %>
-                      </.link>
-                    </h2>
-                    <%= if post.excerpt do %>
-                      <p class="text-base-content/70 mt-2"><%= post.excerpt %></p>
-                    <% end %>
-                  </div>
-                </div>
+            <article class="last:border-b-0 mb-2">
+              <div class="">
+              <div class="flex justify-between">
 
-                <div class="flex items-center gap-4 text-sm text-base-content/60 mt-2">
+                <h2 class="text-md font-normal tracking-wide averia">
+                  <.link navigate={~p"/posts/#{post.slug}"} class="hover:opacity-70 transition-opacity">
+                    <%= post.title %>
+                  </.link>
+                </h2>
+                <div class="text-sm opacity-60">
                   <%= if post.published_at do %>
-                    <span>Published <%= format_date(post.published_at) %></span>
+                    <%= format_date(post.published_at) %>
                   <% else %>
-                    <span>Updated <%= format_date(post.updated_at) %></span>
-                  <% end %>
-                  <%= if post.featured do %>
-                    <span class="badge badge-sm badge-primary">Featured</span>
-                  <% end %>
-                  <%= if post.public do %>
-                    <span class="badge badge-sm badge-info">Public</span>
+                    <%= format_date(post.updated_at) %>
                   <% end %>
                 </div>
-
+                </div>
               </div>
-            </div>
+            </article>
           <% end %>
         <% end %>
       </div>
@@ -73,6 +51,6 @@ defmodule WeaktyWeb.PostLive.Index do
   end
 
   defp format_date(datetime) do
-    Calendar.strftime(datetime, "%B %d, %Y")
+    Calendar.strftime(datetime, "%d %b %Y")
   end
 end

@@ -65,8 +65,8 @@ config :weakty, WeaktyWeb.Endpoint,
     ]
   ]
 
-# Enable dev routes for dashboard and mailbox
-config :weakty, dev_routes: true, token_signing_secret: "SF9pyLgFrxxVB/RbAY5vzxy0QxPstXi4"
+# Enable dev routes for dashboard and mailbox (Ash Admin disabled)
+config :weakty, dev_routes: false, token_signing_secret: "SF9pyLgFrxxVB/RbAY5vzxy0QxPstXi4"
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"

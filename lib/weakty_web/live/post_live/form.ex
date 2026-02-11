@@ -106,7 +106,8 @@ defmodule WeaktyWeb.PostLive.Form do
             <div class="form-control">
               <textarea
                 name={@form[:markdown].name}
-                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none font-mono"
+                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
+                style="font-family: 'IBM Plex Serif', serif;"
                 placeholder="Begin writing your post..."
                 required
               ><%= @form[:markdown].value %></textarea>
@@ -116,14 +117,14 @@ defmodule WeaktyWeb.PostLive.Form do
       </div>
 
       <!-- Sidebar -->
-      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto">
+      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4">
         <h2 class="text-xl font-bold mb-6">Post settings</h2>
 
         <div class="space-y-6">
           <!-- Post URL (Slug) -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Post URL</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Post URL</span>
             </label>
             <div class="flex items-center gap-2">
               <.icon name="hero-link" class="w-4 h-4 text-base-content/50" />
@@ -136,15 +137,15 @@ defmodule WeaktyWeb.PostLive.Form do
                 placeholder="url-friendly-slug"
               />
             </div>
-            <label class="label">
-              <span class="label-text-alt">weakty.com/<%= @form[:slug].value || "post-slug" %>/</span>
-            </label>
+            <div class="text-xs text-base-content/60 mt-1">
+              weakty.com/<%= @form[:slug].value || "post-slug" %>/
+            </div>
           </div>
 
           <!-- Published At -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Publish date</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Publish date</span>
             </label>
             <input
               type="datetime-local"
@@ -153,15 +154,15 @@ defmodule WeaktyWeb.PostLive.Form do
               value={format_datetime_for_input(@form[:published_at].value)}
               class="input input-bordered input-sm w-full text-sm"
             />
-            <label class="label">
-              <span class="label-text-alt">Leave empty to auto-set when publishing</span>
-            </label>
+            <div class="text-xs text-base-content/60 mt-1">
+              Leave empty to auto-set when publishing
+            </div>
           </div>
 
           <!-- Tags -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Tags</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Tags</span>
             </label>
 
             <%= if length(@tags) > 0 do %>
@@ -206,9 +207,9 @@ defmodule WeaktyWeb.PostLive.Form do
           <div class="divider"></div>
 
           <!-- Featured Image -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Featured Image</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Featured Image</span>
             </label>
             <%= if @form[:featured_image].value do %>
               <div class="mb-2">
@@ -226,9 +227,9 @@ defmodule WeaktyWeb.PostLive.Form do
           </div>
 
           <!-- Excerpt -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Excerpt</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Excerpt</span>
             </label>
             <textarea
               form="post-form"
@@ -241,9 +242,9 @@ defmodule WeaktyWeb.PostLive.Form do
           <div class="divider"></div>
 
           <!-- Status -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Status</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Status</span>
             </label>
             <select
               form="post-form"
@@ -259,12 +260,9 @@ defmodule WeaktyWeb.PostLive.Form do
             </select>
           </div>
 
-          <!-- Post Access -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Post access</span>
-            </label>
-            <label class="label cursor-pointer justify-start gap-3">
+          <!-- Access and Featured -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input
                 type="checkbox"
                 form="post-form"
@@ -272,15 +270,10 @@ defmodule WeaktyWeb.PostLive.Form do
                 checked={@form[:public].value}
                 class="toggle toggle-sm"
               />
-              <span class="label-text"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
+              <span class="label-text text-sm"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
             </label>
-          </div>
 
-          <!-- Feature Post -->
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-3">
-              <.icon name="hero-star" class="w-5 h-5" />
-              <span class="label-text font-semibold flex-1">Feature this post</span>
+            <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input
                 type="checkbox"
                 form="post-form"
@@ -288,6 +281,7 @@ defmodule WeaktyWeb.PostLive.Form do
                 checked={@form[:featured].value}
                 class="toggle toggle-sm"
               />
+              <span class="label-text text-sm">Featured</span>
             </label>
           </div>
         </div>
