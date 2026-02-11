@@ -71,6 +71,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     </.admin_header>
 
     <div class="p-8">
+    <form>
       <!-- Filters -->
       <div class="mb-6 flex gap-3">
         <select
@@ -97,6 +98,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
           <option value="want_to_consume" selected={@status_filter == "want_to_consume"}>Want to Consume</option>
         </select>
       </div>
+      </form>
 
       <%= if @media_logs == [] do %>
         <div class="card bg-base-200 shadow-sm">
