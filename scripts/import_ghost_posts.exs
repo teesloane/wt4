@@ -142,12 +142,14 @@ defmodule GhostImporter do
 
     IO.write("Importing: #{title} (#{slug})... ")
 
+    # Convert Ghost HTML to markdown
+    markdown = convert_html_to_markdown(ghost_post["html"])
+
     # Map Ghost fields to Weakty Post fields
     post_attrs = %{
       title: title,
       slug: slug,
-      # Use plaintext for markdown since Ghost uses lexical/mobiledoc
-      markdown: ghost_post["plaintext"] || ghost_post["html"] || "",
+      markdown: markdown,
       html: ghost_post["html"],
       featured_image: ghost_post["feature_image"],
       excerpt: ghost_post["custom_excerpt"],
@@ -202,6 +204,17 @@ defmodule GhostImporter do
     case DateTime.from_iso8601(datetime_string) do
       {:ok, datetime, _offset} -> datetime
       {:error, _} -> nil
+    end
+  end
+
+  defp convert_html_to_markdown(nil), do: ""
+  defp convert_html_to_markdown(""), do: ""
+  defp convert_html_to_markdown(html) when is_binary(html) do
+    case Htmd.convert(html) do
+      {:ok, markdown} -> markdown
+      {:error, _} ->
+        IO.puts("Warning: Failed to convert HTML to markdown, using empty string")
+        ""
     end
   end
 

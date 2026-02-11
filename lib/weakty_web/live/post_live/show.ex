@@ -108,9 +108,9 @@ defmodule WeaktyWeb.PostLive.Show do
   defp render_markdown(""), do: ""
 
   defp render_markdown(markdown) do
-    case Earmark.as_html(markdown) do
-      {:ok, html, _} -> html
-      {:error, _, _} -> "<p>Error rendering markdown</p>"
+    case MDEx.to_html(markdown) do
+      {:ok, html} -> html
+      {:error, _} -> "<p>Error rendering markdown</p>"
     end
   end
 
