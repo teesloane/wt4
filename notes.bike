@@ -33,7 +33,7 @@
               </li>
             </ul>
           </li>
-          <li id="w5" data-type="task">
+          <li id="w5" data-done="2026-02-11T18:12:40Z" data-type="task">
             <p>open graph stuff</p>
           </li>
           <li id="Yr" data-type="task">
@@ -150,21 +150,21 @@
           </li>
         </ul>
       </li>
-      <li id="qEl">
-        <p>UI</p>
-        <ul>
-          <li id="jcz" data-type="unordered">
-            <p>More minimalistic, centered UI. </p>
-          </li>
-        </ul>
-      </li>
       <li id="cS" data-type="heading">
         <p>Bugs</p>
         <ul>
           <li id="V0a" data-type="task">
             <p>adding "tags" doesn’t work for posts, links, etc</p>
           </li>
-          <li id="-ap" data-type="task">
+        </ul>
+      </li>
+      <li id="-ap">
+        <p>Manual Labour (Claude couldn’t do)</p>
+        <ul>
+          <li id="Rmh" data-type="task">
+            <p>set up image uploads for feature posts</p>
+          </li>
+          <li id="4gS" data-type="task">
             <p/>
           </li>
         </ul>

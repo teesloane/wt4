@@ -14,6 +14,7 @@ defmodule WeaktyWeb.AdminComponents do
       <.link
         navigate={@path}
         class={[
+        "text-[0.9rem] text-base-content/70 font-sans font-medium my-0",
           if(String.starts_with?(@current_path, @path), do: "active", else: "")
         ]}
       >

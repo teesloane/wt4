@@ -91,7 +91,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
         <div class="space-y-4 font-sans">
           <%= for post <- @posts do %>
             <div
-              class="flex gap-4 p-2 bg-base-100 rounded-lg hover:bg-base-200 cursor-pointer transition-colors "
+              class="flex gap-4 p-2 bg-base-100 rounded-lg hover:bg-base-200/50 cursor-pointer transition-colors "
               phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}
             >
               <!-- Featured Image Thumbnail -->
@@ -103,8 +103,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                     class="w-24 h-16 object-cover rounded-lg"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   />
+                  <%# for displaying failed icons for broken image %>
                   <div class="w-24 h-16 bg-base-200 rounded-lg items-center justify-center hidden">
-                    <.icon name="hero-photo" class="w-6 h-6 text-base-content/20" />
+                    <.icon name="hero-exclamation-circle" class="w-6 h-6 text-base-content/20" />
                   </div>
                 <% else %>
                   <div class="w-24 h-16 bg-base-200 rounded-lg flex items-center justify-center">
