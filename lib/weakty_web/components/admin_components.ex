@@ -28,27 +28,18 @@ defmodule WeaktyWeb.AdminComponents do
           </li>
 
           <li>
-            <details open>
-              <summary>
-                <.icon name="hero-document-text" class="w-5 h-5" />
-                Posts
-              </summary>
-              <ul>
-                <li>
-                  <.link
-                    navigate="/admin/posts"
-                    class={[
-                      if(String.starts_with?(@current_path, "/admin/posts"),
-                        do: "active",
-                        else: ""
-                      )
-                    ]}
-                  >
-                    All Posts
-                  </.link>
-                </li>
-              </ul>
-            </details>
+            <.link
+              navigate="/admin/posts"
+              class={[
+                if(String.starts_with?(@current_path, "/admin/posts"),
+                  do: "active",
+                  else: ""
+                )
+              ]}
+            >
+              <.icon name="hero-document-text" class="w-5 h-5" />
+              Posts
+            </.link>
           </li>
 
           <li>
