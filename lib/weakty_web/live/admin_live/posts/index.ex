@@ -95,7 +95,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                 <th>Title</th>
                 <th>Excerpt</th>
                 <th>Status</th>
-                <th>Published</th>
+                <th>Date</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -123,12 +123,14 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                     <.status_badge status={post.status} />
                   </td>
                   <td>
-                    <%= if post.published_at do %>
+                    <%= if post.status == :published && post.published_at do %>
                       <div class="text-sm">
                         <%= Calendar.strftime(post.published_at, "%b %d, %Y") %>
                       </div>
                     <% else %>
-                      <span class="text-base-content/50">-</span>
+                      <div class="text-sm text-base-content/60">
+                        Updated <%= Calendar.strftime(post.updated_at, "%b %d, %Y") %>
+                      </div>
                     <% end %>
                   </td>
                   <td onclick="event.stopPropagation()">
