@@ -119,7 +119,8 @@ defmodule WeaktyWeb.ProjectLive.Form do
             <div class="form-control">
               <textarea
                 name={@form[:markdown].name}
-                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none font-mono"
+                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
+                style="font-family: 'IBM Plex Serif', serif;"
                 placeholder="Describe your project..."
                 required
               ><%= @form[:markdown].value %></textarea>
@@ -129,7 +130,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
       </div>
 
       <!-- Sidebar -->
-      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto">
+      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto h-screen">
         <h2 class="text-xl font-bold mb-6">Project settings</h2>
 
         <div class="space-y-6">
