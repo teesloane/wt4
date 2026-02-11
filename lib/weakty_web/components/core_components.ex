@@ -99,6 +99,128 @@ defmodule WeaktyWeb.CoreComponents do
   end
 
   @doc """
+  Renders Open Graph meta tags for social media sharing.
+
+  Supports multiple content types through pattern matching:
+  - Posts: Uses title, excerpt, featured_image
+  - Links: Uses title, commentary, url
+  - MediaLogs: Uses title, notes, thumbnail_url, creator
+  - Generic fallback for other content
+
+  ## Examples
+
+      <.open_graph content={@post} />
+      <.open_graph content={@link} />
+      <.open_graph content={@media_log} />
+  """
+  attr :content, :any, required: true
+  attr :site_name, :string, default: "Weakty"
+  attr :base_url, :string, default: "https://weakty.com"
+
+  def open_graph(assigns) do
+    og_data = extract_og_data(assigns.content, assigns.base_url)
+
+    assigns = assign(assigns, :og_data, og_data)
+
+    ~H"""
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={@og_data.type} />
+    <meta property="og:url" content={@og_data.url} />
+    <meta property="og:title" content={@og_data.title} />
+    <meta property="og:description" content={@og_data.description} />
+    <meta :if={@og_data.image} property="og:image" content={@og_data.image} />
+    <meta property="og:site_name" content={@site_name} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content={if @og_data.image, do: "summary_large_image", else: "summary"} />
+    <meta property="twitter:url" content={@og_data.url} />
+    <meta property="twitter:title" content={@og_data.title} />
+    <meta property="twitter:description" content={@og_data.description} />
+    <meta :if={@og_data.image} property="twitter:image" content={@og_data.image} />
+    """
+  end
+
+  # Pattern match on Post struct
+  defp extract_og_data(%Weakty.Posts.Post{} = post, base_url) do
+    %{
+      type: "article",
+      url: "#{base_url}/posts/#{post.slug}",
+      title: post.title,
+      description: post.excerpt || strip_html(post.html) |> String.slice(0, 200),
+      image: post.featured_image
+    }
+  end
+
+  # Pattern match on Link struct
+  defp extract_og_data(%Weakty.Links.Link{} = link, base_url) do
+    %{
+      type: "website",
+      url: "#{base_url}/links/#{link.slug}",
+      title: link.title,
+      description: link.commentary || "A link shared on Weakty",
+      image: nil
+    }
+  end
+
+  # Pattern match on MediaLog struct
+  defp extract_og_data(%Weakty.MediaLogs.MediaLog{} = media_log, base_url) do
+    description = cond do
+      media_log.notes && String.length(media_log.notes) > 0 ->
+        String.slice(media_log.notes, 0, 200)
+      media_log.creator ->
+        "#{format_media_type(media_log.media_type)} by #{media_log.creator}"
+      true ->
+        format_media_type(media_log.media_type)
+    end
+
+    %{
+      type: "article",
+      url: "#{base_url}/media-logs/#{media_log.slug}",
+      title: media_log.title,
+      description: description,
+      image: media_log.thumbnail_url
+    }
+  end
+
+  # Fallback for any other content type
+  defp extract_og_data(content, base_url) when is_map(content) do
+    %{
+      type: "website",
+      url: base_url,
+      title: Map.get(content, :title, "Weakty"),
+      description: Map.get(content, :description, "A quiet place for writing, links, and reflections."),
+      image: Map.get(content, :image, nil)
+    }
+  end
+
+  # Default fallback
+  defp extract_og_data(_content, base_url) do
+    %{
+      type: "website",
+      url: base_url,
+      title: "Weakty",
+      description: "A quiet place for writing, links, and reflections.",
+      image: nil
+    }
+  end
+
+  defp strip_html(html) when is_binary(html) do
+    html
+    |> String.replace(~r/<[^>]*>/, " ")
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+  end
+
+  defp strip_html(_), do: ""
+
+  defp format_media_type(:book), do: "Book"
+  defp format_media_type(:comic), do: "Comic"
+  defp format_media_type(:movie), do: "Movie"
+  defp format_media_type(:music), do: "Music"
+  defp format_media_type(:video_game), do: "Video Game"
+  defp format_media_type(_), do: "Media"
+
+  @doc """
   Renders a button with navigation support.
 
   ## Examples
