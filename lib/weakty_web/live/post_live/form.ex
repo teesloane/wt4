@@ -46,104 +46,119 @@ defmodule WeaktyWeb.PostLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-4xl px-4 py-8">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">
-          <%= if @post, do: "Edit Post", else: "New Post" %>
-        </h1>
-        <button
-          phx-click="toggle_preview"
-          class="btn btn-ghost btn-sm"
-        >
-          <%= if @preview, do: "Edit", else: "Preview" %>
-        </button>
+    <div class="flex min-h-screen">
+      <!-- Main Content Area -->
+      <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
+        <div class="flex items-center gap-4 mb-8">
+          <.link navigate={~p"/admin/posts"} class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left" class="w-4 h-4" />
+            Posts
+          </.link>
+          <div class="text-sm text-base-content/70">
+            <%= if @post, do: "Draft - Saved", else: "New Post" %>
+          </div>
+          <div class="flex-1"></div>
+          <button
+            phx-click="toggle_preview"
+            class="btn btn-ghost btn-sm"
+          >
+            Preview
+          </button>
+          <button type="submit" form="post-form" class="btn btn-primary btn-sm">
+            <%= if @post, do: "Update", else: "Publish" %>
+          </button>
+        </div>
+
+        <%= if @preview do %>
+          <div class="prose prose-lg max-w-none">
+            <h1><%= @form[:title].value %></h1>
+            <%= if @form[:featured_image].value do %>
+              <img src={@form[:featured_image].value} alt={@form[:title].value} class="w-full rounded-lg" />
+            <% end %>
+            <%= if @form[:excerpt].value do %>
+              <p class="lead"><%= @form[:excerpt].value %></p>
+            <% end %>
+            <div>
+              <%= raw(render_markdown(@form[:markdown].value || "")) %>
+            </div>
+          </div>
+        <% else %>
+          <.form
+            id="post-form"
+            for={@form}
+            phx-submit="save"
+            phx-change="validate"
+            class="space-y-6"
+          >
+            <!-- Title -->
+            <div class="form-control">
+              <input
+                type="text"
+                name={@form[:title].name}
+                value={@form[:title].value}
+                class="input input-ghost w-full text-4xl font-bold px-0 focus:outline-none"
+                placeholder="Post title"
+                required
+              />
+            </div>
+
+            <!-- Content -->
+            <div class="form-control">
+              <textarea
+                name={@form[:markdown].name}
+                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none font-mono"
+                placeholder="Begin writing your post..."
+                required
+              ><%= @form[:markdown].value %></textarea>
+            </div>
+          </.form>
+        <% end %>
       </div>
 
-      <%= if @preview do %>
-        <div class="prose prose-lg max-w-none">
-          <h1><%= @form[:title].value %></h1>
-          <%= if @form[:featured_image].value do %>
-            <img src={@form[:featured_image].value} alt={@form[:title].value} class="w-full rounded-lg" />
-          <% end %>
-          <%= if @form[:excerpt].value do %>
-            <p class="lead"><%= @form[:excerpt].value %></p>
-          <% end %>
-          <div>
-            <%= raw(render_markdown(@form[:markdown].value || "")) %>
-          </div>
-        </div>
-      <% else %>
-        <.form
-          for={@form}
-          phx-submit="save"
-          phx-change="validate"
-          class="space-y-6"
-        >
+      <!-- Sidebar -->
+      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto">
+        <h2 class="text-xl font-bold mb-6">Post settings</h2>
+
+        <div class="space-y-6">
+          <!-- Post URL (Slug) -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-semibold">Title</span>
+              <span class="label-text font-semibold">Post URL</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <.icon name="hero-link" class="w-4 h-4 text-base-content/50" />
+              <input
+                type="text"
+                form="post-form"
+                name={@form[:slug].name}
+                value={@form[:slug].value}
+                class="input input-bordered input-sm flex-1 text-sm"
+                placeholder="url-friendly-slug"
+              />
+            </div>
+            <label class="label">
+              <span class="label-text-alt">weakty.com/<%= @form[:slug].value || "post-slug" %>/</span>
+            </label>
+          </div>
+
+          <!-- Published At -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Publish date</span>
             </label>
             <input
-              type="text"
-              name={@form[:title].name}
-              value={@form[:title].value}
-              class="input input-bordered w-full text-xl"
-              placeholder="Enter your post title..."
-              required
+              type="datetime-local"
+              form="post-form"
+              name={@form[:published_at].name}
+              value={format_datetime_for_input(@form[:published_at].value)}
+              class="input input-bordered input-sm w-full text-sm"
             />
-          </div>
-
-          <div class="form-control">
             <label class="label">
-              <span class="label-text font-semibold">Slug</span>
-              <span class="label-text-alt">Leave empty to auto-generate from title</span>
+              <span class="label-text-alt">Leave empty to auto-set when publishing</span>
             </label>
-            <input
-              type="text"
-              name={@form[:slug].name}
-              value={@form[:slug].value}
-              class="input input-bordered w-full"
-              placeholder="url-friendly-slug"
-            />
           </div>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Featured Image URL</span>
-            </label>
-            <input
-              type="url"
-              name={@form[:featured_image].name}
-              value={@form[:featured_image].value}
-              class="input input-bordered w-full"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Excerpt</span>
-              <span class="label-text-alt">Short summary of your post</span>
-            </label>
-            <textarea
-              name={@form[:excerpt].name}
-              class="textarea textarea-bordered w-full h-20"
-              placeholder="A brief summary..."
-            ><%= @form[:excerpt].value %></textarea>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Content (Markdown)</span>
-            </label>
-            <textarea
-              name={@form[:markdown].name}
-              class="textarea textarea-bordered w-full h-96 font-mono"
-              placeholder="Write your post in markdown..."
-              required
-            ><%= @form[:markdown].value %></textarea>
-          </div>
-
+          <!-- Tags -->
           <div class="form-control">
             <label class="label">
               <span class="label-text font-semibold">Tags</span>
@@ -173,15 +188,15 @@ defmodule WeaktyWeb.PostLive.Form do
                 value={@tag_input}
                 phx-change="update_tag_input"
                 name="tag_input"
-                placeholder="Add a tag (press Enter)"
-                class="input input-bordered join-item w-full"
+                placeholder="Add a tag"
+                class="input input-bordered input-sm join-item flex-1 text-sm"
                 phx-keydown="add_tag"
                 phx-key="Enter"
               />
               <button
                 type="button"
                 phx-click="add_tag"
-                class="btn btn-primary join-item"
+                class="btn btn-sm btn-ghost join-item"
               >
                 Add
               </button>
@@ -190,39 +205,50 @@ defmodule WeaktyWeb.PostLive.Form do
 
           <div class="divider"></div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">Featured Post</span>
-                <input
-                  type="checkbox"
-                  name={@form[:featured].name}
-                  checked={@form[:featured].value}
-                  class="checkbox"
-                />
-              </label>
-            </div>
-
-            <div class="form-control">
-              <label class="label cursor-pointer">
-                <span class="label-text">Public</span>
-                <input
-                  type="checkbox"
-                  name={@form[:public].name}
-                  checked={@form[:public].value}
-                  class="checkbox"
-                />
-              </label>
-            </div>
+          <!-- Featured Image -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Featured Image</span>
+            </label>
+            <%= if @form[:featured_image].value do %>
+              <div class="mb-2">
+                <img src={@form[:featured_image].value} alt="Featured" class="w-full rounded-lg" />
+              </div>
+            <% end %>
+            <input
+              type="url"
+              form="post-form"
+              name={@form[:featured_image].name}
+              value={@form[:featured_image].value}
+              class="input input-bordered input-sm w-full text-sm"
+              placeholder="https://example.com/image.jpg"
+            />
           </div>
 
+          <!-- Excerpt -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Excerpt</span>
+            </label>
+            <textarea
+              form="post-form"
+              name={@form[:excerpt].name}
+              class="textarea textarea-bordered textarea-sm w-full h-20 text-sm"
+              placeholder="Short summary of your post..."
+            ><%= @form[:excerpt].value %></textarea>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Status -->
           <div class="form-control">
             <label class="label">
               <span class="label-text font-semibold">Status</span>
             </label>
             <select
+              form="post-form"
               name={@form[:status].name}
-              class="select select-bordered w-full"
+              class="select select-bordered select-sm w-full text-sm"
             >
               <option value="draft" selected={@form[:status].value == :draft || @form[:status].value == "draft"}>
                 Draft
@@ -233,31 +259,39 @@ defmodule WeaktyWeb.PostLive.Form do
             </select>
           </div>
 
+          <!-- Post Access -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-semibold">Published At</span>
-              <span class="label-text-alt">Leave empty to auto-set when publishing</span>
+              <span class="label-text font-semibold">Post access</span>
             </label>
-            <input
-              type="datetime-local"
-              name={@form[:published_at].name}
-              value={format_datetime_for_input(@form[:published_at].value)}
-              class="input input-bordered w-full"
-            />
+            <label class="label cursor-pointer justify-start gap-3">
+              <input
+                type="checkbox"
+                form="post-form"
+                name={@form[:public].name}
+                checked={@form[:public].value}
+                class="toggle toggle-sm"
+              />
+              <span class="label-text"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
+            </label>
           </div>
 
-          <div class="divider"></div>
-
-          <div class="flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              <%= if @post, do: "Update Post", else: "Create Post" %>
-            </button>
-            <.link navigate={~p"/posts"} class="btn btn-ghost">
-              Cancel
-            </.link>
+          <!-- Feature Post -->
+          <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-3">
+              <.icon name="hero-star" class="w-5 h-5" />
+              <span class="label-text font-semibold flex-1">Feature this post</span>
+              <input
+                type="checkbox"
+                form="post-form"
+                name={@form[:featured].name}
+                checked={@form[:featured].value}
+                class="toggle toggle-sm"
+              />
+            </label>
           </div>
-        </.form>
-      <% end %>
+        </div>
+      </div>
     </div>
     """
   end
