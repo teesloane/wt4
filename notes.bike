@@ -30,27 +30,13 @@
               <li id="ev" data-type="task">
                 <p>Admin Posts</p>
                 <ul>
-                  <li id="Vv" data-type="task">
-                    <p>clicking on the post takes you to it via :id, but it should be :slug</p>
-                    <ul>
-                      <li id="0IH" data-type="task">
-                        <p>basically, need to replicate the behaviour from when clicking the "pencil" edit icon.</p>
-                      </li>
-                    </ul>
-                  </li>
-                  <li id="0VQ" data-type="task">
-                    <p>be able to edit the "published at" date for a post.</p>
-                  </li>
                   <li id="9OS" data-type="task">
                     <p>Update the ghost script to instead take in the html and convert that to markdown instead of just putting plain text into the table under the markdown column.</p>
                     <ul>
                       <li id="dII" data-type="task">
-                        <p><span>Could use </span><a href="https://github.com/kasvith/htmd?tab=readme-ov-file">this html -&gt; markdown converter</a><span> (requires rust)</span></p>
+                        <p><span>Could use </span><a href="https://github.com/kasvith/htmd?tab=readme-ov-file">this html -&gt; markdown convehttps://github.com/kasvith/htmd?tab=readme-ov-filerter</a><span> (requires rust)</span></p>
                       </li>
                     </ul>
-                  </li>
-                  <li id="lAU" data-type="task">
-                    <p><span>see about switching the elixir md library to </span><a href="https://mdelixir.dev/">this one</a><span> (uses rust)</span></p>
                   </li>
                   <li id="cEH" data-type="task">
                     <p>New Post view</p>
@@ -101,6 +87,9 @@
           <li id="ol6" data-type="task">
             <p>Projects</p>
             <ul>
+              <li id="5W" data-type="task">
+                <p>let’s build out a "project" table, that is similar to posts, except it’s for displaying portfolio esque based work. What do you think the fields might be?</p>
+              </li>
               <li id="s5m" data-type="task">
                 <p>Different than posts:</p>
                 <ul>
