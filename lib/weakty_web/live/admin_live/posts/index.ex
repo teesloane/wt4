@@ -88,30 +88,34 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
           </div>
         </div>
       <% else %>
-        <div class="space-y-4">
+        <div class="space-y-4 font-sans">
           <%= for post <- @posts do %>
             <div
-              class="flex gap-4 p-4 bg-base-100 rounded-lg hover:bg-base-200 cursor-pointer transition-colors"
+              class="flex gap-4 p-2 bg-base-100 rounded-lg hover:bg-base-200 cursor-pointer transition-colors "
               phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}
             >
               <!-- Featured Image Thumbnail -->
-              <div class="flex-shrink-0">
+              <div class="flex-shrink-0 relative">
                 <%= if post.featured_image do %>
                   <img
                     src={post.featured_image}
                     alt={post.title}
-                    class="w-40 h-32 object-cover rounded-lg"
+                    class="w-24 h-16 object-cover rounded-lg"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   />
+                  <div class="w-24 h-16 bg-base-200 rounded-lg items-center justify-center hidden">
+                    <.icon name="hero-photo" class="w-6 h-6 text-base-content/20" />
+                  </div>
                 <% else %>
-                  <div class="w-40 h-32 bg-base-200 rounded-lg flex items-center justify-center">
-                    <.icon name="hero-photo" class="w-12 h-12 text-base-content/20" />
+                  <div class="w-24 h-16 bg-base-200 rounded-lg flex items-center justify-center">
+                    <.icon name="hero-photo" class="w-6 h-6 text-base-content/20" />
                   </div>
                 <% end %>
               </div>
 
               <!-- Post Details -->
               <div class="flex-1 min-w-0">
-                <h3 class="text-xl font-bold text-base-content mb-2">
+                <h3 class="font-bold text-sm text-base-content mb-0">
                   <%= post.title %>
                 </h3>
 
@@ -132,8 +136,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                 <% end %>
               </div>
             </div>
+            <hr class="text-base-300" />
           <% end %>
         </div>
+
       <% end %>
     </div>
     """
