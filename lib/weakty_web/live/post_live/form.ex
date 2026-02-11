@@ -414,14 +414,14 @@ defmodule WeaktyWeb.PostLive.Form do
     {:noreply, push_event(socket, "copy-to-clipboard", %{text: "![](#{url})"})}
   end
 
-  def handle_event("validate", %{"_target" => ["featured_image"]}, socket) do
-    # Auto-upload featured image when selected
+  @impl true
+  def handle_progress(:featured_image, entry, socket) when entry.done? do
     uploaded_files =
       consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
         dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
         File.mkdir_p!(Path.dirname(dest))
         File.cp!(path, dest)
-        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+        "/uploads/#{entry.uuid}.#{ext(entry)}"
       end)
 
     case uploaded_files do
@@ -434,19 +434,20 @@ defmodule WeaktyWeb.PostLive.Form do
     end
   end
 
-  def handle_event("validate", %{"_target" => ["content_images"]}, socket) do
-    # Auto-upload content images when selected
+  def handle_progress(:content_images, entry, socket) when entry.done? do
     uploaded_files =
       consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
         dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
         File.mkdir_p!(Path.dirname(dest))
         File.cp!(path, dest)
-        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+        "/uploads/#{entry.uuid}.#{ext(entry)}"
       end)
 
     content_images = socket.assigns.content_images ++ uploaded_files
     {:noreply, assign(socket, content_images: content_images)}
   end
+
+  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
   def handle_event("save", %{"form" => params}, socket) do
     IO.puts("\n=== POST SAVE EVENT ===")
