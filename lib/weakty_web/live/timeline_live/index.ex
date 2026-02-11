@@ -21,14 +21,9 @@ defmodule WeaktyWeb.TimelineLive.Index do
         Archive
       </h1>
 
-      <div class="relative">
+      <div class="space-y-12">
         <%= for {entity, index} <- Enum.with_index(@entities) do %>
-          <article class="relative pb-12">
-            <!-- Timeline connector (not for last item) -->
-            <%= if index < length(@entities) - 1 do %>
-              <div class="absolute left-0 top-full h-12 w-px border-l-2 border-dashed border-base-300 opacity-40"></div>
-            <% end %>
-
+          <article class="pb-8">
             <div class="flex items-center gap-3 text-sm opacity-60 mb-4">
               <span class="lowercase tracking-wide"><%= entity.entity_type %></span>
               <span>·</span>
@@ -58,6 +53,13 @@ defmodule WeaktyWeb.TimelineLive.Index do
               </div>
             <% end %>
           </article>
+
+          <!-- Dotted divider (not for last item) -->
+          <%= if index < length(@entities) - 1 do %>
+            <div class="flex items-center gap-2 opacity-30 my-8">
+              <div class="flex-1 border-t border-dotted border-base-content"></div>
+            </div>
+          <% end %>
         <% end %>
       </div>
     </div>
