@@ -233,6 +233,19 @@ defmodule WeaktyWeb.PostLive.Form do
             </select>
           </div>
 
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Published At</span>
+              <span class="label-text-alt">Leave empty to auto-set when publishing</span>
+            </label>
+            <input
+              type="datetime-local"
+              name={@form[:published_at].name}
+              value={format_datetime_for_input(@form[:published_at].value)}
+              class="input input-bordered w-full"
+            />
+          </div>
+
           <div class="divider"></div>
 
           <div class="flex gap-2">
@@ -370,4 +383,14 @@ defmodule WeaktyWeb.PostLive.Form do
       {:error, _, _} -> "<p>Error rendering markdown</p>"
     end
   end
+
+  defp format_datetime_for_input(nil), do: ""
+
+  defp format_datetime_for_input(%DateTime{} = datetime) do
+    datetime
+    |> DateTime.shift_zone!("Etc/UTC")
+    |> Calendar.strftime("%Y-%m-%dT%H:%M")
+  end
+
+  defp format_datetime_for_input(_), do: ""
 end
