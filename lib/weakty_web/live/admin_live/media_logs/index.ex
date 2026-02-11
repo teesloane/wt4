@@ -44,14 +44,14 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     end
   end
 
-  def handle_event("filter_media_type", %{"value" => media_type}, socket) do
+  def handle_event("filter_media_type", %{"media_type" => media_type}, socket) do
     {:noreply,
      push_patch(socket,
        to: ~p"/admin/media-logs?type=#{media_type}&status=#{socket.assigns.status_filter}"
      )}
   end
 
-  def handle_event("filter_status", %{"value" => status}, socket) do
+  def handle_event("filter_status", %{"status" => status}, socket) do
     {:noreply,
      push_patch(socket,
        to: ~p"/admin/media-logs?type=#{socket.assigns.media_type_filter}&status=#{status}"
