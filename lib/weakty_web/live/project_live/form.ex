@@ -584,7 +584,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
         dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
         File.mkdir_p!(Path.dirname(dest))
         File.cp!(path, dest)
-        {:ok, ~p"/uploads/#{entry.uuid}.#{ext(entry)}"}
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
       end)
 
     case uploaded_files do
@@ -603,7 +603,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
         dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
         File.mkdir_p!(Path.dirname(dest))
         File.cp!(path, dest)
-        {:ok, ~p"/uploads/#{entry.uuid}.#{ext(entry)}"}
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
       end)
 
     images = socket.assigns.images ++ uploaded_files
