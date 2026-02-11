@@ -13,7 +13,7 @@ defmodule WeaktyWeb.PostLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-3xl mx-auto px-6 py-16">
+    <.page_container>
       <div class="space-y-12">
         <%= if Enum.empty?(@posts) do %>
           <p class="text-base-content/60 text-center py-12">No posts found</p>
@@ -41,7 +41,7 @@ defmodule WeaktyWeb.PostLive.Index do
           <% end %>
         <% end %>
       </div>
-    </div>
+    </.page_container>
     """
   end
 

@@ -16,7 +16,8 @@ defmodule WeaktyWeb.PostLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <article class="max-w-3xl mx-auto px-6 py-16">
+    <.page_container>
+    <article>
       <header class="text-center mb-16">
         <div class="text-sm lowercase tracking-wider mb-6 opacity-70">
           <%= @post.post_type || "essay" %>
@@ -53,7 +54,8 @@ defmodule WeaktyWeb.PostLive.Show do
         />
       <% end %>
 
-      <div class="prose mx-auto">
+      <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto py-12">
+
         <%= raw(@post.html) %>
       </div>
 
@@ -89,6 +91,7 @@ defmodule WeaktyWeb.PostLive.Show do
         </div>
       <% end %>
     </article>
+    </.page_container>
     """
   end
 

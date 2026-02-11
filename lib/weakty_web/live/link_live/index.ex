@@ -17,7 +17,7 @@ defmodule WeaktyWeb.LinkLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-3xl mx-auto px-6 py-16">
+    <.page_container>
       <div class="mb-16 text-center">
         <h1 class="text-4xl font-normal mb-6 uppercase tracking-wide averia">
           Links
@@ -62,7 +62,7 @@ defmodule WeaktyWeb.LinkLive.Index do
           </article>
         <% end %>
       </div>
-    </div>
+    </.page_container>
     """
   end
 

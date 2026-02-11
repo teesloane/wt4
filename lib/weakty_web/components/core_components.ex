@@ -80,6 +80,25 @@ defmodule WeaktyWeb.CoreComponents do
   end
 
   @doc """
+  Renders a page container with consistent max-width.
+
+  ## Examples
+
+      <.page_container>
+        <p>Your content here</p>
+      </.page_container>
+  """
+  slot :inner_block, required: true
+
+  def page_container(assigns) do
+    ~H"""
+    <div class="max-w-[65ch] mx-auto px-6 py-16">
+      <%= render_slot(@inner_block) %>
+    </div>
+    """
+  end
+
+  @doc """
   Renders a button with navigation support.
 
   ## Examples

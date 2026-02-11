@@ -16,7 +16,7 @@ defmodule WeaktyWeb.TimelineLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="max-w-3xl mx-auto px-6 py-16">
+    <.page_container>
       <h1 class="text-4xl font-normal mb-16 text-center uppercase tracking-wide averia">
         Archive
       </h1>
@@ -62,7 +62,7 @@ defmodule WeaktyWeb.TimelineLive.Index do
           <% end %>
         <% end %>
       </div>
-    </div>
+    </.page_container>
     """
   end
 end
