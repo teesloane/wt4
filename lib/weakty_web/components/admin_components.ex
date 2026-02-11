@@ -3,6 +3,27 @@ defmodule WeaktyWeb.AdminComponents do
   import WeaktyWeb.CoreComponents
   use Gettext, backend: WeaktyWeb.Gettext
 
+  attr :path, :string, required: true
+  attr :label, :string, required: true
+  attr :icon, :string, required: true
+  attr :current_path, :string, required: true
+
+  def nav_item(assigns) do
+    ~H"""
+    <li>
+      <.link
+        navigate={@path}
+        class={[
+          if(String.starts_with?(@current_path, @path), do: "active", else: "")
+        ]}
+      >
+        <.icon name={@icon} class="w-5 h-5" />
+        <%= @label %>
+      </.link>
+    </li>
+    """
+  end
+
   attr :current_path, :string, required: true
   attr :class, :string, default: nil
 
@@ -14,90 +35,13 @@ defmodule WeaktyWeb.AdminComponents do
       </div>
 
       <nav class="flex-1 overflow-y-auto p-4">
-        <ul class="menu menu-sm gap-1">
-          <li>
-            <.link
-              navigate="/admin"
-              class={[
-                if(@current_path == "/admin", do: "active", else: "")
-              ]}
-            >
-              <.icon name="hero-home" class="w-5 h-5" />
-              Dashboard
-            </.link>
-          </li>
-
-          <li>
-            <.link
-              navigate="/admin/posts"
-              class={[
-                if(String.starts_with?(@current_path, "/admin/posts"),
-                  do: "active",
-                  else: ""
-                )
-              ]}
-            >
-              <.icon name="hero-document-text" class="w-5 h-5" />
-              Posts
-            </.link>
-          </li>
-
-          <li>
-            <.link
-              navigate="/admin/projects"
-              class={[
-                if(String.starts_with?(@current_path, "/admin/projects"),
-                  do: "active",
-                  else: ""
-                )
-              ]}
-            >
-              <.icon name="hero-briefcase" class="w-5 h-5" />
-              Projects
-            </.link>
-          </li>
-
-          <li>
-            <.link
-              navigate="/admin/links"
-              class={[
-                if(String.starts_with?(@current_path, "/admin/links"),
-                  do: "active",
-                  else: ""
-                )
-              ]}
-            >
-              <.icon name="hero-link" class="w-5 h-5" />
-              Links
-            </.link>
-          </li>
-
-          <li>
-            <.link
-              navigate="/admin/media-logs"
-              class={[
-                if(String.starts_with?(@current_path, "/admin/media-logs"),
-                  do: "active",
-                  else: ""
-                )
-              ]}
-            >
-              <.icon name="hero-book-open" class="w-5 h-5" />
-              Media Logs
-            </.link>
-          </li>
-
-          <li>
-            <.link
-              navigate="/admin/tags"
-              class={[
-                if(String.starts_with?(@current_path, "/admin/tags"), do: "active", else: "")
-              ]}
-            >
-              <.icon name="hero-tag" class="w-5 h-5" />
-              Tags
-            </.link>
-          </li>
+        <ul class="menu menu-sm gap-1 flex w-full text-[40px]">
+          <.nav_item path="/admin" label="Dashboard" icon="hero-home" current_path={@current_path} />
+          <.nav_item path="/admin/posts" label="Posts" icon="hero-document-text" current_path={@current_path} />
+          <.nav_item path="/admin/projects" label="Projects" icon="hero-briefcase" current_path={@current_path} />
+          <.nav_item path="/admin/links" label="Links" icon="hero-link" current_path={@current_path} />
+          <.nav_item path="/admin/media-logs" label="Media Logs" icon="hero-book-open" current_path={@current_path} />
+          <.nav_item path="/admin/tags" label="Tags" icon="hero-tag" current_path={@current_path} />
         </ul>
       </nav>
 
