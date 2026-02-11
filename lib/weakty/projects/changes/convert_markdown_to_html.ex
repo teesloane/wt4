@@ -12,10 +12,10 @@ defmodule Weakty.Projects.Changes.ConvertMarkdownToHtml do
     should_convert? = markdown && (!html || Ash.Changeset.changing_attribute?(changeset, :markdown))
 
     if should_convert? do
-      case Earmark.as_html(markdown) do
-        {:ok, html_output, _} ->
+      case MDEx.to_html(markdown) do
+        {:ok, html_output} ->
           Ash.Changeset.force_change_attribute(changeset, :html, html_output)
-        {:error, _, _} ->
+        {:error, _} ->
           changeset
       end
     else

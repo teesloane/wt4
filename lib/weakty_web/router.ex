@@ -35,6 +35,8 @@ defmodule WeaktyWeb.Router do
       live "/links", LinkLive.Index, :index
       live "/posts", PostLive.Index, :index
       live "/posts/:slug", PostLive.Show, :show
+      live "/projects", ProjectLive.Index, :index
+      live "/projects/:slug", ProjectLive.Show, :show
       live "/media-logs", MediaLogLive.Index, :index
       live "/media-logs/:slug", MediaLogLive.Show, :show
       # in each liveview, add one of the following at the top of the module:
@@ -59,6 +61,9 @@ defmodule WeaktyWeb.Router do
       live "/posts", AdminLive.Posts.Index, :index
       live "/posts/new", PostLive.Form, :new
       live "/posts/:slug/edit", PostLive.Form, :edit
+      live "/projects", AdminLive.Projects.Index, :index
+      live "/projects/new", ProjectLive.Form, :new
+      live "/projects/:slug/edit", ProjectLive.Form, :edit
       live "/links", AdminLive.Links.Index, :index
       live "/links/new", LinkLive.Form, :new
       live "/links/:slug/edit", LinkLive.Form, :edit
