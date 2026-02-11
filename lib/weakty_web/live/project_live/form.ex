@@ -134,9 +134,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
 
         <div class="space-y-6">
           <!-- Post URL (Slug) -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Project URL</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Project URL</span>
             </label>
             <div class="flex items-center gap-2">
               <.icon name="hero-link" class="w-4 h-4 text-base-content/50" />
@@ -155,9 +155,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           </div>
 
           <!-- Published At -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Publish date</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Publish date</span>
             </label>
             <input
               type="datetime-local"
@@ -172,41 +172,43 @@ defmodule WeaktyWeb.ProjectLive.Form do
           </div>
 
           <!-- Project Dates -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Start Date</span>
-            </label>
-            <input
-              type="date"
-              form="project-form"
-              name={@form[:start_date].name}
-              value={@form[:start_date].value}
-              class="input input-bordered input-sm w-full text-sm"
-            />
-          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="form-control">
+              <label class="label mb-2">
+                <span class="label-text text-sm font-semibold">Start Date</span>
+              </label>
+              <input
+                type="date"
+                form="project-form"
+                name={@form[:start_date].name}
+                value={@form[:start_date].value}
+                class="input input-bordered input-sm w-full text-sm"
+              />
+            </div>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">End Date</span>
-            </label>
-            <input
-              type="date"
-              form="project-form"
-              name={@form[:end_date].name}
-              value={@form[:end_date].value}
-              class="input input-bordered input-sm w-full text-sm"
-            />
-            <label class="label">
-              <span class="label-text-alt">Leave empty for ongoing projects</span>
-            </label>
+            <div class="form-control">
+              <label class="label mb-2">
+                <span class="label-text text-sm font-semibold">End Date</span>
+              </label>
+              <input
+                type="date"
+                form="project-form"
+                name={@form[:end_date].name}
+                value={@form[:end_date].value}
+                class="input input-bordered input-sm w-full text-sm"
+              />
+            </div>
+          </div>
+          <div class="text-xs text-base-content/60 -mt-2 mb-4">
+            Leave end date empty for ongoing projects
           </div>
 
           <div class="divider"></div>
 
           <!-- Links -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Project Links</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Project Links</span>
             </label>
 
             <%= if length(@links) > 0 do %>
@@ -234,7 +236,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
               <input
                 type="text"
                 value={@link_name}
-                phx-change="update_link_name"
+                phx-keyup="update_link_name"
                 name="link_name"
                 placeholder="Link name (e.g., Demo, GitHub)"
                 class="input input-bordered input-sm w-full text-sm"
@@ -242,7 +244,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
               <input
                 type="url"
                 value={@link_url}
-                phx-change="update_link_url"
+                phx-keyup="update_link_url"
                 name="link_url"
                 placeholder="https://..."
                 class="input input-bordered input-sm w-full text-sm"
@@ -260,9 +262,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           <div class="divider"></div>
 
           <!-- Images -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Project Images</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Project Images</span>
             </label>
 
             <%= if length(@images) > 0 do %>
@@ -287,7 +289,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
               <input
                 type="url"
                 value={@image_url}
-                phx-change="update_image_url"
+                phx-keyup="update_image_url"
                 name="image_url"
                 placeholder="Image URL"
                 class="input input-bordered input-sm w-full text-sm"
@@ -305,9 +307,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           <div class="divider"></div>
 
           <!-- Tags -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Tags</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Tags</span>
             </label>
 
             <%= if length(@tags) > 0 do %>
@@ -352,9 +354,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           <div class="divider"></div>
 
           <!-- Featured Image -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Featured Image</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Featured Image</span>
             </label>
             <%= if @form[:featured_image].value do %>
               <div class="mb-2">
@@ -372,9 +374,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           </div>
 
           <!-- Excerpt -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Excerpt</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Excerpt</span>
             </label>
             <textarea
               form="project-form"
@@ -387,9 +389,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           <div class="divider"></div>
 
           <!-- Status -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Page Status</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Page Status</span>
             </label>
             <select
               form="project-form"
@@ -406,9 +408,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           </div>
 
           <!-- Project Status -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Project Status</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Project Status</span>
             </label>
             <select
               form="project-form"
@@ -428,9 +430,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
           </div>
 
           <!-- Post Access -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Project access</span>
+          <div class="form-control mb-4">
+            <label class="label mb-2">
+              <span class="label-text text-sm font-semibold">Project access</span>
             </label>
             <label class="label cursor-pointer justify-start gap-3">
               <input
@@ -445,10 +447,10 @@ defmodule WeaktyWeb.ProjectLive.Form do
           </div>
 
           <!-- Feature Project -->
-          <div class="form-control">
+          <div class="form-control mb-4">
             <label class="label cursor-pointer justify-start gap-3">
               <.icon name="hero-star" class="w-5 h-5" />
-              <span class="label-text font-semibold flex-1">Feature this project</span>
+              <span class="label-text text-sm font-semibold flex-1">Feature this project</span>
               <input
                 type="checkbox"
                 form="project-form"
@@ -492,11 +494,11 @@ defmodule WeaktyWeb.ProjectLive.Form do
     {:noreply, assign(socket, tags: List.delete(socket.assigns.tags, tag))}
   end
 
-  def handle_event("update_link_name", %{"link_name" => value}, socket) do
+  def handle_event("update_link_name", %{"value" => value}, socket) do
     {:noreply, assign(socket, link_name: value)}
   end
 
-  def handle_event("update_link_url", %{"link_url" => value}, socket) do
+  def handle_event("update_link_url", %{"value" => value}, socket) do
     {:noreply, assign(socket, link_url: value)}
   end
 
@@ -517,7 +519,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
     {:noreply, assign(socket, links: List.delete_at(socket.assigns.links, index))}
   end
 
-  def handle_event("update_image_url", %{"image_url" => value}, socket) do
+  def handle_event("update_image_url", %{"value" => value}, socket) do
     {:noreply, assign(socket, image_url: value)}
   end
 
