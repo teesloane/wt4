@@ -149,9 +149,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
                 placeholder="url-friendly-slug"
               />
             </div>
-            <label class="label">
-              <span class="label-text-alt">weakty.com/projects/<%= @form[:slug].value || "project-slug" %>/</span>
-            </label>
+            <div class="text-xs text-base-content/60 mt-1">
+              weakty.com/projects/<%= @form[:slug].value || "project-slug" %>/
+            </div>
           </div>
 
           <!-- Published At -->
@@ -166,9 +166,9 @@ defmodule WeaktyWeb.ProjectLive.Form do
               value={format_datetime_for_input(@form[:published_at].value)}
               class="input input-bordered input-sm w-full text-sm"
             />
-            <label class="label">
-              <span class="label-text-alt">Leave empty to auto-set when publishing</span>
-            </label>
+            <div class="text-xs text-base-content/60 mt-1">
+              Leave empty to auto-set when publishing
+            </div>
           </div>
 
           <!-- Project Dates -->
@@ -389,52 +389,50 @@ defmodule WeaktyWeb.ProjectLive.Form do
           <div class="divider"></div>
 
           <!-- Status -->
-          <div class="form-control mb-4">
-            <label class="label mb-2">
-              <span class="label-text text-sm font-semibold">Page Status</span>
-            </label>
-            <select
-              form="project-form"
-              name={@form[:status].name}
-              class="select select-bordered select-sm w-full text-sm"
-            >
-              <option value="draft" selected={@form[:status].value == :draft || @form[:status].value == "draft"}>
-                Draft
-              </option>
-              <option value="published" selected={@form[:status].value == :published || @form[:status].value == "published"}>
-                Published
-              </option>
-            </select>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="form-control">
+              <label class="label mb-2">
+                <span class="label-text text-sm font-semibold">Page Status</span>
+              </label>
+              <select
+                form="project-form"
+                name={@form[:status].name}
+                class="select select-bordered select-sm w-full text-sm"
+              >
+                <option value="draft" selected={@form[:status].value == :draft || @form[:status].value == "draft"}>
+                  Draft
+                </option>
+                <option value="published" selected={@form[:status].value == :published || @form[:status].value == "published"}>
+                  Published
+                </option>
+              </select>
+            </div>
+
+            <div class="form-control">
+              <label class="label mb-2">
+                <span class="label-text text-sm font-semibold">Project Status</span>
+              </label>
+              <select
+                form="project-form"
+                name={@form[:project_status].name}
+                class="select select-bordered select-sm w-full text-sm"
+              >
+                <option value="ongoing" selected={@form[:project_status].value == :ongoing || @form[:project_status].value == "ongoing"}>
+                  Ongoing
+                </option>
+                <option value="hiatus" selected={@form[:project_status].value == :hiatus || @form[:project_status].value == "hiatus"}>
+                  Hiatus
+                </option>
+                <option value="completed" selected={@form[:project_status].value == :completed || @form[:project_status].value == "completed"}>
+                  Completed
+                </option>
+              </select>
+            </div>
           </div>
 
-          <!-- Project Status -->
-          <div class="form-control mb-4">
-            <label class="label mb-2">
-              <span class="label-text text-sm font-semibold">Project Status</span>
-            </label>
-            <select
-              form="project-form"
-              name={@form[:project_status].name}
-              class="select select-bordered select-sm w-full text-sm"
-            >
-              <option value="ongoing" selected={@form[:project_status].value == :ongoing || @form[:project_status].value == "ongoing"}>
-                Ongoing
-              </option>
-              <option value="hiatus" selected={@form[:project_status].value == :hiatus || @form[:project_status].value == "hiatus"}>
-                Hiatus
-              </option>
-              <option value="completed" selected={@form[:project_status].value == :completed || @form[:project_status].value == "completed"}>
-                Completed
-              </option>
-            </select>
-          </div>
-
-          <!-- Post Access -->
-          <div class="form-control mb-4">
-            <label class="label mb-2">
-              <span class="label-text text-sm font-semibold">Project access</span>
-            </label>
-            <label class="label cursor-pointer justify-start gap-3">
+          <!-- Access and Featured -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input
                 type="checkbox"
                 form="project-form"
@@ -442,15 +440,10 @@ defmodule WeaktyWeb.ProjectLive.Form do
                 checked={@form[:public].value}
                 class="toggle toggle-sm"
               />
-              <span class="label-text"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
+              <span class="label-text text-sm"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
             </label>
-          </div>
 
-          <!-- Feature Project -->
-          <div class="form-control mb-4">
-            <label class="label cursor-pointer justify-start gap-3">
-              <.icon name="hero-star" class="w-5 h-5" />
-              <span class="label-text text-sm font-semibold flex-1">Feature this project</span>
+            <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input
                 type="checkbox"
                 form="project-form"
@@ -458,6 +451,7 @@ defmodule WeaktyWeb.ProjectLive.Form do
                 checked={@form[:featured].value}
                 class="toggle toggle-sm"
               />
+              <span class="label-text text-sm">Featured</span>
             </label>
           </div>
         </div>
