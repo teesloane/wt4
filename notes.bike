@@ -5,167 +5,74 @@
   </head>
   <body>
     <ul id="FMivkHdI">
+      <li id="pAy">
+        <p>Tasks</p>
+        <ul>
+          <li id="haV" data-type="task">
+            <p>Import books from obsidian</p>
+          </li>
+          <li id="QA7" data-type="task">
+            <p>Add a filter tabs on /posts: "non-fiction | fiction" that filter by post_type (make sure there is a "post_type" of "fiction"</p>
+          </li>
+          <li id="lIM" data-type="task">
+            <p>Add "posts", "media", "links", "projects", etc to top nav bar" (and make sure they are all public pages)</p>
+          </li>
+          <li id="VGM" data-type="task">
+            <p>Make a "home page" with some nice stuff on it. </p>
+            <ul>
+              <li id="_YA" data-type="task">
+                <p>"5 recent posts"</p>
+              </li>
+              <li id="4JR" data-type="task">
+                <p>"recent creative writing"</p>
+              </li>
+              <li id="JfB" data-type="task">
+                <p>"listened to lately</p>
+              </li>
+              <li id="xeY" data-type="task">
+                <p>an "About" section</p>
+              </li>
+              <li id="clm" data-type="task">
+                <p>maybe a "tabbed" interface that show’s recent things?</p>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+      <li id="Yfe">
+        <p/>
+      </li>
+      <li id="4qX">
+        <p>Someday:</p>
+        <ul>
+          <li id="rdV" data-type="task">
+            <p>Set up API’s for book/comics/whatever fetching</p>
+          </li>
+          <li id="jJw" data-type="task">
+            <p>build a search</p>
+          </li>
+        </ul>
+      </li>
       <li id="5T">
-        <p>Next batch of features:</p>
-      </li>
-      <li id="WN" data-type="task">
-        <p>Implement "image uploading" such that anywhere a "featured image" is used, we can upload a file for it, and we will store the string of the location on the server to it. I’m not sure if Ash has image uploading functionality but I know phoenix does.</p>
-      </li>
-      <li id="LOX" data-type="task">
-        <p><span>Set up all posts / tags, media, etc - all public content tables to have </span><a href="https://ogp.me/">open graph metadata</a><span> generated based on their contents.</span></p>
-      </li>
-      <li id="3C" data-type="heading">
-        <p><strong>Features</strong></p>
-        <ul>
-          <li id="j5p" data-type="task">
-            <p>Entities</p>
-            <ul>
-              <li id="KSx" data-type="task">
-                <p>Need to have an EntityTag many to many table to Tags</p>
-                <ul>
-                  <li id="cOn" data-type="unordered">
-                    <p>This would allow ability to search all things tagged, say: "bikes" across Books, Posts, Links, etc.</p>
-                  </li>
-                  <li id="o1K" data-type="unordered">
-                    <p/>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li id="w5" data-done="2026-02-11T18:12:40Z" data-type="task">
-            <p>open graph stuff</p>
-          </li>
-          <li id="Yr" data-type="task">
-            <p>Posts</p>
-            <ul>
-              <li id="6V">
-                <p/>
-              </li>
-              <li id="ev" data-type="task">
-                <p>Admin Posts</p>
-                <ul>
-                  <li id="9OS" data-done="2026-02-11T12:26:15Z" data-type="task">
-                    <p>Update the ghost script to instead take in the html and convert that to markdown instead of just putting plain text into the table under the markdown column.</p>
-                    <ul>
-                      <li id="dII" data-done="2026-02-11T12:26:14Z" data-type="task">
-                        <p><span>Could use </span><a href="https://github.com/kasvith/htmd?tab=readme-ov-file">this html -&gt; markdown convehttps://github.com/kasvith/htmd?tab=readme-ov-filerter</a><span> (requires rust)</span></p>
-                      </li>
-                    </ul>
-                  </li>
-                  <li id="cEH" data-type="task">
-                    <p>New Post view</p>
-                    <ul>
-                      <li id="B56" data-type="task">
-                        <p>change featured image url to be an image upload</p>
-                      </li>
-                      <li id="xKp" data-type="task">
-                        <p>get tags working</p>
-                      </li>
-                      <li id="cu4" data-type="task">
-                        <p>figure out what the "public" checkbox is for posts</p>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-              <li id="B70" data-type="task">
-                <p>RSS</p>
-              </li>
-              <li id="Bo" data-done="2026-02-09T20:52:29Z" data-type="task">
-                <p>overhaul /posts</p>
-                <ul>
-                  <li id="Wc" data-done="2026-02-09T20:52:11Z" data-type="task">
-                    <p>remove "new post"</p>
-                  </li>
-                  <li id="WE" data-done="2026-02-09T20:52:12Z" data-type="task">
-                    <p>improve styling on the cards</p>
-                  </li>
-                  <li id="Vu" data-done="2026-02-09T20:52:17Z" data-type="task">
-                    <p>remove buttons from cards for unpublish, edit and delete</p>
-                  </li>
-                  <li id="6M" data-done="2026-02-09T20:52:22Z" data-type="task">
-                    <p>remove filters of "all" "published" and "drafts</p>
-                  </li>
-                </ul>
-              </li>
-              <li id="NjK" data-done="2026-02-10T02:41:45Z" data-type="task">
-                <p>Enable import from Ghost</p>
-                <ul>
-                  <li id="jzB" data-done="2026-02-10T02:41:44Z" data-type="task">
-                    <p>Paste json for ghost into Claude and ask it to identify the shape of the posts array (don’t post the whole thing it’ll eat up tokens</p>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li id="df" data-type="task">
-            <p> Newsletters</p>
-          </li>
-          <li id="SZ-" data-type="task">
-            <p>Media</p>
-            <ul>
-              <li id="4t6" data-type="task">
-                <p>Write script that imports books from obsidian</p>
-              </li>
-              <li id="A4" data-type="task">
-                <p>Display content to the public</p>
-              </li>
-            </ul>
-          </li>
-          <li id="DP" data-type="task">
-            <p>Archive</p>
-            <ul>
-              <li id="uxu" data-done="2026-02-10T02:41:56Z" data-type="task">
-                <p>Now/Updates</p>
-                <ul>
-                  <li id="DgT" data-done="2026-02-10T02:41:55Z" data-type="task">
-                    <p>could live in the "posts" table but will need a type of "now"</p>
-                  </li>
-                  <li id="90G" data-done="2026-02-10T02:41:55Z" data-type="task">
-                    <p>Identify other "post types".</p>
-                  </li>
-                </ul>
-              </li>
-              <li id="ol6" data-done="2026-02-11T12:26:45Z" data-type="task">
-                <p>Projects</p>
-                <ul>
-                  <li id="5W" data-done="2026-02-11T12:26:42Z" data-type="task">
-                    <p>let’s build out a "project" table, that is similar to posts, except it’s for displaying portfolio esque based work. What do you think the fields might be?</p>
-                  </li>
-                  <li id="s5m" data-done="2026-02-11T12:26:43Z" data-type="task">
-                    <p>Different than posts:</p>
-                    <ul>
-                      <li id="_lK" data-type="task">
-                        <p>"start" and "end" date</p>
-                      </li>
-                      <li id="UVp" data-type="task">
-                        <p>"gallery" images</p>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
-      <li id="cS" data-type="heading">
-        <p>Bugs</p>
-        <ul>
-          <li id="V0a" data-type="task">
-            <p>adding "tags" doesn’t work for posts, links, etc</p>
-          </li>
-        </ul>
+        <p/>
       </li>
       <li id="-ap">
         <p>Manual Labour (Claude couldn’t do)</p>
         <ul>
+          <li id="Yck" data-type="task">
+            <p>Improve the UI of the "archive" page</p>
+          </li>
+          <li id="hxa" data-type="task">
+            <p>Add all the comics you’ve been reading</p>
+          </li>
+          <li id="F8Y" data-type="task">
+            <p>Fix slugs on "now" updates</p>
+          </li>
           <li id="Rmh" data-type="task">
             <p>set up image uploads for feature posts</p>
           </li>
           <li id="4gS" data-type="task">
-            <p/>
+            <p>Add feature images</p>
           </li>
         </ul>
       </li>

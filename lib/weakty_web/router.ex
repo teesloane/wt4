@@ -60,8 +60,8 @@ defmodule WeaktyWeb.Router do
       on_mount: [{WeaktyWeb.LiveUserAuth, :live_user_required}] do
       live "/", AdminLive.Dashboard, :index
       live "/posts", AdminLive.Posts.Index, :index
-      live "/posts/new", PostLive.Form, :new
-      live "/posts/:slug/edit", PostLive.Form, :edit
+      live "/posts/new", AdminLive.Posts.Form, :new
+      live "/posts/:slug/edit", AdminLive.Posts.Form, :edit
       live "/projects", AdminLive.Projects.Index, :index
       live "/projects/new", ProjectLive.Form, :new
       live "/projects/:slug/edit", ProjectLive.Form, :edit

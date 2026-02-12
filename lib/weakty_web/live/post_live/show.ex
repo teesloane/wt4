@@ -139,7 +139,7 @@ defmodule WeaktyWeb.PostLive.Show do
     |> length()
 
     # Average reading speed: 200 words per minute
-    max(1, round(word_count / 200))
+    max(1, round(word_count / 250))
   end
 
   defp estimate_read_time(_), do: 1
