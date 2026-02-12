@@ -7,12 +7,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   @impl true
   def mount(params, _session, socket) do
     post =
-      case params["slug"] do
+      case params["id"] do
         nil -> nil
-        slug ->
+        id ->
           Weakty.Posts.Post
-          |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
-          |> Ash.read_one!()
+          |> Ash.get!(id)
           |> Ash.load!(:tags)
       end
 
@@ -469,6 +468,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
   def handle_event("save", %{"form" => params}, socket) do
+    IO.inspect(params, label: ">>>>>>>>>>>>>")
     # Add content_images to params
     params = Map.put(params, "content_images", socket.assigns.content_images)
 

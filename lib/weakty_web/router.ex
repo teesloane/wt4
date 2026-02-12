@@ -61,16 +61,16 @@ defmodule WeaktyWeb.Router do
       live "/", AdminLive.Dashboard, :index
       live "/posts", AdminLive.Posts.Index, :index
       live "/posts/new", AdminLive.Posts.Form, :new
-      live "/posts/:slug/edit", AdminLive.Posts.Form, :edit
+      live "/posts/:id/edit", AdminLive.Posts.Form, :edit
       live "/projects", AdminLive.Projects.Index, :index
       live "/projects/new", ProjectLive.Form, :new
-      live "/projects/:slug/edit", ProjectLive.Form, :edit
+      live "/projects/:id/edit", ProjectLive.Form, :edit
       live "/links", AdminLive.Links.Index, :index
       live "/links/new", LinkLive.Form, :new
-      live "/links/:slug/edit", LinkLive.Form, :edit
+      live "/links/:id/edit", LinkLive.Form, :edit
       live "/media-logs", AdminLive.MediaLogs.Index, :index
       live "/media-logs/new", MediaLogLive.Form, :new
-      live "/media-logs/:slug/edit", MediaLogLive.Form, :edit
+      live "/media-logs/:id/edit", MediaLogLive.Form, :edit
       live "/tags", AdminLive.Tags.Index, :index
     end
   end

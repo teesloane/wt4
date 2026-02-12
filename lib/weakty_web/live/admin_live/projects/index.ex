@@ -114,7 +114,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
             </thead>
             <tbody>
               <%= for project <- @projects do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/projects/#{project.slug}/edit")}>
+                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/projects/#{project.id}/edit")}>
                   <td>
                     <div class="flex items-center gap-3">
                       <%= if project.featured_image do %>
@@ -159,7 +159,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
                   <td onclick="event.stopPropagation()">
                     <div class="flex gap-2">
                       <.link
-                        navigate={~p"/admin/projects/#{project.slug}/edit"}
+                        navigate={~p"/admin/projects/#{project.id}/edit"}
                         class="btn btn-ghost btn-xs"
                         title="Edit"
                       >

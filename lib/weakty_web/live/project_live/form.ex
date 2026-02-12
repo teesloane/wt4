@@ -7,12 +7,11 @@ defmodule WeaktyWeb.ProjectLive.Form do
   @impl true
   def mount(params, _session, socket) do
     project =
-      case params["slug"] do
+      case params["id"] do
         nil -> nil
-        slug ->
+        id ->
           Weakty.Projects.Project
-          |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
-          |> Ash.read_one!()
+          |> Ash.get!(id)
           |> Ash.load!(:tags)
       end
 

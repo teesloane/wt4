@@ -128,7 +128,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
             </thead>
             <tbody>
               <%= for media_log <- @media_logs do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/media-logs/#{media_log.slug}/edit")}>
+                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/media-logs/#{media_log.id}/edit")}>
                   <td>
                     <div class="flex items-center gap-3">
                       <%= if media_log.thumbnail_url do %>
@@ -196,7 +196,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                   <td onclick="event.stopPropagation()">
                     <div class="flex gap-2">
                       <.link
-                        navigate={~p"/admin/media-logs/#{media_log.slug}/edit"}
+                        navigate={~p"/admin/media-logs/#{media_log.id}/edit"}
                         class="btn btn-ghost btn-xs"
                         title="Edit"
                       >

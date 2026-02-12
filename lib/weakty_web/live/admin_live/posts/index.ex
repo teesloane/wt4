@@ -92,7 +92,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
           <%= for post <- @posts do %>
             <div
               class="flex gap-4 p-2 bg-base-100 rounded-lg hover:bg-base-200/50 cursor-pointer transition-colors "
-              phx-click={JS.navigate(~p"/admin/posts/#{post.slug}/edit")}
+              phx-click={JS.navigate(~p"/admin/posts/#{post.id}/edit")}
             >
               <!-- Featured Image Thumbnail -->
               <div class="flex-shrink-0 relative">
