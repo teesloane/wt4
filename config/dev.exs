@@ -6,7 +6,8 @@ config :weakty, Weakty.Repo,
   database: Path.expand("../weakty_dev.db", __DIR__),
   pool_size: 5,
   stacktrace: true,
-  show_sensitive_data_on_connection_error: true
+  show_sensitive_data_on_connection_error: true,
+  log: false
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -70,6 +71,9 @@ config :weakty, dev_routes: false, token_signing_secret: "SF9pyLgFrxxVB/RbAY5vzx
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
+
+# Set log level to warning to hide noisy info/debug logs
+config :logger, level: :warning
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
