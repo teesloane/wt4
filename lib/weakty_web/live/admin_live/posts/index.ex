@@ -103,7 +103,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                     class="w-24 h-16 object-cover rounded-lg"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   />
-                  <%# for displaying failed icons for broken image %>
+                  <%!-- for displaying failed icons for broken image --%>
                   <div class="w-24 h-16 bg-base-200 rounded-lg items-center justify-center hidden">
                     <.icon name="hero-exclamation-circle" class="w-6 h-6 text-base-content/20" />
                   </div>

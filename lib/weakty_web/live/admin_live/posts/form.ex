@@ -54,6 +54,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:ok, socket, layout: {WeaktyWeb.Layouts, :admin}}
   end
 
+  defp error_to_string(:too_large), do: "File too large (max 5MB)"
+  defp error_to_string(:too_many_files), do: "Too many files selected"
+  defp error_to_string(:not_accepted), do: "Invalid file type (only .jpg, .jpeg, .png, .gif, .webp)"
+  defp error_to_string(error), do: "Upload error: #{inspect(error)}"
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -66,7 +71,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             Posts
           </.link>
           <div class="text-sm text-base-content/70">
-            <%= if @post, do: "Draft - Saved", else: "New Post" %>
+            <%= if @post, do: "Draft - Saved (not implemented)", else: "New Post" %>
           </div>
           <div class="flex-1"></div>
           <button
@@ -107,7 +112,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 type="text"
                 name={@form[:title].name}
                 value={@form[:title].value}
-                class="input input-ghost w-full text-4xl font-bold px-0 focus:outline-none"
+                class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
                 placeholder="Post title"
                 required
               />
@@ -247,6 +252,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                   Uploading: <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
                 </div>
               <% end %>
+
+              <%= for err <- upload_errors(@uploads.featured_image) do %>
+                <p class="text-error text-xs"><%= error_to_string(err) %></p>
+              <% end %>
             </div>
 
             <!-- Hidden input to preserve existing value -->
@@ -298,6 +307,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               <div class="text-xs text-base-content/60 mt-1">
                 <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
               </div>
+            <% end %>
+
+            <%= for err <- upload_errors(@uploads.content_images) do %>
+              <p class="text-error text-xs"><%= error_to_string(err) %></p>
             <% end %>
 
             <div class="text-xs text-base-content/60 mt-1">
@@ -361,10 +374,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
           <!-- Access and Featured -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
+              <input type="hidden" form="post-form" name={@form[:public].name} value="false" />
               <input
                 type="checkbox"
                 form="post-form"
                 name={@form[:public].name}
+                value="true"
                 checked={@form[:public].value}
                 class="toggle toggle-sm"
               />
@@ -372,10 +387,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             </label>
 
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
+              <input type="hidden" form="post-form" name={@form[:featured].name} value="false" />
               <input
                 type="checkbox"
                 form="post-form"
                 name={@form[:featured].name}
+                value="true"
                 checked={@form[:featured].value}
                 class="toggle toggle-sm"
               />
@@ -432,43 +449,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:noreply, push_event(socket, "copy-to-clipboard", %{text: "![](#{url})"})}
   end
 
-  @impl true
-  def handle_progress(:featured_image, entry, socket) when entry.done? do
-    uploaded_files =
-      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
-        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        "/uploads/#{entry.uuid}.#{ext(entry)}"
-      end)
-
-    case uploaded_files do
-      [url | _] ->
-        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
-        {:noreply, assign(socket, form: to_form(form))}
-
-      [] ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_progress(:content_images, entry, socket) when entry.done? do
-    uploaded_files =
-      consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
-        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        "/uploads/#{entry.uuid}.#{ext(entry)}"
-      end)
-
-    content_images = socket.assigns.content_images ++ uploaded_files
-    {:noreply, assign(socket, content_images: content_images)}
-  end
-
-  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
-
   def handle_event("save", %{"form" => params}, socket) do
-    IO.inspect(params, label: ">>>>>>>>>>>>>")
     # Add content_images to params
     params = Map.put(params, "content_images", socket.assigns.content_images)
 
@@ -481,6 +462,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
 
       {:error, form} ->
+        IO.inspect(form, label: "3333333333333333333333333333")
         # Check if there's a resource in the form source (means post was created despite error)
         post_from_error =
           case form.source do
@@ -508,6 +490,41 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         end
     end
   end
+
+  def handle_progress(:featured_image, entry, socket) when entry.done? do
+    uploaded_files =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    case uploaded_files do
+      [{:ok, url} | _] ->
+        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
+        {:noreply, assign(socket, form: to_form(form))}
+
+      [] ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_progress(:content_images, entry, socket) when entry.done? do
+    uploaded_files =
+      consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
+        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    new_urls = Enum.map(uploaded_files, fn {:ok, url} -> url end)
+    content_images = socket.assigns.content_images ++ new_urls
+    {:noreply, assign(socket, content_images: content_images)}
+  end
+
+  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
   defp handle_tag_update(post, tags) do
     if length(tags) > 0 do

@@ -469,10 +469,12 @@ defmodule WeaktyWeb.ProjectLive.Form do
           <!-- Access and Featured -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
+              <input type="hidden" form="project-form" name={@form[:public].name} value="false" />
               <input
                 type="checkbox"
                 form="project-form"
                 name={@form[:public].name}
+                value="true"
                 checked={@form[:public].value}
                 class="toggle toggle-sm"
               />
@@ -480,10 +482,12 @@ defmodule WeaktyWeb.ProjectLive.Form do
             </label>
 
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
+              <input type="hidden" form="project-form" name={@form[:featured].name} value="false" />
               <input
                 type="checkbox"
                 form="project-form"
                 name={@form[:featured].name}
+                value="true"
                 checked={@form[:featured].value}
                 class="toggle toggle-sm"
               />
@@ -577,41 +581,6 @@ defmodule WeaktyWeb.ProjectLive.Form do
     {:noreply, push_event(socket, "copy-to-clipboard", %{text: "![](#{url})"})}
   end
 
-  @impl true
-  def handle_progress(:featured_image, entry, socket) when entry.done? do
-    uploaded_files =
-      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
-        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        "/uploads/#{entry.uuid}.#{ext(entry)}"
-      end)
-
-    case uploaded_files do
-      [url | _] ->
-        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
-        {:noreply, assign(socket, form: to_form(form))}
-
-      [] ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_progress(:content_images, entry, socket) when entry.done? do
-    uploaded_files =
-      consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
-        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        "/uploads/#{entry.uuid}.#{ext(entry)}"
-      end)
-
-    images = socket.assigns.images ++ uploaded_files
-    {:noreply, assign(socket, images: images)}
-  end
-
-  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
-
   def handle_event("save", %{"form" => params}, socket) do
     # Add links and images to params
     params = params
@@ -649,6 +618,40 @@ defmodule WeaktyWeb.ProjectLive.Form do
         end
     end
   end
+
+  def handle_progress(:featured_image, entry, socket) when entry.done? do
+    uploaded_files =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        "/uploads/#{entry.uuid}.#{ext(entry)}"
+      end)
+
+    case uploaded_files do
+      [url | _] ->
+        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
+        {:noreply, assign(socket, form: to_form(form))}
+
+      [] ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_progress(:content_images, entry, socket) when entry.done? do
+    uploaded_files =
+      consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
+        dest = Path.join(["priv", "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        "/uploads/#{entry.uuid}.#{ext(entry)}"
+      end)
+
+    images = socket.assigns.images ++ uploaded_files
+    {:noreply, assign(socket, images: images)}
+  end
+
+  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
   defp handle_tag_update(project, tags) do
     if length(tags) > 0 do
