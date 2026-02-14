@@ -391,53 +391,21 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    # First, create/update the media log without tags
-    result = Form.submit(socket.assigns.form, params: params)
-
-    case result do
+    case Form.submit(socket.assigns.form, params: params) do
       {:ok, media_log} ->
         handle_tag_update(media_log, socket.assigns.tags)
         {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
 
       {:error, form} ->
-        # Check if there's a resource in the form source (means media_log was created despite error)
-        media_log_from_error =
-          case form.source do
-            %{resource: %Weakty.MediaLogs.MediaLog{} = ml} -> ml
-            %{data: %Weakty.MediaLogs.MediaLog{} = ml} -> ml
-            %Ash.Changeset{data: %Weakty.MediaLogs.MediaLog{} = ml} -> ml
-            _ -> nil
-          end
-
-        cond do
-          # Media log was created despite form error - use it for tags
-          media_log_from_error && media_log_from_error.id ->
-            handle_tag_update(media_log_from_error, socket.assigns.tags)
-            {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
-
-          # Editing existing media log - reload it
-          socket.assigns.media_log ->
-            media_log = Ash.get!(Weakty.MediaLogs.MediaLog, socket.assigns.media_log.id)
-            handle_tag_update(media_log, socket.assigns.tags)
-            {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
-
-          # Creating new media log - form validation actually failed
-          true ->
-            {:noreply, assign(socket, form: to_form(form))}
-        end
+        {:noreply, assign(socket, form: to_form(form))}
     end
   end
 
   defp handle_tag_update(media_log, tags) do
-    if length(tags) > 0 do
-      tags_param = Enum.map(tags, &%{name: &1})
-
-      # Update the media log with tags
-      media_log
-      |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.MediaLogs)
-      |> Ash.Changeset.set_argument(:tags, tags_param)
-      |> Ash.update(domain: Weakty.MediaLogs)
-    end
+    Weakty.Tags.TagManager.apply_tags(
+      media_log, :media_log, tags,
+      Weakty.MediaLogs.MediaLogTag, :media_log_id
+    )
   end
 
   # Helper functions for dynamic labels

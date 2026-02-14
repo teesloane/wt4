@@ -582,40 +582,18 @@ defmodule WeaktyWeb.ProjectLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    # Add links and images to params
-    params = params
+    params =
+      params
       |> Map.put("links", socket.assigns.links)
       |> Map.put("images", socket.assigns.images)
 
-    result = Form.submit(socket.assigns.form, params: params)
-
-    case result do
+    case Form.submit(socket.assigns.form, params: params) do
       {:ok, project} ->
         handle_tag_update(project, socket.assigns.tags)
         {:noreply, push_navigate(socket, to: ~p"/admin/projects")}
 
       {:error, form} ->
-        project_from_error =
-          case form.source do
-            %{resource: %Weakty.Projects.Project{} = project} -> project
-            %{data: %Weakty.Projects.Project{} = project} -> project
-            %Ash.Changeset{data: %Weakty.Projects.Project{} = project} -> project
-            _ -> nil
-          end
-
-        cond do
-          project_from_error && project_from_error.id ->
-            handle_tag_update(project_from_error, socket.assigns.tags)
-            {:noreply, push_navigate(socket, to: ~p"/admin/projects")}
-
-          socket.assigns.project ->
-            project = Ash.get!(Weakty.Projects.Project, socket.assigns.project.id)
-            handle_tag_update(project, socket.assigns.tags)
-            {:noreply, push_navigate(socket, to: ~p"/admin/projects")}
-
-          true ->
-            {:noreply, assign(socket, form: to_form(form))}
-        end
+        {:noreply, assign(socket, form: to_form(form))}
     end
   end
 
@@ -654,14 +632,10 @@ defmodule WeaktyWeb.ProjectLive.Form do
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
   defp handle_tag_update(project, tags) do
-    if length(tags) > 0 do
-      tags_param = Enum.map(tags, &%{name: &1})
-
-      project
-      |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Projects)
-      |> Ash.Changeset.set_argument(:tags, tags_param)
-      |> Ash.update(domain: Weakty.Projects)
-    end
+    Weakty.Tags.TagManager.apply_tags(
+      project, :project, tags,
+      Weakty.Projects.ProjectTag, :project_id
+    )
   end
 
   defp render_markdown(nil), do: ""
