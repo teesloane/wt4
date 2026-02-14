@@ -33,7 +33,7 @@ defmodule Weakty.Changes.SyncEntity do
         favourite: resolve_value(record, opts[:favourite]) || false,
         tags: tags,
         public: resolve_value(record, opts[:public] || :public) || false,
-        published_at: resolve_value(record, opts[:published_at]) || Map.get(record, :inserted_at)
+        published_at: resolve_value(record, opts[:published_at]) || Map.get(record, :inserted_at) || DateTime.utc_now()
       }
 
       case Weakty.Content.Entity.upsert_entity(entity_params) do

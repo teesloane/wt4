@@ -37,7 +37,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
     socket =
       socket
-      |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "")
+      |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "", auto_slug: "")
       |> assign(:current_path, "/admin/posts")
       |> assign(:content_images, (post && post.content_images) || [])
       |> allow_upload(:featured_image,
@@ -199,25 +199,18 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               </div>
             <% end %>
 
-            <div class="join w-full">
+            <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
               <input
                 type="text"
-                value={@tag_input}
-                phx-change="update_tag_input"
                 name="tag_input"
+                value={@tag_input}
                 placeholder="Add a tag"
                 class="input input-bordered input-sm join-item flex-1 text-sm"
-                phx-keydown="add_tag"
-                phx-key="Enter"
               />
-              <button
-                type="button"
-                phx-click="add_tag"
-                class="btn btn-sm btn-ghost join-item"
-              >
+              <button type="submit" class="btn btn-sm btn-ghost join-item">
                 Add
               </button>
-            </div>
+            </form>
           </div>
 
           <div class="divider"></div>
@@ -400,6 +393,18 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               <span class="label-text text-sm">Featured</span>
             </label>
           </div>
+
+          <%= if @post do %>
+            <div class="divider"></div>
+            <button
+              type="button"
+              phx-click="delete_post"
+              data-confirm="Are you sure you want to delete this post?"
+              class="btn btn-error btn-sm w-full"
+            >
+              Delete post
+            </button>
+          <% end %>
         </div>
       </div>
     </div>
@@ -408,8 +413,13 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
   @impl true
   def handle_event("validate", %{"form" => params}, socket) do
+    {params, auto_slug} =
+      if is_nil(socket.assigns.post),
+        do: maybe_auto_slug(params, socket.assigns.auto_slug),
+        else: {params, socket.assigns.auto_slug}
+
     form = Form.validate(socket.assigns.form, params, errors: true)
-    {:noreply, assign(socket, form: form)}
+    {:noreply, assign(socket, form: form, auto_slug: auto_slug)}
   end
 
   def handle_event("toggle_preview", _params, socket) do
@@ -420,8 +430,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:noreply, assign(socket, tag_input: value)}
   end
 
-  def handle_event("add_tag", _params, socket) do
-    tag = String.trim(socket.assigns.tag_input)
+  def handle_event("add_tag", %{"tag_input" => value}, socket) do
+    tag = String.trim(value)
 
     if tag != "" and tag not in socket.assigns.tags do
       {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "")}
@@ -439,6 +449,13 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:noreply, assign(socket, form: to_form(form))}
   end
 
+  def handle_event("delete_post", _params, socket) do
+    case Weakty.Posts.Post.delete_post(socket.assigns.post) do
+      :ok -> {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
+      {:error, _} -> {:noreply, put_flash(socket, :error, "Failed to delete post")}
+    end
+  end
+
   def handle_event("remove_content_image", %{"index" => index_str}, socket) do
     index = String.to_integer(index_str)
     content_images = List.delete_at(socket.assigns.content_images, index)
@@ -451,44 +468,15 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    # Add content_images to params
     params = Map.put(params, "content_images", socket.assigns.content_images)
 
-    # Submit the form
-    result = Form.submit(socket.assigns.form, params: params)
-
-    case result do
+    case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
         handle_tag_update(post, socket.assigns.tags)
         {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
 
       {:error, form} ->
-        IO.inspect(form, label: "3333333333333333333333333333")
-        # Check if there's a resource in the form source (means post was created despite error)
-        post_from_error =
-          case form.source do
-            %{resource: %Weakty.Posts.Post{} = post} -> post
-            %{data: %Weakty.Posts.Post{} = post} -> post
-            %Ash.Changeset{data: %Weakty.Posts.Post{} = post} -> post
-            _ -> nil
-          end
-
-        cond do
-          # Post was created despite form error - use it for tags
-          post_from_error && post_from_error.id ->
-            handle_tag_update(post_from_error, socket.assigns.tags)
-            {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
-
-          # Editing existing post - reload it
-          socket.assigns.post ->
-            post = Ash.get!(Weakty.Posts.Post, socket.assigns.post.id)
-            handle_tag_update(post, socket.assigns.tags)
-            {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
-
-          # Creating new post - form validation actually failed
-          true ->
-            {:noreply, assign(socket, form: to_form(form))}
-        end
+        {:noreply, assign(socket, form: to_form(form))}
     end
   end
 
@@ -527,16 +515,31 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
-  defp handle_tag_update(post, tags) do
-    if length(tags) > 0 do
-      tags_param = Enum.map(tags, &%{name: &1})
+  defp maybe_auto_slug(params, current_auto_slug) do
+    title = params["title"] || ""
+    slug = params["slug"] || ""
+    new_auto_slug = slugify(title)
 
-      # Update the post with tags
-      post
-      |> Ash.Changeset.for_update(:update, %{}, domain: Weakty.Posts)
-      |> Ash.Changeset.set_argument(:tags, tags_param)
-      |> Ash.update(domain: Weakty.Posts)
+    if slug == current_auto_slug do
+      {Map.put(params, "slug", new_auto_slug), new_auto_slug}
+    else
+      {params, current_auto_slug}
     end
+  end
+
+  defp slugify(""), do: ""
+
+  defp slugify(title) do
+    title
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9\s-]/, "")
+    |> String.replace(~r/\s+/, "-")
+    |> String.replace(~r/-+/, "-")
+    |> String.trim("-")
+  end
+
+  defp handle_tag_update(post, tags) do
+    Weakty.Tags.TagManager.apply_tags(post, :post, tags, Weakty.Posts.PostTag, :post_id)
   end
 
   defp render_markdown(nil), do: ""

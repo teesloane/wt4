@@ -131,8 +131,8 @@ defmodule Weakty.Projects.Project do
       change manage_relationship(:tags, :tags,
         type: :append_and_remove,
         value_is_key: :name,
-        on_lookup: {:relate, :read, :read, []},
-        on_no_match: {:create, :create, :create, []},
+        on_lookup: :relate,
+        on_no_match: :create,
         use_identities: [:unique_name]
       )
 
@@ -181,8 +181,8 @@ defmodule Weakty.Projects.Project do
       change manage_relationship(:tags, :tags,
         type: :append_and_remove,
         value_is_key: :name,
-        on_lookup: {:relate, :read, :read, []},
-        on_no_match: {:create, :create, :create, []},
+        on_lookup: :relate,
+        on_no_match: :create,
         use_identities: [:unique_name]
       )
 

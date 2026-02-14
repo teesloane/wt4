@@ -139,6 +139,8 @@ defmodule WeaktyWeb.LinkLive.Form do
           </div>
         </div>
 
+        <.input field={@form[:public]} type="checkbox" label="Public" />
+
         <input
           type="hidden"
           name={@form[:user_id].name}
@@ -183,47 +185,17 @@ defmodule WeaktyWeb.LinkLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    IO.puts("\n=== SAVE EVENT ===")
-    IO.inspect(socket.assigns.tags, label: "Tags to save")
-
-    # First, create/update the link without tags
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, link} ->
-        IO.inspect(link.id, label: "Created link ID")
-
-        # Then add tags as a separate step
-        if length(socket.assigns.tags) > 0 do
-          tags_param = Enum.map(socket.assigns.tags, &%{name: &1})
-          IO.inspect(tags_param, label: "Tags param")
-
-          # Update the link with tags
-          result =
-            link
-            |> Ash.Changeset.for_update(:update, %{})
-            |> Ash.Changeset.set_argument(:tags, tags_param)
-            |> Ash.update()
-
-          IO.inspect(result, label: "Update result")
-
-          case result do
-            {:ok, updated_link} ->
-              IO.puts("Tags updated successfully")
-              # Load tags to verify
-              loaded = Ash.load!(updated_link, :tags)
-              IO.inspect(loaded.tags, label: "Loaded tags")
-
-            {:error, error} ->
-              IO.puts("ERROR updating tags:")
-              IO.inspect(error)
-          end
-        end
-
-        {:noreply, push_navigate(socket, to: ~p"/links")}
+        handle_tag_update(link, socket.assigns.tags)
+        {:noreply, push_navigate(socket, to: ~p"/admin/links")}
 
       {:error, form} ->
-        IO.puts("ERROR creating link:")
-        IO.inspect(form)
         {:noreply, assign(socket, form: to_form(form))}
     end
+  end
+
+  defp handle_tag_update(link, tags) do
+    Weakty.Tags.TagManager.apply_tags(link, :link, tags, Weakty.Links.LinkTag, :link_id)
   end
 end

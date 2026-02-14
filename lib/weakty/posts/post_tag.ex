@@ -17,6 +17,7 @@ defmodule Weakty.Posts.PostTag do
     belongs_to :post, Weakty.Posts.Post do
       allow_nil? false
       attribute_writable? true
+      attribute_public? true
     end
 
     belongs_to :tag, Weakty.Tags.Tag do

@@ -58,11 +58,25 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
   end
 
   @impl true
+  def handle_event("cleanup_orphaned", _, socket) do
+    case Weakty.Tags.TagManager.cleanup_orphaned_tags() do
+      {:ok, 0} ->
+        {:noreply, put_flash(socket, :info, "No orphaned tags found")}
+
+      {:ok, count} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Deleted #{count} orphaned tag#{if count != 1, do: "s"}")
+         |> load_tags()}
+    end
+  end
+
+  @impl true
   def handle_event("delete", %{"id" => id}, socket) do
     tag = Ash.get!(Weakty.Tags.Tag, id)
 
     case Weakty.Tags.Tag.delete_tag(tag) do
-      {:ok, _} ->
+      :ok ->
         {:noreply,
          socket
          |> put_flash(:info, "Tag deleted successfully")
@@ -78,6 +92,13 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     ~H"""
     <.admin_header title="Tags" subtitle={"#{length(@tags)} tag#{if length(@tags) != 1, do: "s"}"}>
       <:actions>
+        <button
+          phx-click="cleanup_orphaned"
+          data-confirm="Delete all tags not attached to any content?"
+          class="btn btn-ghost btn-sm"
+        >
+          Clean up unused
+        </button>
         <button
           class="btn btn-primary"
           onclick="document.getElementById('new_tag_modal').showModal()"
@@ -113,7 +134,9 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                 <th>Slug</th>
                 <th>Posts</th>
                 <th>Links</th>
-                <th>Total Usage</th>
+                <th>Media</th>
+                <th>Projects</th>
+                <th>Total</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -126,27 +149,13 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                   <td>
                     <code class="text-sm text-base-content/70"><%= tag.slug %></code>
                   </td>
-                  <td>
-                    <div class="text-sm">
-                      <%= if tag.posts do %>
-                        <%= length(tag.posts) %>
-                      <% else %>
-                        0
-                      <% end %>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="text-sm">
-                      <%= if tag.links do %>
-                        <%= length(tag.links) %>
-                      <% else %>
-                        0
-                      <% end %>
-                    </div>
-                  </td>
+                  <td><div class="text-sm"><%= length(tag.posts) %></div></td>
+                  <td><div class="text-sm"><%= length(tag.links) %></div></td>
+                  <td><div class="text-sm"><%= length(tag.media_logs) %></div></td>
+                  <td><div class="text-sm"><%= length(tag.projects) %></div></td>
                   <td>
                     <div class="font-semibold">
-                      <%= (if(tag.posts, do: length(tag.posts), else: 0) + if(tag.links, do: length(tag.links), else: 0)) %>
+                      <%= length(tag.posts) + length(tag.links) + length(tag.media_logs) + length(tag.projects) %>
                     </div>
                   </td>
                   <td>
@@ -227,8 +236,9 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
   end
 
   defp load_tags(socket) do
-    tags = Weakty.Tags.Tag.list_tags!()
-    tags = Ash.load!(tags, [:links, :posts])
+    tags =
+      Weakty.Tags.Tag.list_tags!()
+      |> Ash.load!([:links, :posts, :media_logs, :projects], domain: Weakty.Tags)
     assign(socket, :tags, tags)
   end
 end

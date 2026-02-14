@@ -44,7 +44,7 @@ defmodule WeaktyWeb.LinkLive.Index do
             <div class="flex gap-3 text-sm opacity-60">
               <button
                 phx-click="edit"
-                phx-value-slug={link.slug}
+                phx-value-id={link.id}
                 class="hover:opacity-100 transition-opacity"
               >
                 Edit
@@ -85,7 +85,7 @@ defmodule WeaktyWeb.LinkLive.Index do
     {:noreply, push_navigate(socket, to: ~p"/admin/links/new")}
   end
 
-  def handle_event("edit", %{"slug" => slug}, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/admin/links/#{slug}/edit")}
+  def handle_event("edit", %{"id" => id}, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/admin/links/#{id}/edit")}
   end
 end
