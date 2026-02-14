@@ -26,7 +26,6 @@ defmodule GhostImporter do
     json_data = read_json_file(json_path)
 
     # Ghost exports are an array with a single object
-    IO.inspect(json_data, label: ">>>>>>>>>>>>>>>")
     # db_data = case json_data do
     #   [first | _] -> Map.get(first, "data", %{})
     #   %{"db" => %{"data" => data}} -> data
@@ -231,21 +230,23 @@ defmodule GhostImporter do
   end
 end
 
-# Main execution
-case System.argv() do
-  [json_path, user_email] ->
-    GhostImporter.run(json_path, user_email)
+# Main execution — only runs when invoked directly (not when loaded via Code.require_file)
+if System.argv() != [] do
+  case System.argv() do
+    [json_path, user_email] ->
+      GhostImporter.run(json_path, user_email)
 
-  _ ->
-    IO.puts("""
-    Usage: mix run scripts/import_ghost_posts.exs <path_to_ghost_export.json> <user_email>
+    _ ->
+      IO.puts("""
+      Usage: mix run scripts/import_ghost_posts.exs <path_to_ghost_export.json> <user_email>
 
-    Example:
-      mix run scripts/import_ghost_posts.exs ghost_export.json weakty@fastmail.com
+      Example:
+        mix run scripts/import_ghost_posts.exs ghost_export.json weakty@fastmail.com
 
-    Arguments:
-      <path_to_ghost_export.json>  Path to your Ghost JSON export file
-      <user_email>                 Email of the user to assign posts to
-    """)
-    System.halt(1)
+      Arguments:
+        <path_to_ghost_export.json>  Path to your Ghost JSON export file
+        <user_email>                 Email of the user to assign posts to
+      """)
+      System.halt(1)
+  end
 end

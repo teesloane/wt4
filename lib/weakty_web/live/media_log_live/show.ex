@@ -142,7 +142,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
       <%= if @current_user && @current_user.id == @media_log.user_id do %>
         <div class="divider my-8"></div>
         <div class="flex gap-2">
-          <.link navigate={~p"/admin/media-logs/#{@media_log.slug}/edit"} class="btn btn-primary">
+          <.link navigate={~p"/admin/media-logs/#{@media_log.id}/edit"} class="btn btn-primary">
             Edit Media Log
           </.link>
           <%= if @media_log.public do %>

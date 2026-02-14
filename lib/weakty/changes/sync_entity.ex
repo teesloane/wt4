@@ -1,5 +1,6 @@
 defmodule Weakty.Changes.SyncEntity do
   use Ash.Resource.Change
+  require Logger
 
   @impl true
   def init(opts) do
@@ -13,34 +14,57 @@ defmodule Weakty.Changes.SyncEntity do
   @impl true
   def change(changeset, opts, _context) do
     Ash.Changeset.after_action(changeset, fn _changeset, record ->
-      max_len = opts[:content_max_length] || 280
+      skip_field = opts[:skip_if_nil]
 
-      # Load tags if the record has a tags relationship
-      tags = load_tags(record)
+      if skip_field && is_nil(Map.get(record, skip_field)) do
+        destroy_entity_if_exists(opts[:entity_type], record.id)
+        {:ok, record}
+      else
+        max_len = opts[:content_max_length] || 280
 
-      entity_params = %{
-        entity_type: opts[:entity_type],
-        source_id: record.id,
-        title: resolve_value(record, opts[:title] || :title),
-        content: resolve_value(record, opts[:content]) |> truncate(max_len),
-        url: resolve_value(record, opts[:url]),
-        slug: resolve_value(record, opts[:slug] || :slug),
-        source_path: resolve_value(record, opts[:source_path]),
-        hero_url: resolve_value(record, opts[:hero_url]),
-        thumbnail_url: resolve_value(record, opts[:thumbnail_url]),
-        rating: resolve_value(record, opts[:rating]),
-        status: resolve_value(record, opts[:status]),
-        favourite: resolve_value(record, opts[:favourite]) || false,
-        tags: tags,
-        public: resolve_value(record, opts[:public] || :public) || false,
-        published_at: resolve_value(record, opts[:published_at]) || Map.get(record, :inserted_at) || DateTime.utc_now()
-      }
+        # Load tags if the record has a tags relationship
+        tags = load_tags(record)
 
-      case Weakty.Content.Entity.upsert_entity(entity_params) do
-        {:ok, _entity} -> {:ok, record}
-        {:error, error} -> {:error, error}
+        entity_params = %{
+          entity_type: opts[:entity_type],
+          source_id: record.id,
+          title: resolve_value(record, opts[:title] || :title),
+          content: resolve_value(record, opts[:content]) |> truncate(max_len),
+          url: resolve_value(record, opts[:url]),
+          slug: resolve_value(record, opts[:slug] || :slug),
+          source_path: resolve_value(record, opts[:source_path]),
+          hero_url: resolve_value(record, opts[:hero_url]),
+          thumbnail_url: resolve_value(record, opts[:thumbnail_url]),
+          rating: resolve_value(record, opts[:rating]),
+          status: resolve_value(record, opts[:status]),
+          favourite: resolve_value(record, opts[:favourite]) || false,
+          tags: tags,
+          public: resolve_value(record, opts[:public] || :public) || false,
+          published_at:
+            resolve_value(record, opts[:published_at])
+            |> to_datetime()
+            |> Kernel.||(Map.get(record, :inserted_at))
+            |> Kernel.||(DateTime.utc_now())
+        }
+
+        case Weakty.Content.Entity.upsert_entity(entity_params) do
+          {:ok, _entity} ->
+            {:ok, record}
+
+          {:error, error} ->
+            Logger.error("SyncEntity failed for #{opts[:entity_type]} #{record.id}: #{inspect(error)}")
+            {:ok, record}
+        end
       end
     end)
+  end
+
+  defp destroy_entity_if_exists(entity_type, source_id) do
+    case Weakty.Content.Entity.get_entity_by_source(entity_type, source_id) do
+      {:ok, entity} -> Weakty.Content.Entity.delete_entity(entity)
+      {:error, %Ash.Error.Query.NotFound{}} -> :ok
+      {:error, _} -> :ok
+    end
   end
 
   defp load_tags(record) do
@@ -57,6 +81,12 @@ defmodule Weakty.Changes.SyncEntity do
         []
     end
   end
+
+  defp to_datetime(%Date{} = date) do
+    {:ok, dt, _} = DateTime.from_iso8601(Date.to_iso8601(date) <> "T00:00:00Z")
+    dt
+  end
+  defp to_datetime(value), do: value
 
   defp resolve_value(_record, nil), do: nil
   defp resolve_value(_record, value) when is_binary(value), do: value

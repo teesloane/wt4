@@ -1,6 +1,7 @@
 defmodule WeaktyWeb.MediaLogLive.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
+  require Logger
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
 
@@ -15,7 +16,6 @@ defmodule WeaktyWeb.MediaLogLive.Form do
           |> Ash.load!(:tags)
       end
 
-    # Extract existing tag names if editing
     existing_tags = if media_log, do: Enum.map(media_log.tags || [], & &1.name), else: []
 
     form =
@@ -35,7 +35,6 @@ defmodule WeaktyWeb.MediaLogLive.Form do
       |> Form.validate(%{})
       |> to_form()
 
-    # Get media_type from form to determine which date fields to show
     media_type = if media_log, do: media_log.media_type, else: :book
 
     {:ok,
@@ -56,400 +55,287 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-4xl px-4 py-8">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold">
-          <%= if @media_log, do: "Edit Media Log", else: "New Media Log" %>
-        </h1>
+    <div class="flex min-h-screen">
+      <!-- Main content area -->
+      <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
+        <div class="flex items-center gap-4 mb-8">
+          <.link navigate={~p"/admin/media-logs"} class="btn btn-ghost btn-sm">
+            <.icon name="hero-arrow-left" class="w-4 h-4" />
+            Media Logs
+          </.link>
+          <div class="text-sm text-base-content/70">
+            <%= if @media_log, do: "Editing", else: "New entry" %>
+          </div>
+          <div class="flex-1" />
+          <button type="submit" form="media-log-form" class="btn btn-primary btn-sm">
+            <%= if @media_log, do: "Update", else: "Create" %>
+          </button>
+        </div>
+
+        <.form
+          id="media-log-form"
+          for={@form}
+          phx-submit="save"
+          phx-change="validate"
+          class="space-y-6"
+        >
+          <input
+            type="text"
+            name={@form[:title].name}
+            value={@form[:title].value}
+            class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
+            placeholder="Title"
+            required
+          />
+          <textarea
+            name={@form[:notes].name}
+            class="textarea textarea-ghost w-full min-h-[500px] text-lg leading-relaxed px-0 focus:outline-none"
+            placeholder="Your notes and thoughts..."
+          ><%= @form[:notes].value %></textarea>
+        </.form>
       </div>
 
-      <%= if is_nil(@media_log) && search_available?(@media_type) do %>
-        <div class="card bg-base-200 mb-8">
-          <div class="card-body p-4 gap-3">
-            <h3 class="font-semibold text-sm">Search to auto-fill</h3>
-            <div class="join w-full">
-            <.form class="flex w-full">
-              <input
-                type="text"
-                value={@search_query}
-                phx-change="update_search_query"
-                phx-keydown="search_media"
-                phx-key="Enter"
-                name="search_query"
-                placeholder={"Search for a #{media_type_label(@media_type)}..."}
-                class="input input-bordered join-item w-full"
-              />
-              <button
-                type="button"
-                phx-click="search_media"
-                class="btn btn-secondary join-item"
-              >
-                Search
-              </button>
-              </.form>
-            </div>
-
-            <%= if length(@search_results) > 0 do %>
-              <div class="space-y-1 max-h-80 overflow-y-auto">
-                <%= for result <- @search_results do %>
-                  <div class="flex items-center gap-3 p-2 rounded hover:bg-base-300">
-                    <%= if result.cover_url do %>
-                      <img
-                        src={result.cover_url}
-                        alt={result.title}
-                        class="w-10 h-14 object-cover rounded flex-shrink-0"
-                      />
-                    <% else %>
-                      <div class="w-10 h-14 bg-base-300 rounded flex-shrink-0 flex items-center justify-center text-base-content/30 text-xs">
-                        ?
-                      </div>
-                    <% end %>
-                    <div class="flex-1 min-w-0">
-                      <div class="font-medium text-sm truncate"><%= result.title %></div>
-                      <div class="text-xs text-base-content/70 truncate">
-                        <%= Enum.join(result.creators, ", ") %>
-                      </div>
-                      <div class="text-xs text-base-content/50">
-                        <%= result.year %><%= if result.year && result.media_type, do: " · " %><%= media_type_label(result.media_type) %>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      phx-click="select_result"
-                      phx-value-id={result.external_id}
-                      class="btn btn-xs btn-primary flex-shrink-0"
-                    >
-                      Use
-                    </button>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-
-      <.form
-        for={@form}
-        phx-submit="save"
-        phx-change="validate"
-        class="space-y-6"
+      <!-- Sidebar -->
+      <div
+        class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-screen sticky top-0"
+        style="font-family: 'IBM Plex Sans', sans-serif;"
       >
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text text-sm font-semibold">Title *</span>
-            </label>
-            <input
-              type="text"
-              name={@form[:title].name}
-              value={@form[:title].value}
-              class="input input-bordered w-full text-xl"
-              placeholder="Enter title..."
-              required
-            />
-          </div>
+        <h2 class="text-xl font-bold mb-6">Details</h2>
 
-          <div class="form-control">
-            <label class="label">
+        <div class="space-y-4">
+          <!-- Search (new entries only) -->
+          <%= if is_nil(@media_log) && search_available?(@media_type) do %>
+            <div class="form-control mb-4">
+              <label class="label mb-1">
+                <span class="label-text text-sm font-semibold">Search to auto-fill</span>
+              </label>
+              <form phx-submit="search_media" phx-change="update_search_query" class="join w-full">
+                <input
+                  type="text"
+                  name="search_query"
+                  value={@search_query}
+                  placeholder={"Search for a #{media_type_label(@media_type)}..."}
+                  class="input input-bordered input-sm join-item flex-1"
+                />
+                <button type="submit" class="btn btn-sm btn-secondary join-item">
+                  Search
+                </button>
+              </form>
+              <%= if length(@search_results) > 0 do %>
+                <div class="space-y-1 max-h-60 overflow-y-auto mt-2">
+                  <%= for result <- @search_results do %>
+                    <div class="flex items-center gap-3 p-2 rounded hover:bg-base-300">
+                      <%= if result.cover_url do %>
+                        <img src={result.cover_url} alt={result.title} class="w-8 h-12 object-cover rounded flex-shrink-0" />
+                      <% else %>
+                        <div class="w-8 h-12 bg-base-300 rounded flex-shrink-0" />
+                      <% end %>
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-xs truncate"><%= result.title %></div>
+                        <div class="text-xs text-base-content/60 truncate"><%= Enum.join(result.creators, ", ") %></div>
+                      </div>
+                      <button
+                        type="button"
+                        phx-click="select_result"
+                        phx-value-id={result.external_id}
+                        class="btn btn-xs btn-primary flex-shrink-0"
+                      >
+                        Use
+                      </button>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+            <div class="divider"></div>
+          <% end %>
+
+          <!-- Slug -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Slug</span>
-              <span class="label-text-alt">Auto-generated if empty</span>
             </label>
             <input
               type="text"
+              form="media-log-form"
               name={@form[:slug].name}
               value={@form[:slug].value}
-              class="input input-bordered w-full"
+              class="input input-bordered input-sm w-full text-sm"
               placeholder="url-friendly-slug"
             />
           </div>
-        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text text-sm font-semibold">Media Type *</span>
+          <!-- Media Type -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">Media Type</span>
             </label>
             <select
+              form="media-log-form"
               name={@form[:media_type].name}
-              class="select select-bordered w-full"
-              phx-change="media_type_changed"
-              required
+              class="select select-bordered select-sm w-full text-sm"
             >
-              <option value="book" selected={@media_type == :book || @media_type == "book"}>
-                Book
-              </option>
-              <option value="comic" selected={@media_type == :comic || @media_type == "comic"}>
-                Comic
-              </option>
-              <option value="movie" selected={@media_type == :movie || @media_type == "movie"}>
-                Movie
-              </option>
-              <option value="music" selected={@media_type == :music || @media_type == "music"}>
-                Music
-              </option>
-              <option value="video_game" selected={@media_type == :video_game || @media_type == "video_game"}>
-                Video Game
-              </option>
+              <option value="book" selected={@media_type in [:book, "book"]}>Book</option>
+              <option value="comic" selected={@media_type in [:comic, "comic"]}>Comic</option>
+              <option value="movie" selected={@media_type in [:movie, "movie"]}>Movie</option>
+              <option value="music" selected={@media_type in [:music, "music"]}>Music</option>
+              <option value="video_game" selected={@media_type in [:video_game, "video_game"]}>Video Game</option>
             </select>
           </div>
 
-          <div class="form-control">
-            <label class="label">
+          <!-- Creator -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
               <span class="label-text text-sm font-semibold"><%= creator_label(@media_type) %></span>
             </label>
             <input
               type="text"
+              form="media-log-form"
               name={@form[:creator].name}
               value={@form[:creator].value}
-              class="input input-bordered w-full"
+              class="input input-bordered input-sm w-full text-sm"
               placeholder={creator_placeholder(@media_type)}
             />
           </div>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text text-sm font-semibold">Status *</span>
+          <!-- Status -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">Status</span>
             </label>
             <select
+              form="media-log-form"
               name={@form[:status].name}
-              class="select select-bordered w-full"
-              required
+              class="select select-bordered select-sm w-full text-sm"
             >
-              <option value="want_to_consume" selected={@form[:status].value == :want_to_consume || @form[:status].value == "want_to_consume"}>
+              <option value="want_to_consume" selected={@form[:status].value in [:want_to_consume, "want_to_consume"]}>
                 Want to <%= consume_verb(@media_type) %>
               </option>
-              <option value="consuming" selected={@form[:status].value == :consuming || @form[:status].value == "consuming"}>
+              <option value="consuming" selected={@form[:status].value in [:consuming, "consuming"]}>
                 Currently <%= consume_verb(@media_type, :ing) %>
               </option>
-              <option value="consumed" selected={@form[:status].value == :consumed || @form[:status].value == "consumed"}>
+              <option value="consumed" selected={@form[:status].value in [:consumed, "consumed"]}>
                 <%= consume_verb(@media_type, :past) %>
               </option>
-              <option value="on_hold" selected={@form[:status].value == :on_hold || @form[:status].value == "on_hold"}>
-                On Hold
-              </option>
-              <option value="abandoned" selected={@form[:status].value == :abandoned || @form[:status].value == "abandoned"}>
-                Abandoned
-              </option>
+              <option value="on_hold" selected={@form[:status].value in [:on_hold, "on_hold"]}>On Hold</option>
+              <option value="abandoned" selected={@form[:status].value in [:abandoned, "abandoned"]}>Abandoned</option>
             </select>
           </div>
-        </div>
 
-        <!-- Conditional Date Fields -->
-        <%= if @media_type in [:book, :comic, "book", "comic"] do %>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text text-sm font-semibold">Date Started</span>
-              </label>
-              <input
-                type="date"
-                name={@form[:date_started].name}
-                value={@form[:date_started].value}
-                class="input input-bordered w-full"
-              />
+          <!-- Date fields -->
+          <%= if @media_type in [:book, :comic, "book", "comic"] do %>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="form-control">
+                <label class="label mb-1">
+                  <span class="label-text text-sm font-semibold">Started</span>
+                </label>
+                <input type="date" form="media-log-form" name={@form[:date_started].name} value={@form[:date_started].value} class="input input-bordered input-sm w-full text-sm" />
+              </div>
+              <div class="form-control">
+                <label class="label mb-1">
+                  <span class="label-text text-sm font-semibold">Finished</span>
+                </label>
+                <input type="date" form="media-log-form" name={@form[:date_finished].name} value={@form[:date_finished].value} class="input input-bordered input-sm w-full text-sm" />
+              </div>
             </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text text-sm font-semibold">Date Finished</span>
-              </label>
-              <input
-                type="date"
-                name={@form[:date_finished].name}
-                value={@form[:date_finished].value}
-                class="input input-bordered w-full"
-              />
-            </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text text-sm font-semibold">Date Published</span>
-              </label>
-              <input
-                type="date"
-                name={@form[:date_published].name}
-                value={@form[:date_published].value}
-                class="input input-bordered w-full"
-              />
-            </div>
-          </div>
-        <% else %>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div class="form-control">
-              <label class="label">
+          <% else %>
+            <div class="form-control mb-4">
+              <label class="label mb-1">
                 <span class="label-text text-sm font-semibold"><%= date_consumed_label(@media_type) %></span>
               </label>
-              <input
-                type="date"
-                name={@form[:date_consumed].name}
-                value={@form[:date_consumed].value}
-                class="input input-bordered w-full"
-              />
-            </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text text-sm font-semibold">Date Published</span>
-              </label>
-              <input
-                type="date"
-                name={@form[:date_published].name}
-                value={@form[:date_published].value}
-                class="input input-bordered w-full"
-              />
-            </div>
-          </div>
-        <% end %>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text text-sm font-semibold">Rating</span>
-            <span class="label-text-alt">1-5 stars</span>
-          </label>
-          <select
-            name={@form[:rating].name}
-            class="select select-bordered w-full"
-          >
-            <option value="">No rating</option>
-            <option value="1" selected={@form[:rating].value == 1}>★</option>
-            <option value="2" selected={@form[:rating].value == 2}>★★</option>
-            <option value="3" selected={@form[:rating].value == 3}>★★★</option>
-            <option value="4" selected={@form[:rating].value == 4}>★★★★</option>
-            <option value="5" selected={@form[:rating].value == 5}>★★★★★</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text text-sm font-semibold">Thumbnail URL</span>
-              <span class="label-text-alt">Cover art, poster, or album art</span>
-            </label>
-            <input
-              type="url"
-              name={@form[:thumbnail_url].name}
-              value={@form[:thumbnail_url].value}
-              class="input input-bordered w-full"
-              placeholder="https://example.com/image.jpg"
-            />
-            <%= if @form[:thumbnail_url].value do %>
-              <div class="mt-2">
-                <img src={@form[:thumbnail_url].value} alt="Preview" class="w-32 h-auto rounded" />
-              </div>
-            <% end %>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text text-sm font-semibold">External URL</span>
-              <span class="label-text-alt">Link to Goodreads, IMDB, etc.</span>
-            </label>
-            <input
-              type="url"
-              name={@form[:external_url].name}
-              value={@form[:external_url].value}
-              class="input input-bordered w-full"
-              placeholder="https://www.goodreads.com/..."
-            />
-          </div>
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text text-sm font-semibold">Notes</span>
-            <span class="label-text-alt">Your thoughts and commentary</span>
-          </label>
-          <textarea
-            name={@form[:notes].name}
-            class="textarea textarea-bordered w-full h-32"
-            placeholder="Share your thoughts..."
-          ><%= @form[:notes].value %></textarea>
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text text-sm font-semibold">Tags</span>
-          </label>
-
-          <%= if length(@tags) > 0 do %>
-            <div class="flex flex-wrap gap-2 mb-2">
-              <%= for tag <- @tags do %>
-                <div class="badge badge-lg gap-2">
-                  <%= tag %>
-                  <button
-                    type="button"
-                    phx-click="remove_tag"
-                    phx-value-tag={tag}
-                    class="btn btn-xs btn-circle btn-ghost"
-                  >
-                    ✕
-                  </button>
-                </div>
-              <% end %>
+              <input type="date" form="media-log-form" name={@form[:date_consumed].name} value={@form[:date_consumed].value} class="input input-bordered input-sm w-full text-sm" />
             </div>
           <% end %>
 
-          <div class="join w-full">
-            <input
-              type="text"
-              value={@tag_input}
-              phx-change="update_tag_input"
-              name="tag_input"
-              placeholder="Add a tag (press Enter)"
-              class="input input-bordered join-item w-full"
-              phx-keydown="add_tag"
-              phx-key="Enter"
-            />
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">Date Published</span>
+            </label>
+            <input type="date" form="media-log-form" name={@form[:date_published].name} value={@form[:date_published].value} class="input input-bordered input-sm w-full text-sm" />
+          </div>
+
+          <!-- Rating -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">Rating</span>
+            </label>
+            <select form="media-log-form" name={@form[:rating].name} class="select select-bordered select-sm w-full text-sm">
+              <option value="">No rating</option>
+              <option value="1" selected={@form[:rating].value == 1}>★</option>
+              <option value="2" selected={@form[:rating].value == 2}>★★</option>
+              <option value="3" selected={@form[:rating].value == 3}>★★★</option>
+              <option value="4" selected={@form[:rating].value == 4}>★★★★</option>
+              <option value="5" selected={@form[:rating].value == 5}>★★★★★</option>
+            </select>
+          </div>
+
+          <!-- Thumbnail -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">Thumbnail URL</span>
+            </label>
+            <input type="url" form="media-log-form" name={@form[:thumbnail_url].name} value={@form[:thumbnail_url].value} class="input input-bordered input-sm w-full text-sm" placeholder="https://..." />
+            <%= if @form[:thumbnail_url].value do %>
+              <img src={@form[:thumbnail_url].value} alt="Preview" class="mt-2 w-20 h-auto rounded" />
+            <% end %>
+          </div>
+
+          <!-- External URL -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">External URL</span>
+            </label>
+            <input type="url" form="media-log-form" name={@form[:external_url].name} value={@form[:external_url].value} class="input input-bordered input-sm w-full text-sm" placeholder="https://www.goodreads.com/..." />
+          </div>
+
+          <!-- Tags -->
+          <div class="form-control mb-4">
+            <label class="label mb-1">
+              <span class="label-text text-sm font-semibold">Tags</span>
+            </label>
+            <%= if length(@tags) > 0 do %>
+              <div class="flex flex-wrap gap-1 mb-2">
+                <%= for tag <- @tags do %>
+                  <div class="badge badge-sm gap-1">
+                    <%= tag %>
+                    <button type="button" phx-click="remove_tag" phx-value-tag={tag} class="btn btn-xs btn-circle btn-ghost">✕</button>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+            <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
+              <input
+                type="text"
+                name="tag_input"
+                value={@tag_input}
+                placeholder="Add a tag"
+                class="input input-bordered input-sm join-item flex-1 text-sm"
+              />
+              <button type="submit" class="btn btn-sm btn-ghost join-item">Add</button>
+            </form>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Favourite + Public -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <.input field={@form[:favourite]} type="checkbox" label="Favourite" form="media-log-form" />
+            <.input field={@form[:public]} type="checkbox" label="Public" form="media-log-form" />
+          </div>
+
+          <%= if @media_log do %>
+            <div class="divider"></div>
             <button
               type="button"
-              phx-click="add_tag"
-              class="btn btn-primary join-item"
+              phx-click="delete_media_log"
+              data-confirm="Are you sure you want to delete this entry?"
+              class="btn btn-error btn-sm w-full"
             >
-              Add
+              Delete entry
             </button>
-          </div>
+          <% end %>
         </div>
-
-        <div class="divider"></div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="form-control">
-            <label class="label cursor-pointer">
-              <span class="label-text text-sm">Favourite</span>
-              <input
-                type="checkbox"
-                name={@form[:favourite].name}
-                checked={@form[:favourite].value}
-                class="checkbox"
-              />
-            </label>
-          </div>
-
-          <div class="form-control">
-            <label class="label cursor-pointer">
-              <span class="label-text text-sm">Public</span>
-              <input
-                type="checkbox"
-                name={@form[:public].name}
-                checked={@form[:public].value}
-                class="checkbox"
-              />
-            </label>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="flex gap-2">
-          <button type="submit" class="btn btn-primary">
-            <%= if @media_log, do: "Update Media Log", else: "Create Media Log" %>
-          </button>
-          <.link navigate={~p"/admin/media-logs"} class="btn btn-ghost">
-            Cancel
-          </.link>
-        </div>
-      </.form>
+      </div>
     </div>
     """
   end
@@ -457,20 +343,22 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   @impl true
   def handle_event("validate", %{"form" => params}, socket) do
     form = Form.validate(socket.assigns.form, params, errors: true)
-    {:noreply, assign(socket, form: form)}
-  end
 
-  def handle_event("media_type_changed", %{"form" => %{"media_type" => media_type}}, socket) do
-    media_type_atom = String.to_existing_atom(media_type)
-    {:noreply, assign(socket, media_type: media_type_atom)}
+    media_type =
+      case params["media_type"] do
+        mt when is_binary(mt) and mt != "" -> String.to_existing_atom(mt)
+        _ -> socket.assigns.media_type
+      end
+
+    {:noreply, assign(socket, form: form, media_type: media_type)}
   end
 
   def handle_event("update_tag_input", %{"tag_input" => value}, socket) do
     {:noreply, assign(socket, tag_input: value)}
   end
 
-  def handle_event("add_tag", _params, socket) do
-    tag = String.trim(socket.assigns.tag_input)
+  def handle_event("add_tag", %{"tag_input" => value}, socket) do
+    tag = String.trim(value)
 
     if tag != "" and tag not in socket.assigns.tags do
       {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "")}
@@ -487,30 +375,41 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, media_log} ->
         handle_tag_update(media_log, socket.assigns.tags)
-        {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
+        {:noreply,
+         socket
+         |> put_flash(:info, "Saved successfully.")
+         |> push_navigate(to: ~p"/admin/media-logs")}
 
       {:error, form} ->
-        {:noreply, assign(socket, form: to_form(form))}
+        Logger.error("MediaLog save failed: #{inspect(form.source.errors)}")
+        {:noreply,
+         socket
+         |> put_flash(:error, "Could not save. Please check the fields below.")
+         |> assign(form: to_form(form))}
+    end
+  end
+
+  def handle_event("delete_media_log", _params, socket) do
+    case Weakty.MediaLogs.MediaLog.delete_media_log(socket.assigns.media_log) do
+      :ok ->
+        {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
+
+      {:ok, _} ->
+        {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
+
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Failed to delete entry")}
     end
   end
 
   def handle_event("update_search_query", %{"search_query" => value}, socket) do
-    IO.inspect("update_seaerch_query call #{value}")
     {:noreply, assign(socket, search_query: value)}
   end
 
   def handle_event("search_media", _params, socket) do
-    query = socket.assigns.search_query
-
-    dbg(query)
-    case Weakty.Media.search(socket.assigns.media_type, query) do
-      {:ok, results} ->
-        # dbg()
-        {:noreply, assign(socket, search_results: results)}
-
-      {:error, _reason} ->
-        # dbg()
-        {:noreply, assign(socket, search_results: [])}
+    case Weakty.Media.search(socket.assigns.media_type, socket.assigns.search_query) do
+      {:ok, results} -> {:noreply, assign(socket, search_results: results)}
+      {:error, _} -> {:noreply, assign(socket, search_results: [])}
     end
   end
 
@@ -518,12 +417,10 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     result = Enum.find(socket.assigns.search_results, &(&1.external_id == external_id))
 
     if result do
-      creators_str = result.creators |> Enum.take(3) |> Enum.join(", ")
-
       params =
         %{
           "title" => result.title || "",
-          "creator" => creators_str,
+          "creator" => result.creators |> Enum.take(3) |> Enum.join(", "),
           "thumbnail_url" => result.cover_url || "",
           "media_type" => to_string(socket.assigns.media_type)
         }
@@ -543,77 +440,41 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     )
   end
 
-  # Helper functions for dynamic labels
   defp creator_label(media_type) do
     case media_type do
-      :book -> "Author"
-      "book" -> "Author"
-      :music -> "Artist"
-      "music" -> "Artist"
-      :movie -> "Director"
-      "movie" -> "Director"
-      :video_game -> "Developer"
-      "video_game" -> "Developer"
-      :comic -> "Author"
-      "comic" -> "Author"
+      t when t in [:book, "book", :comic, "comic"] -> "Author"
+      t when t in [:music, "music"] -> "Artist"
+      t when t in [:movie, "movie"] -> "Director"
+      t when t in [:video_game, "video_game"] -> "Developer"
       _ -> "Creator"
     end
   end
 
   defp creator_placeholder(media_type) do
     case media_type do
-      :book -> "e.g., Frank Herbert"
-      "book" -> "e.g., Frank Herbert"
-      :music -> "e.g., Radiohead"
-      "music" -> "e.g., Radiohead"
-      :movie -> "e.g., Denis Villeneuve"
-      "movie" -> "e.g., Denis Villeneuve"
-      :video_game -> "e.g., FromSoftware"
-      "video_game" -> "e.g., FromSoftware"
-      :comic -> "e.g., Alan Moore"
-      "comic" -> "e.g., Alan Moore"
+      t when t in [:book, "book"] -> "e.g., Frank Herbert"
+      t when t in [:music, "music"] -> "e.g., Radiohead"
+      t when t in [:movie, "movie"] -> "e.g., Denis Villeneuve"
+      t when t in [:video_game, "video_game"] -> "e.g., FromSoftware"
+      t when t in [:comic, "comic"] -> "e.g., Alan Moore"
       _ -> "Enter creator name"
     end
   end
 
   defp consume_verb(media_type, tense \\ :base) do
     case {media_type, tense} do
-      # Book
-      {:book, :base} -> "Read"
-      {"book", :base} -> "Read"
-      {:book, :ing} -> "Reading"
-      {"book", :ing} -> "Reading"
-      {:book, :past} -> "Read"
-      {"book", :past} -> "Read"
-      # Comic
-      {:comic, :base} -> "Read"
-      {"comic", :base} -> "Read"
-      {:comic, :ing} -> "Reading"
-      {"comic", :ing} -> "Reading"
-      {:comic, :past} -> "Read"
-      {"comic", :past} -> "Read"
-      # Movie
-      {:movie, :base} -> "Watch"
-      {"movie", :base} -> "Watch"
-      {:movie, :ing} -> "Watching"
-      {"movie", :ing} -> "Watching"
-      {:movie, :past} -> "Watched"
-      {"movie", :past} -> "Watched"
-      # Music
-      {:music, :base} -> "Listen"
-      {"music", :base} -> "Listen"
-      {:music, :ing} -> "Listening"
-      {"music", :ing} -> "Listening"
-      {:music, :past} -> "Listened"
-      {"music", :past} -> "Listened"
-      # Video Game
-      {:video_game, :base} -> "Play"
-      {"video_game", :base} -> "Play"
-      {:video_game, :ing} -> "Playing"
-      {"video_game", :ing} -> "Playing"
-      {:video_game, :past} -> "Played"
-      {"video_game", :past} -> "Played"
-      # Default
+      {t, :base} when t in [:book, "book", :comic, "comic"] -> "Read"
+      {t, :ing} when t in [:book, "book", :comic, "comic"] -> "Reading"
+      {t, :past} when t in [:book, "book", :comic, "comic"] -> "Read"
+      {t, :base} when t in [:movie, "movie"] -> "Watch"
+      {t, :ing} when t in [:movie, "movie"] -> "Watching"
+      {t, :past} when t in [:movie, "movie"] -> "Watched"
+      {t, :base} when t in [:music, "music"] -> "Listen"
+      {t, :ing} when t in [:music, "music"] -> "Listening"
+      {t, :past} when t in [:music, "music"] -> "Listened"
+      {t, :base} when t in [:video_game, "video_game"] -> "Play"
+      {t, :ing} when t in [:video_game, "video_game"] -> "Playing"
+      {t, :past} when t in [:video_game, "video_game"] -> "Played"
       {_, :base} -> "Consume"
       {_, :ing} -> "Consuming"
       {_, :past} -> "Consumed"
@@ -622,12 +483,9 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
   defp date_consumed_label(media_type) do
     case media_type do
-      :movie -> "Date Watched"
-      "movie" -> "Date Watched"
-      :music -> "Date Listened"
-      "music" -> "Date Listened"
-      :video_game -> "Date Played"
-      "video_game" -> "Date Played"
+      t when t in [:movie, "movie"] -> "Date Watched"
+      t when t in [:music, "music"] -> "Date Listened"
+      t when t in [:video_game, "video_game"] -> "Date Played"
       _ -> "Date Consumed"
     end
   end
@@ -638,17 +496,11 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
   defp media_type_label(media_type) do
     case media_type do
-      :book -> "book"
-      "book" -> "book"
-      :music -> "album"
-      "music" -> "album"
-      :movie -> "movie"
-      "movie" -> "movie"
-      :tv -> "TV show"
-      :comic -> "comic"
-      "comic" -> "comic"
-      :video_game -> "game"
-      "video_game" -> "game"
+      t when t in [:book, "book"] -> "book"
+      t when t in [:music, "music"] -> "album"
+      t when t in [:movie, "movie"] -> "movie"
+      t when t in [:comic, "comic"] -> "comic"
+      t when t in [:video_game, "video_game"] -> "game"
       _ -> "title"
     end
   end

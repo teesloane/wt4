@@ -210,14 +210,19 @@ defmodule ObsidianBookImporter do
         {:skip, "no book metadata (likely index or notes file)"}
 
       true ->
+        status        = extract_status(fm)
+        date_finished = parse_date(Map.get(fm, "finished") || Map.get(fm, "lastRead"))
+
         attrs = %{
           title:          title,
           media_type:     extract_media_type(fm),
-          status:         extract_status(fm),
+          status:         status,
           creator:        extract_author(fm),
           date_published: parse_date(Map.get(fm, "publish") || Map.get(fm, "year")),
           date_started:   parse_date(Map.get(fm, "started")),
-          date_finished:  parse_date(Map.get(fm, "finished") || Map.get(fm, "lastRead")),
+          date_finished:  date_finished,
+          # date_consumed drives entity creation; for books, mirror date_finished when consumed
+          date_consumed:  if(status == :consumed, do: date_finished, else: nil),
           rating:         extract_rating(fm),
           notes:          notes,
           thumbnail_url:  extract_cover(fm),
@@ -408,16 +413,18 @@ defmodule ObsidianBookImporter do
   end
 end
 
-# Entry point
-case System.argv() do
-  [books_dir, user_email] ->
-    ObsidianBookImporter.run(books_dir, user_email)
-  _ ->
-    IO.puts("""
-    Usage: mix run scripts/import_obsidian_books.exs <books_directory> <user_email>
+# Entry point — only runs when invoked directly (not when loaded via Code.require_file)
+if System.argv() != [] do
+  case System.argv() do
+    [books_dir, user_email] ->
+      ObsidianBookImporter.run(books_dir, user_email)
+    _ ->
+      IO.puts("""
+      Usage: mix run scripts/import_obsidian_books.exs <books_directory> <user_email>
 
-    Example:
-      mix run scripts/import_obsidian_books.exs docs/plans/books weakty@fastmail.com
-    """)
-    System.halt(1)
+      Example:
+        mix run scripts/import_obsidian_books.exs docs/plans/books weakty@fastmail.com
+      """)
+      System.halt(1)
+  end
 end

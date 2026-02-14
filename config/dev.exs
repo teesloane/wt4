@@ -69,7 +69,7 @@ config :weakty, WeaktyWeb.Endpoint,
   ]
 
 # Enable dev routes for dashboard and mailbox (Ash Admin disabled)
-config :weakty, dev_routes: false, token_signing_secret: "SF9pyLgFrxxVB/RbAY5vzxy0QxPstXi4"
+config :weakty, dev_routes: true, token_signing_secret: "SF9pyLgFrxxVB/RbAY5vzxy0QxPstXi4"
 
 config :weakty, tmdb_api_key: System.get_env("TMDB_API_KEY", "")
 

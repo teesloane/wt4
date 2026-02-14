@@ -164,14 +164,20 @@ defmodule Weakty.MediaLogs.MediaLog do
       )
 
       change fn changeset, _context ->
-        # Auto-generate slug from title if not provided
+        # Auto-generate slug from creator + title if not provided
         if Ash.Changeset.get_attribute(changeset, :slug) do
           changeset
         else
-          case Ash.Changeset.get_attribute(changeset, :title) do
+          title   = Ash.Changeset.get_attribute(changeset, :title)
+          creator = Ash.Changeset.get_attribute(changeset, :creator)
+
+          case title do
             nil -> changeset
-            title ->
-              slug = title
+            _ ->
+              slug =
+                [creator, title]
+                |> Enum.reject(&is_nil/1)
+                |> Enum.join(" ")
                 |> String.downcase()
                 |> String.replace(~r/[^a-z0-9]+/, "-")
                 |> String.trim("-")
@@ -187,6 +193,18 @@ defmodule Weakty.MediaLogs.MediaLog do
 
         if public && is_nil(published_at) do
           Ash.Changeset.force_change_attribute(changeset, :published_at, DateTime.utc_now())
+        else
+          changeset
+        end
+      end
+
+      change fn changeset, _context ->
+        # For books/comics, mirror date_finished → date_consumed so entity sync works
+        media_type = Ash.Changeset.get_attribute(changeset, :media_type)
+
+        if media_type in [:book, :comic] do
+          date_finished = Ash.Changeset.get_attribute(changeset, :date_finished)
+          Ash.Changeset.force_change_attribute(changeset, :date_consumed, date_finished)
         else
           changeset
         end
@@ -222,6 +240,18 @@ defmodule Weakty.MediaLogs.MediaLog do
           else
             changeset
           end
+        else
+          changeset
+        end
+      end
+
+      change fn changeset, _context ->
+        # For books/comics, mirror date_finished → date_consumed so entity sync works
+        media_type = Ash.Changeset.get_attribute(changeset, :media_type)
+
+        if media_type in [:book, :comic] do
+          date_finished = Ash.Changeset.get_attribute(changeset, :date_finished)
+          Ash.Changeset.force_change_attribute(changeset, :date_consumed, date_finished)
         else
           changeset
         end
@@ -282,7 +312,8 @@ defmodule Weakty.MediaLogs.MediaLog do
       status: :status,
       favourite: :favourite,
       public: :public,
-      published_at: :published_at
+      published_at: :date_consumed,
+      skip_if_nil: :date_consumed
     }, on: [:create, :update]
 
     change {Weakty.Changes.DestroyEntity,

@@ -43,3 +43,5 @@ npm-debug.log
 .DS_Store
 
 scripts/weakty-ghost.json
+seed/weakty-ghost.json
+seed/books
