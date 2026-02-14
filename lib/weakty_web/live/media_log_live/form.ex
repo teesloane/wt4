@@ -61,108 +61,112 @@ defmodule WeaktyWeb.MediaLogLive.Form do
         phx-change="validate"
         class="space-y-6"
       >
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Title *</span>
-          </label>
-          <input
-            type="text"
-            name={@form[:title].name}
-            value={@form[:title].value}
-            class="input input-bordered w-full text-xl"
-            placeholder="Enter title..."
-            required
-          />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold">Title *</span>
+            </label>
+            <input
+              type="text"
+              name={@form[:title].name}
+              value={@form[:title].value}
+              class="input input-bordered w-full text-xl"
+              placeholder="Enter title..."
+              required
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold">Slug</span>
+              <span class="label-text-alt">Auto-generated if empty</span>
+            </label>
+            <input
+              type="text"
+              name={@form[:slug].name}
+              value={@form[:slug].value}
+              class="input input-bordered w-full"
+              placeholder="url-friendly-slug"
+            />
+          </div>
         </div>
 
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Slug</span>
-            <span class="label-text-alt">Leave empty to auto-generate from title</span>
-          </label>
-          <input
-            type="text"
-            name={@form[:slug].name}
-            value={@form[:slug].value}
-            class="input input-bordered w-full"
-            placeholder="url-friendly-slug"
-          />
-        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold">Media Type *</span>
+            </label>
+            <select
+              name={@form[:media_type].name}
+              class="select select-bordered w-full"
+              phx-change="media_type_changed"
+              required
+            >
+              <option value="book" selected={@media_type == :book || @media_type == "book"}>
+                Book
+              </option>
+              <option value="comic" selected={@media_type == :comic || @media_type == "comic"}>
+                Comic
+              </option>
+              <option value="movie" selected={@media_type == :movie || @media_type == "movie"}>
+                Movie
+              </option>
+              <option value="music" selected={@media_type == :music || @media_type == "music"}>
+                Music
+              </option>
+              <option value="video_game" selected={@media_type == :video_game || @media_type == "video_game"}>
+                Video Game
+              </option>
+            </select>
+          </div>
 
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Media Type *</span>
-          </label>
-          <select
-            name={@form[:media_type].name}
-            class="select select-bordered w-full"
-            phx-change="media_type_changed"
-            required
-          >
-            <option value="book" selected={@media_type == :book || @media_type == "book"}>
-              Book
-            </option>
-            <option value="comic" selected={@media_type == :comic || @media_type == "comic"}>
-              Comic
-            </option>
-            <option value="movie" selected={@media_type == :movie || @media_type == "movie"}>
-              Movie
-            </option>
-            <option value="music" selected={@media_type == :music || @media_type == "music"}>
-              Music
-            </option>
-            <option value="video_game" selected={@media_type == :video_game || @media_type == "video_game"}>
-              Video Game
-            </option>
-          </select>
-        </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold"><%= creator_label(@media_type) %></span>
+            </label>
+            <input
+              type="text"
+              name={@form[:creator].name}
+              value={@form[:creator].value}
+              class="input input-bordered w-full"
+              placeholder={creator_placeholder(@media_type)}
+            />
+          </div>
 
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold"><%= creator_label(@media_type) %></span>
-          </label>
-          <input
-            type="text"
-            name={@form[:creator].name}
-            value={@form[:creator].value}
-            class="input input-bordered w-full"
-            placeholder={creator_placeholder(@media_type)}
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Status *</span>
-          </label>
-          <select
-            name={@form[:status].name}
-            class="select select-bordered w-full"
-            required
-          >
-            <option value="want_to_consume" selected={@form[:status].value == :want_to_consume || @form[:status].value == "want_to_consume"}>
-              Want to <%= consume_verb(@media_type) %>
-            </option>
-            <option value="consuming" selected={@form[:status].value == :consuming || @form[:status].value == "consuming"}>
-              Currently <%= consume_verb(@media_type, :ing) %>
-            </option>
-            <option value="consumed" selected={@form[:status].value == :consumed || @form[:status].value == "consumed"}>
-              <%= consume_verb(@media_type, :past) %>
-            </option>
-            <option value="on_hold" selected={@form[:status].value == :on_hold || @form[:status].value == "on_hold"}>
-              On Hold
-            </option>
-            <option value="abandoned" selected={@form[:status].value == :abandoned || @form[:status].value == "abandoned"}>
-              Abandoned
-            </option>
-          </select>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold">Status *</span>
+            </label>
+            <select
+              name={@form[:status].name}
+              class="select select-bordered w-full"
+              required
+            >
+              <option value="want_to_consume" selected={@form[:status].value == :want_to_consume || @form[:status].value == "want_to_consume"}>
+                Want to <%= consume_verb(@media_type) %>
+              </option>
+              <option value="consuming" selected={@form[:status].value == :consuming || @form[:status].value == "consuming"}>
+                Currently <%= consume_verb(@media_type, :ing) %>
+              </option>
+              <option value="consumed" selected={@form[:status].value == :consumed || @form[:status].value == "consumed"}>
+                <%= consume_verb(@media_type, :past) %>
+              </option>
+              <option value="on_hold" selected={@form[:status].value == :on_hold || @form[:status].value == "on_hold"}>
+                On Hold
+              </option>
+              <option value="abandoned" selected={@form[:status].value == :abandoned || @form[:status].value == "abandoned"}>
+                Abandoned
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Conditional Date Fields -->
         <%= if @media_type in [:book, :comic, "book", "comic"] do %>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="form-control">
               <label class="label">
-                <span class="label-text font-semibold">Date Started</span>
+                <span class="label-text text-sm font-semibold">Date Started</span>
               </label>
               <input
                 type="date"
@@ -174,7 +178,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
             <div class="form-control">
               <label class="label">
-                <span class="label-text font-semibold">Date Finished</span>
+                <span class="label-text text-sm font-semibold">Date Finished</span>
               </label>
               <input
                 type="date"
@@ -183,37 +187,50 @@ defmodule WeaktyWeb.MediaLogLive.Form do
                 class="input input-bordered w-full"
               />
             </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text text-sm font-semibold">Date Published</span>
+              </label>
+              <input
+                type="date"
+                name={@form[:date_published].name}
+                value={@form[:date_published].value}
+                class="input input-bordered w-full"
+              />
+            </div>
           </div>
         <% else %>
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold"><%= date_consumed_label(@media_type) %></span>
-            </label>
-            <input
-              type="date"
-              name={@form[:date_consumed].name}
-              value={@form[:date_consumed].value}
-              class="input input-bordered w-full"
-            />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text text-sm font-semibold"><%= date_consumed_label(@media_type) %></span>
+              </label>
+              <input
+                type="date"
+                name={@form[:date_consumed].name}
+                value={@form[:date_consumed].value}
+                class="input input-bordered w-full"
+              />
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text text-sm font-semibold">Date Published</span>
+              </label>
+              <input
+                type="date"
+                name={@form[:date_published].name}
+                value={@form[:date_published].value}
+                class="input input-bordered w-full"
+              />
+            </div>
           </div>
         <% end %>
 
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-semibold">Date Published</span>
-            <span class="label-text-alt">When the media was originally released</span>
-          </label>
-          <input
-            type="date"
-            name={@form[:date_published].name}
-            value={@form[:date_published].value}
-            class="input input-bordered w-full"
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Rating</span>
+            <span class="label-text text-sm font-semibold">Rating</span>
             <span class="label-text-alt">1-5 stars</span>
           </label>
           <select
@@ -229,42 +246,44 @@ defmodule WeaktyWeb.MediaLogLive.Form do
           </select>
         </div>
 
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Thumbnail URL</span>
-            <span class="label-text-alt">Cover art, poster, or album art</span>
-          </label>
-          <input
-            type="url"
-            name={@form[:thumbnail_url].name}
-            value={@form[:thumbnail_url].value}
-            class="input input-bordered w-full"
-            placeholder="https://example.com/image.jpg"
-          />
-          <%= if @form[:thumbnail_url].value do %>
-            <div class="mt-2">
-              <img src={@form[:thumbnail_url].value} alt="Preview" class="w-32 h-auto rounded" />
-            </div>
-          <% end %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold">Thumbnail URL</span>
+              <span class="label-text-alt">Cover art, poster, or album art</span>
+            </label>
+            <input
+              type="url"
+              name={@form[:thumbnail_url].name}
+              value={@form[:thumbnail_url].value}
+              class="input input-bordered w-full"
+              placeholder="https://example.com/image.jpg"
+            />
+            <%= if @form[:thumbnail_url].value do %>
+              <div class="mt-2">
+                <img src={@form[:thumbnail_url].value} alt="Preview" class="w-32 h-auto rounded" />
+              </div>
+            <% end %>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm font-semibold">External URL</span>
+              <span class="label-text-alt">Link to Goodreads, IMDB, etc.</span>
+            </label>
+            <input
+              type="url"
+              name={@form[:external_url].name}
+              value={@form[:external_url].value}
+              class="input input-bordered w-full"
+              placeholder="https://www.goodreads.com/..."
+            />
+          </div>
         </div>
 
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-semibold">External URL</span>
-            <span class="label-text-alt">Link to Goodreads, IMDB, etc.</span>
-          </label>
-          <input
-            type="url"
-            name={@form[:external_url].name}
-            value={@form[:external_url].value}
-            class="input input-bordered w-full"
-            placeholder="https://www.goodreads.com/..."
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-semibold">Notes</span>
+            <span class="label-text text-sm font-semibold">Notes</span>
             <span class="label-text-alt">Your thoughts and commentary</span>
           </label>
           <textarea
@@ -276,7 +295,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-semibold">Tags</span>
+            <span class="label-text text-sm font-semibold">Tags</span>
           </label>
 
           <%= if length(@tags) > 0 do %>
@@ -323,7 +342,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="form-control">
             <label class="label cursor-pointer">
-              <span class="label-text">Favourite</span>
+              <span class="label-text text-sm">Favourite</span>
               <input
                 type="checkbox"
                 name={@form[:favourite].name}
@@ -335,7 +354,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
           <div class="form-control">
             <label class="label cursor-pointer">
-              <span class="label-text">Public</span>
+              <span class="label-text text-sm">Public</span>
               <input
                 type="checkbox"
                 name={@form[:public].name}
