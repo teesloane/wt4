@@ -28,6 +28,8 @@ config :weakty, WeaktyWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:weakty, ~w(--watch)]}
   ]
 
+config :live_debugger, port: 4019
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
