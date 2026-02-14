@@ -40,7 +40,15 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
     {:ok,
      socket
-     |> assign(form: form, media_log: media_log, tags: existing_tags, tag_input: "", media_type: media_type)
+     |> assign(
+       form: form,
+       media_log: media_log,
+       tags: existing_tags,
+       tag_input: "",
+       media_type: media_type,
+       search_query: "",
+       search_results: []
+     )
      |> assign(:current_path, "/admin/media-logs"),
      layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -54,6 +62,72 @@ defmodule WeaktyWeb.MediaLogLive.Form do
           <%= if @media_log, do: "Edit Media Log", else: "New Media Log" %>
         </h1>
       </div>
+
+      <%= if is_nil(@media_log) && search_available?(@media_type) do %>
+        <div class="card bg-base-200 mb-8">
+          <div class="card-body p-4 gap-3">
+            <h3 class="font-semibold text-sm">Search to auto-fill</h3>
+            <div class="join w-full">
+            <.form class="flex w-full">
+              <input
+                type="text"
+                value={@search_query}
+                phx-change="update_search_query"
+                phx-keydown="search_media"
+                phx-key="Enter"
+                name="search_query"
+                placeholder={"Search for a #{media_type_label(@media_type)}..."}
+                class="input input-bordered join-item w-full"
+              />
+              <button
+                type="button"
+                phx-click="search_media"
+                class="btn btn-secondary join-item"
+              >
+                Search
+              </button>
+              </.form>
+            </div>
+
+            <%= if length(@search_results) > 0 do %>
+              <div class="space-y-1 max-h-80 overflow-y-auto">
+                <%= for result <- @search_results do %>
+                  <div class="flex items-center gap-3 p-2 rounded hover:bg-base-300">
+                    <%= if result.cover_url do %>
+                      <img
+                        src={result.cover_url}
+                        alt={result.title}
+                        class="w-10 h-14 object-cover rounded flex-shrink-0"
+                      />
+                    <% else %>
+                      <div class="w-10 h-14 bg-base-300 rounded flex-shrink-0 flex items-center justify-center text-base-content/30 text-xs">
+                        ?
+                      </div>
+                    <% end %>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-medium text-sm truncate"><%= result.title %></div>
+                      <div class="text-xs text-base-content/70 truncate">
+                        <%= Enum.join(result.creators, ", ") %>
+                      </div>
+                      <div class="text-xs text-base-content/50">
+                        <%= result.year %><%= if result.year && result.media_type, do: " · " %><%= media_type_label(result.media_type) %>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      phx-click="select_result"
+                      phx-value-id={result.external_id}
+                      class="btn btn-xs btn-primary flex-shrink-0"
+                    >
+                      Use
+                    </button>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
 
       <.form
         for={@form}
@@ -428,6 +502,48 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     end
   end
 
+  def handle_event("update_search_query", %{"search_query" => value}, socket) do
+    IO.inspect("update_seaerch_query call #{value}")
+    {:noreply, assign(socket, search_query: value)}
+  end
+
+  def handle_event("search_media", _params, socket) do
+    query = socket.assigns.search_query
+
+    dbg(query)
+    case Weakty.Media.search(socket.assigns.media_type, query) do
+      {:ok, results} ->
+        # dbg()
+        {:noreply, assign(socket, search_results: results)}
+
+      {:error, _reason} ->
+        # dbg()
+        {:noreply, assign(socket, search_results: [])}
+    end
+  end
+
+  def handle_event("select_result", %{"id" => external_id}, socket) do
+    result = Enum.find(socket.assigns.search_results, &(&1.external_id == external_id))
+
+    if result do
+      creators_str = result.creators |> Enum.take(3) |> Enum.join(", ")
+
+      params =
+        %{
+          "title" => result.title || "",
+          "creator" => creators_str,
+          "thumbnail_url" => result.cover_url || "",
+          "media_type" => to_string(socket.assigns.media_type)
+        }
+        |> maybe_put_date("date_published", result.year)
+
+      form = socket.assigns.form |> Form.validate(params, errors: false) |> to_form()
+      {:noreply, assign(socket, form: form, search_results: [])}
+    else
+      {:noreply, socket}
+    end
+  end
+
   defp handle_tag_update(media_log, tags) do
     if length(tags) > 0 do
       tags_param = Enum.map(tags, &%{name: &1})
@@ -528,4 +644,39 @@ defmodule WeaktyWeb.MediaLogLive.Form do
       _ -> "Date Consumed"
     end
   end
+
+  defp search_available?(media_type) do
+    media_type in [:book, :music, :movie, "book", "music", "movie"]
+  end
+
+  defp media_type_label(media_type) do
+    case media_type do
+      :book -> "book"
+      "book" -> "book"
+      :music -> "album"
+      "music" -> "album"
+      :movie -> "movie"
+      "movie" -> "movie"
+      :tv -> "TV show"
+      :comic -> "comic"
+      "comic" -> "comic"
+      :video_game -> "game"
+      "video_game" -> "game"
+      _ -> "title"
+    end
+  end
+
+  defp maybe_put_date(params, key, year) when is_binary(year) do
+    date =
+      cond do
+        String.match?(year, ~r/^\d{4}-\d{2}-\d{2}$/) -> year
+        String.match?(year, ~r/^\d{4}-\d{2}$/) -> "#{year}-01"
+        String.match?(year, ~r/^\d{4}$/) -> "#{year}-01-01"
+        true -> nil
+      end
+
+    if date, do: Map.put(params, key, date), else: params
+  end
+
+  defp maybe_put_date(params, _key, _year), do: params
 end

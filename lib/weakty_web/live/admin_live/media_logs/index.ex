@@ -193,7 +193,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                         <span class="text-base-content/50">-</span>
                     <% end %>
                   </td>
-                  <td onclick="event.stopPropagation()">
+                  <td>
                     <div class="flex gap-2">
                       <.link
                         navigate={~p"/admin/media-logs/#{media_log.id}/edit"}

@@ -67,6 +67,8 @@ if config_env() == :prod do
       System.get_env("TOKEN_SIGNING_SECRET") ||
         raise("Missing environment variable `TOKEN_SIGNING_SECRET`!")
 
+  config :weakty, tmdb_api_key: System.get_env("TMDB_API_KEY", "")
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
