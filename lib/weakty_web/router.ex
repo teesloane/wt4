@@ -34,6 +34,7 @@ defmodule WeaktyWeb.Router do
     ash_authentication_live_session :authenticated_routes do
       live "/now", UpdateLive.Index, :index
       live "/links", LinkLive.Index, :index
+      live "/links/:slug", LinkLive.Show, :show
       live "/posts", PostLive.Index, :index
       live "/posts/:slug", PostLive.Show, :show
       live "/projects", ProjectLive.Index, :index
@@ -72,6 +73,7 @@ defmodule WeaktyWeb.Router do
       live "/media-logs/new", MediaLogLive.Form, :new
       live "/media-logs/:id/edit", MediaLogLive.Form, :edit
       live "/tags", AdminLive.Tags.Index, :index
+      live "/entities", AdminLive.Entities.Index, :index
     end
   end
 

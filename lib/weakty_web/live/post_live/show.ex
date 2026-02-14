@@ -66,7 +66,7 @@ defmodule WeaktyWeb.PostLive.Show do
       <%= if @current_user && @current_user.id == @post.user_id do %>
         <div class="border-t border-base-300 mt-16 pt-8 text-center">
           <div class="flex gap-3 justify-center">
-            <.link navigate={~p"/admin/posts/#{@post.slug}/edit"} class="btn btn-primary btn-sm">
+            <.link navigate={~p"/admin/posts/#{@post.id}/edit"} class="btn btn-primary btn-sm">
               Edit Post
             </.link>
             <%= if @post.status == :draft do %>
