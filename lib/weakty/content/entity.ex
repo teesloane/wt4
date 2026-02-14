@@ -103,6 +103,10 @@ defmodule Weakty.Content.Entity do
                       :published_at, :public, :updated_at]
     end
 
+    update :update_tags do
+      accept [:tags]
+    end
+
     read :timeline do
       prepare build(sort: [published_at: :desc])
     end
@@ -119,6 +123,7 @@ defmodule Weakty.Content.Entity do
     define :list_entities, action: :timeline
     define :get_entity_by_source, action: :by_source, args: [:entity_type, :source_id]
     define :upsert_entity, action: :create
+    define :update_entity_tags, action: :update_tags
     define :delete_entity, action: :destroy
   end
 
