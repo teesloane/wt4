@@ -57,35 +57,37 @@ defmodule WeaktyWeb.LinkLive.Form do
         phx-change="validate"
         class="space-y-4"
       >
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">URL</span>
-          </label>
-          <input
-            type="url"
-            name={@form[:url].name}
-            value={@form[:url].value}
-            class="input input-bordered w-full"
-            required
-          />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm">URL</span>
+            </label>
+            <input
+              type="url"
+              name={@form[:url].name}
+              value={@form[:url].value}
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text text-sm">Title</span>
+            </label>
+            <input
+              type="text"
+              name={@form[:title].name}
+              value={@form[:title].value}
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
         </div>
 
         <div class="form-control">
           <label class="label">
-            <span class="label-text">Title</span>
-          </label>
-          <input
-            type="text"
-            name={@form[:title].name}
-            value={@form[:title].value}
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Commentary</span>
+            <span class="label-text text-sm">Commentary</span>
           </label>
           <textarea
             name={@form[:commentary].name}
@@ -95,7 +97,7 @@ defmodule WeaktyWeb.LinkLive.Form do
 
         <div class="form-control">
           <label class="label">
-            <span class="label-text">Tags</span>
+            <span class="label-text text-sm">Tags</span>
           </label>
 
           <%= if length(@tags) > 0 do %>

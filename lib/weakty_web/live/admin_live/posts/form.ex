@@ -333,42 +333,43 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
           <div class="divider"></div>
 
-          <!-- Post Type -->
-          <div class="form-control mb-4">
-            <label class="label mb-2">
-              <span class="label-text text-sm font-semibold">Post Type</span>
-            </label>
-            <select
-              form="post-form"
-              name={@form[:post_type].name}
-              class="select select-bordered select-sm w-full text-sm"
-            >
-              <option value="post" selected={@form[:post_type].value == :post || @form[:post_type].value == "post"}>
-                Post
-              </option>
-              <option value="update" selected={@form[:post_type].value == :update || @form[:post_type].value == "update"}>
-                Update
-              </option>
-            </select>
-          </div>
+          <!-- Post Type + Status -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="form-control">
+              <label class="label mb-2">
+                <span class="label-text text-sm font-semibold">Post Type</span>
+              </label>
+              <select
+                form="post-form"
+                name={@form[:post_type].name}
+                class="select select-bordered select-sm w-full text-sm"
+              >
+                <option value="post" selected={@form[:post_type].value == :post || @form[:post_type].value == "post"}>
+                  Post
+                </option>
+                <option value="update" selected={@form[:post_type].value == :update || @form[:post_type].value == "update"}>
+                  Update
+                </option>
+              </select>
+            </div>
 
-          <!-- Status -->
-          <div class="form-control mb-4">
-            <label class="label mb-2">
-              <span class="label-text text-sm font-semibold">Status</span>
-            </label>
-            <select
-              form="post-form"
-              name={@form[:status].name}
-              class="select select-bordered select-sm w-full text-sm"
-            >
-              <option value="draft" selected={@form[:status].value == :draft || @form[:status].value == "draft"}>
-                Draft
-              </option>
-              <option value="published" selected={@form[:status].value == :published || @form[:status].value == "published"}>
-                Published
-              </option>
-            </select>
+            <div class="form-control">
+              <label class="label mb-2">
+                <span class="label-text text-sm font-semibold">Status</span>
+              </label>
+              <select
+                form="post-form"
+                name={@form[:status].name}
+                class="select select-bordered select-sm w-full text-sm"
+              >
+                <option value="draft" selected={@form[:status].value == :draft || @form[:status].value == "draft"}>
+                  Draft
+                </option>
+                <option value="published" selected={@form[:status].value == :published || @form[:status].value == "published"}>
+                  Published
+                </option>
+              </select>
+            </div>
           </div>
 
           <!-- Access and Featured -->
