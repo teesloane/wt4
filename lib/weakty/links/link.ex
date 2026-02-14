@@ -59,14 +59,19 @@ defmodule Weakty.Links.Link do
   end
 
   actions do
-    defaults [:read, :destroy]
+    defaults [:read]
+
+    destroy :destroy do
+      primary? true
+      require_atomic? false
+    end
 
     read :get_by_slug do
       get_by :slug
     end
 
     create :create do
-      accept [:url, :title, :commentary, :slug, :user_id]
+      accept [:url, :title, :commentary, :slug, :user_id, :public]
 
       argument :tags, {:array, :map} do
         allow_nil? true
@@ -75,8 +80,8 @@ defmodule Weakty.Links.Link do
       change manage_relationship(:tags, :tags,
         type: :append_and_remove,
         value_is_key: :name,
-        on_lookup: {:relate, :read, :read, []},
-        on_no_match: {:create, :create, :create, []},
+        on_lookup: :relate,
+        on_no_match: :create,
         use_identities: [:unique_name]
       )
 
@@ -95,7 +100,8 @@ defmodule Weakty.Links.Link do
     end
 
     update :update do
-      accept [:url, :title, :commentary]
+      accept [:url, :title, :commentary, :public]
+      require_atomic? false
 
       argument :tags, {:array, :map} do
         allow_nil? true
@@ -104,8 +110,8 @@ defmodule Weakty.Links.Link do
       change manage_relationship(:tags, :tags,
         type: :append_and_remove,
         value_is_key: :name,
-        on_lookup: {:relate, :read, :read, []},
-        on_no_match: {:create, :create, :create, []},
+        on_lookup: :relate,
+        on_no_match: :create,
         use_identities: [:unique_name]
       )
     end

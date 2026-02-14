@@ -17,6 +17,7 @@ defmodule Weakty.MediaLogs.MediaLogTag do
     belongs_to :media_log, Weakty.MediaLogs.MediaLog do
       allow_nil? false
       attribute_writable? true
+      attribute_public? true
     end
 
     belongs_to :tag, Weakty.Tags.Tag do

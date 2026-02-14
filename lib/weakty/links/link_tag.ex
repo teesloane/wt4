@@ -17,6 +17,7 @@ defmodule Weakty.Links.LinkTag do
     belongs_to :link, Weakty.Links.Link do
       allow_nil? false
       attribute_writable? true
+      attribute_public? true
     end
 
     belongs_to :tag, Weakty.Tags.Tag do

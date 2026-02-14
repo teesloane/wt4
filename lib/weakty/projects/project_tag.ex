@@ -17,6 +17,7 @@ defmodule Weakty.Projects.ProjectTag do
     belongs_to :project, Weakty.Projects.Project do
       allow_nil? false
       attribute_writable? true
+      attribute_public? true
     end
 
     belongs_to :tag, Weakty.Tags.Tag do

@@ -44,6 +44,12 @@ defmodule Weakty.Tags.Tag do
       source_attribute_on_join_resource :tag_id
       destination_attribute_on_join_resource :media_log_id
     end
+
+    many_to_many :projects, Weakty.Projects.Project do
+      through Weakty.Projects.ProjectTag
+      source_attribute_on_join_resource :tag_id
+      destination_attribute_on_join_resource :project_id
+    end
   end
 
   identities do
