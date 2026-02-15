@@ -207,11 +207,11 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
     sorted =
       Enum.sort_by(list, fn e ->
         case sort_by do
-          "entity_type" -> to_string(e.entity_type)
-          "title"       -> String.downcase(e.title || e.slug || "")
-          "public"      -> if(e.public, do: 1, else: 0)
-          "published_at" -> e.published_at || ~U[0001-01-01 00:00:00Z]
-          _             -> e.published_at || ~U[0001-01-01 00:00:00Z]
+          "entity_type"  -> to_string(e.entity_type)
+          "title"        -> String.downcase(e.title || e.slug || "")
+          "public"       -> if(e.public, do: 1, else: 0)
+          _              ->
+            if e.published_at, do: DateTime.to_unix(e.published_at, :microsecond), else: 0
         end
       end)
 

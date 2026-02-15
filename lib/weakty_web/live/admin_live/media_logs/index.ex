@@ -90,6 +90,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
           <input
             type="text"
             value={@search}
+            name="q"
             placeholder="Search title or creator..."
             phx-debounce="200"
             class="input input-bordered input-sm w-full"
@@ -294,8 +295,11 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
           "media_type" -> to_string(ml.media_type)
           "status"     -> to_string(ml.status)
           "rating"     -> ml.rating || 0
-          "date"       -> ml.date_finished || ml.date_consumed || ml.date_started || ~D[0001-01-01]
-          _            -> ml.updated_at
+          "date"       ->
+            date = ml.date_finished || ml.date_consumed || ml.date_started
+            if date, do: Date.to_gregorian_days(date), else: 0
+          _ ->
+            if ml.updated_at, do: DateTime.to_unix(ml.updated_at, :microsecond), else: 0
         end
       end)
 
