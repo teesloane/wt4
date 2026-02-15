@@ -12,15 +12,30 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
      |> assign(:page_title, "Entities")
      |> assign(:current_path, "/admin/entities")
      |> assign(:filter_type, "all")
+     |> assign(:search, "")
+     |> assign(:sort_by, "published_at")
+     |> assign(:sort_dir, "desc")
      |> load_entities(), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
   def handle_event("filter", %{"type" => type}, socket) do
-    {:noreply,
-     socket
-     |> assign(:filter_type, type)
-     |> load_entities(type)}
+    {:noreply, socket |> assign(:filter_type, type) |> load_entities()}
+  end
+
+  def handle_event("search", %{"q" => q}, socket) do
+    {:noreply, socket |> assign(:search, q) |> load_entities()}
+  end
+
+  def handle_event("sort", %{"col" => col}, socket) do
+    {sort_by, sort_dir} =
+      if socket.assigns.sort_by == col do
+        {col, if(socket.assigns.sort_dir == "asc", do: "desc", else: "asc")}
+      else
+        {col, "asc"}
+      end
+
+    {:noreply, socket |> assign(:sort_by, sort_by) |> assign(:sort_dir, sort_dir) |> load_entities()}
   end
 
   @impl true
@@ -46,11 +61,24 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
     </.admin_header>
 
     <div class="p-8">
+      <div class="mb-6">
+        <form phx-change="search" class="max-w-sm">
+          <input
+            type="text"
+            name="q"
+            value={@search}
+            placeholder="Search by title..."
+            phx-debounce="200"
+            class="input input-bordered input-sm w-full"
+          />
+        </form>
+      </div>
+
       <%= if @entities == [] do %>
         <div class="card bg-base-200 shadow-sm">
           <div class="card-body items-center text-center">
             <.icon name="hero-square-3-stack-3d" class="w-16 h-16 text-base-content/30" />
-            <h2 class="card-title">No entities</h2>
+            <h2 class="card-title">No results</h2>
             <p class="text-base-content/70">Entities are created automatically when you publish content</p>
           </div>
         </div>
@@ -59,11 +87,11 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
           <table class="table table-zebra">
             <thead>
               <tr>
-                <th>Type</th>
-                <th>Title</th>
+                <.sort_th col="entity_type" label="Type" sort_by={@sort_by} sort_dir={@sort_dir} />
+                <.sort_th col="title" label="Title" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <th>Tags</th>
-                <th>Public</th>
-                <th>Published</th>
+                <.sort_th col="public" label="Public" sort_by={@sort_by} sort_dir={@sort_dir} />
+                <.sort_th col="published_at" label="Published" sort_by={@sort_by} sort_dir={@sort_dir} />
               </tr>
             </thead>
             <tbody>
@@ -128,8 +156,26 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
     """
   end
 
-  defp load_entities(socket, type \\ nil) do
-    type = type || socket.assigns[:filter_type] || "all"
+  defp sort_th(assigns) do
+    ~H"""
+    <th
+      class="cursor-pointer select-none hover:bg-base-300 whitespace-nowrap"
+      phx-click="sort"
+      phx-value-col={@col}
+    >
+      <%= @label %>
+      <%= if @sort_by == @col do %>
+        <span class="text-primary ml-1"><%= if @sort_dir == "asc", do: "↑", else: "↓" %></span>
+      <% end %>
+    </th>
+    """
+  end
+
+  defp load_entities(socket) do
+    type = socket.assigns[:filter_type] || "all"
+    search = socket.assigns[:search] || ""
+    sort_by = socket.assigns[:sort_by] || "published_at"
+    sort_dir = socket.assigns[:sort_dir] || "desc"
 
     entities =
       Weakty.Content.Entity
@@ -143,16 +189,39 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
       end)
       |> Ash.Query.sort(published_at: :desc)
       |> Ash.read!(domain: Weakty.Content)
+      |> filter_by_search(search)
+      |> sort_results(sort_by, sort_dir)
 
     assign(socket, :entities, entities)
   end
 
+  defp filter_by_search(list, ""), do: list
+  defp filter_by_search(list, q) do
+    q = String.downcase(q)
+    Enum.filter(list, fn e ->
+      String.contains?(String.downcase(e.title || e.slug || ""), q)
+    end)
+  end
+
+  defp sort_results(list, sort_by, sort_dir) do
+    sorted =
+      Enum.sort_by(list, fn e ->
+        case sort_by do
+          "entity_type" -> to_string(e.entity_type)
+          "title"       -> String.downcase(e.title || e.slug || "")
+          "public"      -> if(e.public, do: 1, else: 0)
+          "published_at" -> e.published_at || ~U[0001-01-01 00:00:00Z]
+          _             -> e.published_at || ~U[0001-01-01 00:00:00Z]
+        end
+      end)
+
+    if sort_dir == "desc", do: Enum.reverse(sorted), else: sorted
+  end
+
   defp type_badge_class(type) do
     case to_string(type) do
-      "post" -> "badge-primary"
-      "link" -> "badge-secondary"
-      "project" -> "badge-accent"
-      "media_log" -> "badge-info"
+      "post" -> "badge-primary"; "link" -> "badge-secondary"
+      "project" -> "badge-accent"; "media_log" -> "badge-info"
       _ -> "badge-ghost"
     end
   end
