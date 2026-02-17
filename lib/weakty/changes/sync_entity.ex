@@ -22,9 +22,6 @@ defmodule Weakty.Changes.SyncEntity do
       else
         max_len = opts[:content_max_length] || 280
 
-        # Load tags if the record has a tags relationship
-        tags = load_tags(record)
-
         entity_params = %{
           entity_type: opts[:entity_type],
           source_id: record.id,
@@ -38,7 +35,6 @@ defmodule Weakty.Changes.SyncEntity do
           rating: resolve_value(record, opts[:rating]),
           status: resolve_value(record, opts[:status]),
           favourite: resolve_value(record, opts[:favourite]) || false,
-          tags: tags,
           public: resolve_value(record, opts[:public] || :public) || false,
           published_at:
             resolve_value(record, opts[:published_at])
@@ -48,7 +44,9 @@ defmodule Weakty.Changes.SyncEntity do
         }
 
         case Weakty.Content.Entity.upsert_entity(entity_params) do
-          {:ok, _entity} ->
+          {:ok, entity} ->
+            # Sync tags relationship
+            sync_entity_tags(entity, record)
             {:ok, record}
 
           {:error, error} ->
@@ -67,18 +65,69 @@ defmodule Weakty.Changes.SyncEntity do
     end
   end
 
-  defp load_tags(record) do
-    # Try to load the tags relationship and extract tag names
-    case Ash.load(record, :tags) do
+  defp sync_entity_tags(entity, source_record) do
+    # Load tags from the source record
+    case Ash.load(source_record, :tags) do
       {:ok, loaded_record} ->
-        case Map.get(loaded_record, :tags) do
-          nil -> []
-          tags when is_list(tags) -> Enum.map(tags, & &1.name)
-          _ -> []
+        source_tag_ids =
+          case Map.get(loaded_record, :tags) do
+            nil -> []
+            tags when is_list(tags) -> Enum.map(tags, & &1.id)
+            _ -> []
+          end
+
+        # Load current entity tags
+        case Ash.load(entity, :tags) do
+          {:ok, loaded_entity} ->
+            current_tag_ids =
+              case Map.get(loaded_entity, :tags) do
+                nil -> []
+                tags when is_list(tags) -> Enum.map(tags, & &1.id)
+                _ -> []
+              end
+
+            # Find tags to add and remove
+            tags_to_add = source_tag_ids -- current_tag_ids
+            tags_to_remove = current_tag_ids -- source_tag_ids
+
+            # Add new tag associations
+            Enum.each(tags_to_add, fn tag_id ->
+              Weakty.Content.EntityTag.create_entity_tag(%{
+                entity_id: entity.id,
+                tag_id: tag_id
+              })
+            end)
+
+            # Remove old tag associations
+            if length(tags_to_remove) > 0 do
+              case Ash.load(loaded_entity, :tags) do
+                {:ok, entity_with_tags} ->
+                  Enum.each(entity_with_tags.tags, fn tag ->
+                    if tag.id in tags_to_remove do
+                      # Find and delete the join record
+                      case Ash.read(Weakty.Content.EntityTag,
+                             filter: [entity_id: entity.id, tag_id: tag.id]
+                           ) do
+                        {:ok, [join_record | _]} ->
+                          Weakty.Content.EntityTag.delete_entity_tag(join_record)
+
+                        _ ->
+                          :ok
+                      end
+                    end
+                  end)
+
+                _ ->
+                  :ok
+              end
+            end
+
+          _ ->
+            :ok
         end
 
-      {:error, _} ->
-        []
+      _ ->
+        :ok
     end
   end
 

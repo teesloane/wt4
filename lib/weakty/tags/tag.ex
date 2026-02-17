@@ -50,6 +50,12 @@ defmodule Weakty.Tags.Tag do
       source_attribute_on_join_resource :tag_id
       destination_attribute_on_join_resource :project_id
     end
+
+    many_to_many :entities, Weakty.Content.Entity do
+      through Weakty.Content.EntityTag
+      source_attribute_on_join_resource :tag_id
+      destination_attribute_on_join_resource :entity_id
+    end
   end
 
   identities do

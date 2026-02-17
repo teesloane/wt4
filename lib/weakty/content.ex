@@ -8,5 +8,6 @@ defmodule Weakty.Content do
 
   resources do
     resource Weakty.Content.Entity
+    resource Weakty.Content.EntityTag
   end
 end

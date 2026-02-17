@@ -66,11 +66,6 @@ defmodule Weakty.Content.Entity do
       public? true
     end
 
-    attribute :tags, {:array, :string} do
-      public? true
-      default []
-    end
-
     attribute :published_at, :utc_datetime_usec do
       allow_nil? true
       public? true
@@ -85,6 +80,15 @@ defmodule Weakty.Content.Entity do
     timestamps()
   end
 
+  relationships do
+    many_to_many :tags, Weakty.Tags.Tag do
+      through Weakty.Content.EntityTag
+      source_attribute_on_join_resource :entity_id
+      destination_attribute_on_join_resource :tag_id
+      public? true
+    end
+  end
+
   identities do
     identity :unique_source, [:entity_type, :source_id]
   end
@@ -94,17 +98,13 @@ defmodule Weakty.Content.Entity do
 
     create :create do
       accept [:entity_type, :source_id, :title, :content, :url, :slug, :source_path,
-              :hero_url, :thumbnail_url, :rating, :status, :favourite, :tags,
+              :hero_url, :thumbnail_url, :rating, :status, :favourite,
               :published_at, :public]
       upsert? true
       upsert_identity :unique_source
       upsert_fields [:title, :content, :url, :slug, :source_path,
-                      :hero_url, :thumbnail_url, :rating, :status, :favourite, :tags,
+                      :hero_url, :thumbnail_url, :rating, :status, :favourite,
                       :published_at, :public, :updated_at]
-    end
-
-    update :update_tags do
-      accept [:tags]
     end
 
     read :timeline do
@@ -123,7 +123,6 @@ defmodule Weakty.Content.Entity do
     define :list_entities, action: :timeline
     define :get_entity_by_source, action: :by_source, args: [:entity_type, :source_id]
     define :upsert_entity, action: :create
-    define :update_entity_tags, action: :update_tags
     define :delete_entity, action: :destroy
   end
 
