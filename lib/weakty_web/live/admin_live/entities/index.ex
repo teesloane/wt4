@@ -92,6 +92,7 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                 <th>Tags</th>
                 <.sort_th col="public" label="Public" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <.sort_th col="published_at" label="Published" sort_by={@sort_by} sort_dir={@sort_dir} />
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -122,7 +123,7 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                     <%= if entity.tags && entity.tags != [] do %>
                       <div class="flex gap-1 flex-wrap">
                         <%= for tag <- Enum.take(entity.tags, 3) do %>
-                          <span class="badge badge-sm"><%= tag %></span>
+                          <span class="badge badge-sm"><%= tag.name %></span>
                         <% end %>
                         <%= if length(entity.tags) > 3 do %>
                           <span class="badge badge-sm badge-ghost">+<%= length(entity.tags) - 3 %></span>
@@ -145,6 +146,12 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                     <% else %>
                       <span class="text-base-content/40">—</span>
                     <% end %>
+                  </td>
+                  <td>
+                    <.link navigate={edit_path_for_entity(entity)} class="btn btn-ghost btn-xs">
+                      <.icon name="hero-pencil" class="w-4 h-4" />
+                      Edit
+                    </.link>
                   </td>
                 </tr>
               <% end %>
@@ -224,6 +231,16 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
       "post" -> "badge-primary"; "link" -> "badge-secondary"
       "project" -> "badge-accent"; "media_log" -> "badge-info"
       _ -> "badge-ghost"
+    end
+  end
+
+  defp edit_path_for_entity(entity) do
+    case entity.entity_type do
+      :post -> "/admin/posts/#{entity.source_id}/edit"
+      :project -> "/admin/projects/#{entity.source_id}/edit"
+      :link -> "/admin/links/#{entity.source_id}/edit"
+      :media_log -> "/admin/media-logs/#{entity.source_id}/edit"
+      _ -> "#"
     end
   end
 end
