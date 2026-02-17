@@ -6,6 +6,7 @@ defmodule WeaktyWeb.TimelineLive.Index do
     # Get all public entities and sort by published date (most recent first)
     entities =
       Weakty.Content.Entity.list_entities!()
+      |> Ash.load!([:tags], domain: Weakty.Content)
       |> Enum.filter(& &1.public)
       |> Enum.sort_by(& &1.published_at, {:desc, DateTime})
       |> Enum.uniq_by(& {&1.entity_type, &1.slug})
@@ -48,7 +49,7 @@ defmodule WeaktyWeb.TimelineLive.Index do
             <%= if entity.tags && length(entity.tags) > 0 do %>
               <div class="flex flex-wrap gap-3 text-sm opacity-60">
                 <%= for tag <- entity.tags do %>
-                  <span>#<%= tag %></span>
+                  <span>#<%= tag.name %></span>
                 <% end %>
               </div>
             <% end %>
