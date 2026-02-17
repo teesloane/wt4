@@ -189,6 +189,7 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
       end)
       |> Ash.Query.sort(published_at: :desc)
       |> Ash.read!(domain: Weakty.Content)
+      |> Ash.load!([:tags], domain: Weakty.Content)
       |> filter_by_search(search)
       |> sort_results(sort_by, sort_dir)
 

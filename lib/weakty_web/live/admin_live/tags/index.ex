@@ -33,6 +33,12 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
   end
 
   @impl true
+  def handle_event("validate", _params, socket) do
+    # No-op validation handler
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("update_tag", %{"tag" => tag_params}, socket) do
     # Handle image upload
     uploaded_files =
@@ -66,8 +72,26 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
   end
 
   @impl true
-  def handle_event("create_tag", %{"tag" => %{"name" => name}}, socket) do
-    case Weakty.Tags.Tag.create_tag(%{name: name}) do
+  def handle_event("create_tag", %{"tag" => tag_params}, socket) do
+    # Handle image upload
+    uploaded_files =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join(["priv/static/uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    featured_image = List.first(uploaded_files)
+
+    params =
+      tag_params
+      |> Map.put("featured_image", featured_image)
+      |> Map.take(["name", "public", "featured_image", "description"])
+      |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
+      |> Map.new()
+
+    case Weakty.Tags.Tag.create_tag(params) do
       {:ok, _} ->
         {:noreply,
          socket
@@ -219,10 +243,33 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     </div>
     <%!-- New Tag Modal --%>
     <dialog id="new_tag_modal" class="modal">
-      <div class="modal-box">
+      <div class="modal-box max-w-2xl">
         <h3 class="font-bold text-lg mb-4">Create New Tag</h3>
-        <.form for={%{}} phx-submit="create_tag">
+        <.form for={%{}} phx-submit="create_tag" phx-change="validate">
           <.input type="text" name="tag[name]" label="Tag Name" value={@new_tag_name} required />
+
+          <.input
+            type="checkbox"
+            name="tag[public]"
+            label="Public (show as an area)"
+            checked={false}
+          />
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">Featured Image</span>
+            </label>
+            <.live_file_input upload={@uploads.featured_image} class="file-input file-input-bordered w-full" />
+          </div>
+
+          <.input
+            type="textarea"
+            name="tag[description]"
+            label="Description (Markdown)"
+            value=""
+            rows="6"
+          />
+
           <div class="modal-action">
             <button type="submit" class="btn btn-primary">Create</button>
             <button
