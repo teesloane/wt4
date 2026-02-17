@@ -11,6 +11,7 @@ defmodule WeaktyWeb.RssController do
       |> Ash.Query.sort(published_at: :desc)
       |> Ash.read!()
       |> Ash.load!([:tags], domain: Weakty.Posts)
+      |> Enum.reject(&is_nil/1)
 
     # Build the RSS XML
     rss_xml = build_rss(posts)
@@ -55,12 +56,13 @@ defmodule WeaktyWeb.RssController do
     """
   end
 
+  defp build_item(nil), do: ""
   defp build_item(post) do
     """
     <item>
-      <title><![CDATA[#{escape_cdata(post.title)}]]></title>
+      <title><![CDATA[#{escape_cdata(post.title || "Untitled")}]]></title>
       <description><![CDATA[#{escape_cdata(post.excerpt || "")}]]></description>
-      <link>https://weakty.com/posts/#{post.slug}/</link>
+      <link>https://weakty.com/posts/#{post.slug || post.id}/</link>
       <guid isPermaLink="false">#{post.id}</guid>
       #{build_categories(post.tags)}
       <dc:creator><![CDATA[Ty]]></dc:creator>
