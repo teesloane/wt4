@@ -140,6 +140,7 @@ defmodule Weakty.Changes.SyncEntity do
   defp resolve_value(_record, nil), do: nil
   defp resolve_value(_record, value) when is_binary(value), do: value
   defp resolve_value(record, field) when is_atom(field), do: Map.get(record, field)
+  defp resolve_value(record, func) when is_function(func, 1), do: func.(record)
 
   defp truncate(nil, _max), do: nil
   defp truncate(str, max) when byte_size(str) <= max, do: str
