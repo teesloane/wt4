@@ -126,8 +126,8 @@ defmodule Weakty.Tags.Tag do
           nil -> changeset
           "" -> changeset
           markdown ->
-            case Earmark.as_html(markdown) do
-              {:ok, html, _} -> Ash.Changeset.force_change_attribute(changeset, :description_html, html)
+            case MDEx.to_html(markdown) do
+              {:ok, html} -> Ash.Changeset.force_change_attribute(changeset, :description_html, html)
               _ -> changeset
             end
         end
@@ -146,8 +146,8 @@ defmodule Weakty.Tags.Tag do
           "" ->
             Ash.Changeset.force_change_attribute(changeset, :description_html, nil)
           markdown ->
-            case Earmark.as_html(markdown) do
-              {:ok, html, _} -> Ash.Changeset.force_change_attribute(changeset, :description_html, html)
+            case MDEx.to_html(markdown) do
+              {:ok, html} -> Ash.Changeset.force_change_attribute(changeset, :description_html, html)
               _ -> changeset
             end
         end
