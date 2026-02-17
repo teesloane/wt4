@@ -272,12 +272,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                 />
                 <input type="hidden" name="tag[featured_image]" value={@editing_tag.featured_image} />
               <% end %>
-              <input
-                type="file"
-                phx-drop-target={@uploads.featured_image.ref}
-                class="file-input file-input-bordered w-full"
-                {Phoenix.LiveView.Upload.maybe_permit_upload(@uploads.featured_image)}
-              />
+              <.live_file_input upload={@uploads.featured_image} class="file-input file-input-bordered w-full" />
             </div>
 
             <.input
