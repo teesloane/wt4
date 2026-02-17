@@ -64,6 +64,23 @@ defmodule Weakty.Links.Link do
     destroy :destroy do
       primary? true
       require_atomic? false
+
+      # Clean up entity and join table entries before deletion
+      change before_action(fn changeset, _context ->
+        link = changeset.data
+        import Ecto.Query
+
+        # Delete associated entity if it exists
+        case Weakty.Content.Entity.get_entity_by_source(:link, link.id) do
+          {:ok, entity} -> Weakty.Content.Entity.delete_entity(entity)
+          _ -> :ok
+        end
+
+        # Delete link_tags join table entries
+        Weakty.Repo.delete_all(from lt in "link_tags", where: lt.link_id == ^link.id)
+
+        changeset
+      end)
     end
 
     read :get_by_slug do

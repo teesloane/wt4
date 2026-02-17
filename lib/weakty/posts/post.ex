@@ -104,6 +104,23 @@ defmodule Weakty.Posts.Post do
     destroy :destroy do
       primary? true
       require_atomic? false
+
+      # Clean up entity and join table entries before deletion
+      change before_action(fn changeset, _context ->
+        post = changeset.data
+        import Ecto.Query
+
+        # Delete associated entity if it exists
+        case Weakty.Content.Entity.get_entity_by_source(:post, post.id) do
+          {:ok, entity} -> Weakty.Content.Entity.delete_entity(entity)
+          _ -> :ok
+        end
+
+        # Delete post_tags join table entries
+        Weakty.Repo.delete_all(from pt in "post_tags", where: pt.post_id == ^post.id)
+
+        changeset
+      end)
     end
 
     create :create do

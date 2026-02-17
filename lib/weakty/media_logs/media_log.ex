@@ -145,6 +145,23 @@ defmodule Weakty.MediaLogs.MediaLog do
     destroy :destroy do
       primary? true
       require_atomic? false
+
+      # Clean up entity and join table entries before deletion
+      change before_action(fn changeset, _context ->
+        media_log = changeset.data
+        import Ecto.Query
+
+        # Delete associated entity if it exists
+        case Weakty.Content.Entity.get_entity_by_source(:media_log, media_log.id) do
+          {:ok, entity} -> Weakty.Content.Entity.delete_entity(entity)
+          _ -> :ok
+        end
+
+        # Delete media_log_tags join table entries
+        Weakty.Repo.delete_all(from mt in "media_log_tags", where: mt.media_log_id == ^media_log.id)
+
+        changeset
+      end)
     end
 
     create :create do

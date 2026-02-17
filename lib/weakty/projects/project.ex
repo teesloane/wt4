@@ -118,6 +118,23 @@ defmodule Weakty.Projects.Project do
     destroy :destroy do
       primary? true
       require_atomic? false
+
+      # Clean up entity and join table entries before deletion
+      change before_action(fn changeset, _context ->
+        project = changeset.data
+        import Ecto.Query
+
+        # Delete associated entity if it exists
+        case Weakty.Content.Entity.get_entity_by_source(:project, project.id) do
+          {:ok, entity} -> Weakty.Content.Entity.delete_entity(entity)
+          _ -> :ok
+        end
+
+        # Delete project_tags join table entries
+        Weakty.Repo.delete_all(from pt in "project_tags", where: pt.project_id == ^project.id)
+
+        changeset
+      end)
     end
 
     create :create do
