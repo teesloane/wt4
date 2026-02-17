@@ -87,48 +87,17 @@ defmodule Weakty.Tags.Tag do
       primary? true
       require_atomic? false
 
-      # Remove all relationships before deleting the tag
+      # Remove all join table relationships before deleting the tag
       change before_action(fn changeset, _context ->
         tag = changeset.data
+        import Ecto.Query
 
-        # Load all relationships
-        tag = Ash.load!(tag, [:links, :posts, :media_logs, :projects, :entities], domain: Weakty.Tags)
-
-        # Delete join table entries directly
-        for link <- tag.links do
-          case Ash.read(Weakty.Links.LinkTag, filter: [tag_id: tag.id, link_id: link.id]) do
-            {:ok, [join | _]} -> Ash.destroy!(join)
-            _ -> :ok
-          end
-        end
-
-        for post <- tag.posts do
-          case Ash.read(Weakty.Posts.PostTag, filter: [tag_id: tag.id, post_id: post.id]) do
-            {:ok, [join | _]} -> Ash.destroy!(join)
-            _ -> :ok
-          end
-        end
-
-        for media_log <- tag.media_logs do
-          case Ash.read(Weakty.MediaLogs.MediaLogTag, filter: [tag_id: tag.id, media_log_id: media_log.id]) do
-            {:ok, [join | _]} -> Ash.destroy!(join)
-            _ -> :ok
-          end
-        end
-
-        for project <- tag.projects do
-          case Ash.read(Weakty.Projects.ProjectTag, filter: [tag_id: tag.id, project_id: project.id]) do
-            {:ok, [join | _]} -> Ash.destroy!(join)
-            _ -> :ok
-          end
-        end
-
-        for entity <- tag.entities do
-          case Ash.read(Weakty.Content.EntityTag, filter: [tag_id: tag.id, entity_id: entity.id]) do
-            {:ok, [join | _]} -> Ash.destroy!(join)
-            _ -> :ok
-          end
-        end
+        # Delete join table entries directly using Ecto
+        Weakty.Repo.delete_all(from lt in "link_tags", where: lt.tag_id == ^tag.id)
+        Weakty.Repo.delete_all(from pt in "post_tags", where: pt.tag_id == ^tag.id)
+        Weakty.Repo.delete_all(from mt in "media_log_tags", where: mt.tag_id == ^tag.id)
+        Weakty.Repo.delete_all(from pt in "project_tags", where: pt.tag_id == ^tag.id)
+        Weakty.Repo.delete_all(from et in "entity_tags", where: et.tag_id == ^tag.id)
 
         changeset
       end)
