@@ -102,6 +102,7 @@ defmodule Weakty.Posts.Post do
     end
 
     destroy :destroy do
+      primary? true
       require_atomic? false
     end
 

@@ -143,6 +143,7 @@ defmodule Weakty.MediaLogs.MediaLog do
     end
 
     destroy :destroy do
+      primary? true
       require_atomic? false
     end
 
@@ -209,6 +210,18 @@ defmodule Weakty.MediaLogs.MediaLog do
           changeset
         end
       end
+
+      change fn changeset, _context ->
+        # Auto-set status to :consumed when a finish/consume date is provided
+        date_finished = Ash.Changeset.get_attribute(changeset, :date_finished)
+        date_consumed = Ash.Changeset.get_attribute(changeset, :date_consumed)
+
+        if date_finished || date_consumed do
+          Ash.Changeset.force_change_attribute(changeset, :status, :consumed)
+        else
+          changeset
+        end
+      end
     end
 
     update :update do
@@ -252,6 +265,18 @@ defmodule Weakty.MediaLogs.MediaLog do
         if media_type in [:book, :comic] do
           date_finished = Ash.Changeset.get_attribute(changeset, :date_finished)
           Ash.Changeset.force_change_attribute(changeset, :date_consumed, date_finished)
+        else
+          changeset
+        end
+      end
+
+      change fn changeset, _context ->
+        # Auto-set status to :consumed when a finish/consume date is provided
+        date_finished = Ash.Changeset.get_attribute(changeset, :date_finished)
+        date_consumed = Ash.Changeset.get_attribute(changeset, :date_consumed)
+
+        if date_finished || date_consumed do
+          Ash.Changeset.force_change_attribute(changeset, :status, :consumed)
         else
           changeset
         end

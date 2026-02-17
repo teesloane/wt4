@@ -116,6 +116,7 @@ defmodule Weakty.Projects.Project do
     end
 
     destroy :destroy do
+      primary? true
       require_atomic? false
     end
 
