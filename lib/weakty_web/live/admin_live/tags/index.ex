@@ -13,6 +13,11 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
      |> assign(:current_path, "/admin/tags")
      |> assign(:editing_tag, nil)
      |> assign(:new_tag_name, "")
+     |> allow_upload(:featured_image,
+       accept: ~w(.jpg .jpeg .png .gif .webp),
+       max_entries: 1,
+       max_file_size: 5_000_000
+     )
      |> load_tags(), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
@@ -28,8 +33,26 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
   end
 
   @impl true
-  def handle_event("update_tag", %{"tag" => %{"name" => name}}, socket) do
-    case Weakty.Tags.Tag.update_tag(socket.assigns.editing_tag, %{name: name}) do
+  def handle_event("update_tag", %{"tag" => tag_params}, socket) do
+    # Handle image upload
+    uploaded_files =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join(["priv/static/uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    featured_image = List.first(uploaded_files) || Map.get(tag_params, "featured_image")
+
+    params =
+      tag_params
+      |> Map.put("featured_image", featured_image)
+      |> Map.take(["name", "public", "featured_image", "description"])
+      |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
+      |> Map.new()
+
+    case Weakty.Tags.Tag.update_tag(socket.assigns.editing_tag, params) do
       {:ok, _} ->
         {:noreply,
          socket
@@ -132,6 +155,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
               <tr>
                 <th>Name</th>
                 <th>Slug</th>
+                <th>Public</th>
                 <th>Posts</th>
                 <th>Links</th>
                 <th>Media</th>
@@ -148,6 +172,13 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                   </td>
                   <td>
                     <code class="text-sm text-base-content/70"><%= tag.slug %></code>
+                  </td>
+                  <td>
+                    <%= if tag.public do %>
+                      <span class="badge badge-success badge-sm">Yes</span>
+                    <% else %>
+                      <span class="badge badge-ghost badge-sm">No</span>
+                    <% end %>
                   </td>
                   <td><div class="text-sm"><%= length(tag.posts) %></div></td>
                   <td><div class="text-sm"><%= length(tag.links) %></div></td>
@@ -211,9 +242,9 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     <%!-- Edit Tag Modal --%>
     <%= if @editing_tag do %>
       <dialog id="edit_tag_modal" class="modal" open>
-        <div class="modal-box">
+        <div class="modal-box max-w-2xl">
           <h3 class="font-bold text-lg mb-4">Edit Tag</h3>
-          <.form for={%{}} phx-submit="update_tag">
+          <.form for={%{}} phx-submit="update_tag" phx-change="validate">
             <.input
               type="text"
               name="tag[name]"
@@ -221,6 +252,42 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
               value={@editing_tag.name}
               required
             />
+
+            <.input
+              type="checkbox"
+              name="tag[public]"
+              label="Public (show as an area)"
+              checked={@editing_tag.public}
+            />
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Featured Image</span>
+              </label>
+              <%= if @editing_tag.featured_image do %>
+                <img
+                  src={@editing_tag.featured_image}
+                  alt="Current featured image"
+                  class="w-32 h-32 object-cover rounded mb-2"
+                />
+                <input type="hidden" name="tag[featured_image]" value={@editing_tag.featured_image} />
+              <% end %>
+              <input
+                type="file"
+                phx-drop-target={@uploads.featured_image.ref}
+                class="file-input file-input-bordered w-full"
+                {Phoenix.LiveView.Upload.maybe_permit_upload(@uploads.featured_image)}
+              />
+            </div>
+
+            <.input
+              type="textarea"
+              name="tag[description]"
+              label="Description (Markdown)"
+              value={@editing_tag.description}
+              rows="6"
+            />
+
             <div class="modal-action">
               <button type="submit" class="btn btn-primary">Update</button>
               <button type="button" phx-click="cancel_edit" class="btn">Cancel</button>
@@ -240,5 +307,10 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
       Weakty.Tags.Tag.list_tags!()
       |> Ash.load!([:links, :posts, :media_logs, :projects], domain: Weakty.Tags)
     assign(socket, :tags, tags)
+  end
+
+  defp ext(entry) do
+    [ext | _] = MIME.extensions(entry.client_type)
+    ext
   end
 end

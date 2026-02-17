@@ -23,6 +23,23 @@ defmodule Weakty.Tags.Tag do
       public? true
     end
 
+    attribute :public, :boolean do
+      default false
+      public? true
+    end
+
+    attribute :featured_image, :string do
+      public? true
+    end
+
+    attribute :description, :string do
+      public? true
+    end
+
+    attribute :description_html, :string do
+      public? true
+    end
+
     timestamps()
   end
 
@@ -68,26 +85,53 @@ defmodule Weakty.Tags.Tag do
 
     create :create do
       primary? true
-      accept [:name, :slug]
+      accept [:name, :slug, :public, :featured_image, :description]
 
       # Auto-generate slug from name if not provided
       change fn changeset, _context ->
-        if Ash.Changeset.get_attribute(changeset, :slug) do
-          changeset
-        else
-          case Ash.Changeset.get_attribute(changeset, :name) do
-            nil -> changeset
-            name ->
-              slug = name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
-              Ash.Changeset.force_change_attribute(changeset, :slug, slug)
+        changeset =
+          if Ash.Changeset.get_attribute(changeset, :slug) do
+            changeset
+          else
+            case Ash.Changeset.get_attribute(changeset, :name) do
+              nil -> changeset
+              name ->
+                slug = name |> String.downcase() |> String.replace(~r/[^a-z0-9]+/, "-") |> String.trim("-")
+                Ash.Changeset.force_change_attribute(changeset, :slug, slug)
+            end
           end
+
+        # Convert markdown to HTML if description is present
+        case Ash.Changeset.get_attribute(changeset, :description) do
+          nil -> changeset
+          "" -> changeset
+          markdown ->
+            case Earmark.as_html(markdown) do
+              {:ok, html, _} -> Ash.Changeset.force_change_attribute(changeset, :description_html, html)
+              _ -> changeset
+            end
         end
       end
     end
 
     update :update do
       primary? true
-      accept [:name, :slug]
+      accept [:name, :slug, :public, :featured_image, :description]
+      require_atomic? false
+
+      # Convert markdown to HTML if description is updated
+      change fn changeset, _context ->
+        case Ash.Changeset.get_attribute(changeset, :description) do
+          nil -> changeset
+          "" ->
+            Ash.Changeset.force_change_attribute(changeset, :description_html, nil)
+          markdown ->
+            case Earmark.as_html(markdown) do
+              {:ok, html, _} -> Ash.Changeset.force_change_attribute(changeset, :description_html, html)
+              _ -> changeset
+            end
+        end
+      end
     end
   end
 
