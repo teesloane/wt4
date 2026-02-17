@@ -94,7 +94,7 @@ defmodule WeaktyWeb.AreaLive.Show do
                     </div>
 
                     <h3 class="card-title mb-2">
-                      <.link navigate={entity.source_path} class="hover:underline">
+                      <.link navigate={"#{entity.source_path}/#{entity.slug}"} class="hover:underline">
                         <%= entity.title %>
                       </.link>
                     </h3>
