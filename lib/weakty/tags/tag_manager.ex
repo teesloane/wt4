@@ -94,13 +94,59 @@ defmodule Weakty.Tags.TagManager do
     {:ok, length(orphaned)}
   end
 
-  # Updates the entity's flat tags array to match the current tag names.
+  # Updates the entity's tags via join table to match the current tag names.
   defp sync_entity_tags(entity_type, source_id, tag_names) do
     case Weakty.Content.Entity.get_entity_by_source(entity_type, source_id) do
       {:ok, entity} when not is_nil(entity) ->
-        entity
-        |> Ash.Changeset.for_update(:update_tags, %{tags: tag_names}, domain: Weakty.Content)
-        |> Ash.update(domain: Weakty.Content)
+        # Get tag IDs from tag names
+        tag_ids =
+          tag_names
+          |> Enum.map(fn name ->
+            case Ash.get(Weakty.Tags.Tag, name: name) do
+              {:ok, tag} -> tag.id
+              _ -> nil
+            end
+          end)
+          |> Enum.reject(&is_nil/1)
+
+        # Load current entity tags
+        entity = Ash.load!(entity, [:tags], domain: Weakty.Content)
+
+        current_tag_ids =
+          case entity.tags do
+            nil -> []
+            tags when is_list(tags) -> Enum.map(tags, & &1.id)
+            _ -> []
+          end
+
+        # Find tags to add and remove
+        tags_to_add = tag_ids -- current_tag_ids
+        tags_to_remove = current_tag_ids -- tag_ids
+
+        # Add new tag associations
+        Enum.each(tags_to_add, fn tag_id ->
+          Weakty.Content.EntityTag.create_entity_tag(%{
+            entity_id: entity.id,
+            tag_id: tag_id
+          })
+        end)
+
+        # Remove old tag associations
+        if length(tags_to_remove) > 0 do
+          Enum.each(tags_to_remove, fn tag_id ->
+            case Ash.read(Weakty.Content.EntityTag,
+                   filter: [entity_id: entity.id, tag_id: tag_id]
+                 ) do
+              {:ok, [join_record | _]} ->
+                Weakty.Content.EntityTag.delete_entity_tag(join_record)
+
+              _ ->
+                :ok
+            end
+          end)
+        end
+
+        {:ok, entity}
 
       _ ->
         :ok
