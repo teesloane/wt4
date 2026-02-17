@@ -95,6 +95,7 @@ defmodule WeaktyWeb.Router do
 
     get "/", PageController, :home
     live "/archive", TimelineLive.Index, :index
+    get "/posts/rss", RssController, :posts
 
     auth_routes AuthController, Weakty.Accounts.User, path: "/auth"
     sign_out_route AuthController
