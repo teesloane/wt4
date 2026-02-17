@@ -284,7 +284,7 @@ defmodule Weakty.Posts.Post do
     change {Weakty.Changes.SyncEntity,
       entity_type: :post,
       title: :title,
-      content: :markdown,
+      content: {Weakty.Posts.Helpers, :content_for_entity},
       slug: :slug,
       source_path: "/posts",
       hero_url: :featured_image,
