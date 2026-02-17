@@ -48,7 +48,7 @@ defmodule WeaktyWeb.RssController do
         </image>
         <generator>Weakty Phoenix</generator>
         <lastBuildDate>#{format_rfc822(last_build_date)}</lastBuildDate>
-        <atom:link href="https://weakty.com/posts/rss/" rel="self" type="application/rss+xml" />
+        <atom:link href="https://weakty.com/rss/" rel="self" type="application/rss+xml" />
         <ttl>60</ttl>
         #{Enum.map_join(posts, "\n", &build_item/1)}
       </channel>

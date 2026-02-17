@@ -30,6 +30,8 @@ defmodule WeaktyWeb.Router do
   scope "/", WeaktyWeb do
     pipe_through :browser
 
+    # RSS feed
+    get "/rss", RssController, :posts
 
     ash_authentication_live_session :authenticated_routes do
       live "/now", UpdateLive.Index, :index
@@ -95,7 +97,6 @@ defmodule WeaktyWeb.Router do
 
     get "/", PageController, :home
     live "/archive", TimelineLive.Index, :index
-    get "/posts/rss", RssController, :posts
 
     auth_routes AuthController, Weakty.Accounts.User, path: "/auth"
     sign_out_route AuthController
