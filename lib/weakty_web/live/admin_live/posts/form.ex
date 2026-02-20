@@ -40,15 +40,18 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
       |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "", auto_slug: "")
       |> assign(:current_path, "/admin/posts")
       |> assign(:content_images, (post && post.content_images) || [])
+      |> assign(:uploaded_featured_image, post && post.featured_image)
       |> allow_upload(:featured_image,
         accept: ~w(.jpg .jpeg .png .gif .webp),
         max_entries: 1,
-        max_file_size: 5_000_000
+        max_file_size: 5_000_000,
+        auto_upload: true
       )
       |> allow_upload(:content_images,
         accept: ~w(.jpg .jpeg .png .gif .webp),
         max_entries: 10,
-        max_file_size: 5_000_000
+        max_file_size: 5_000_000,
+        auto_upload: true
       )
 
     {:ok, socket, layout: {WeaktyWeb.Layouts, :admin}}
@@ -88,8 +91,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         <%= if @preview do %>
           <div class="prose max-w-none">
             <h1><%= @form[:title].value %></h1>
-            <%= if @form[:featured_image].value do %>
-              <img src={@form[:featured_image].value} alt={@form[:title].value} class="w-full rounded-lg" />
+            <%= if @uploaded_featured_image do %>
+              <img src={@uploaded_featured_image} alt={@form[:title].value} class="w-full rounded-lg" />
             <% end %>
             <%= if @form[:excerpt].value do %>
               <p class="lead"><%= @form[:excerpt].value %></p>
@@ -220,9 +223,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Featured Image</span>
             </label>
-            <%= if @form[:featured_image].value do %>
+            <%= if @uploaded_featured_image do %>
               <div class="mb-2 relative group">
-                <img src={@form[:featured_image].value} alt="Featured" class="w-full rounded-lg" />
+                <img src={@uploaded_featured_image} alt="Featured" class="w-full rounded-lg" />
                 <button
                   type="button"
                   phx-click="remove_featured_image"
@@ -236,7 +239,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <div class="space-y-2">
               <label for={@uploads.featured_image.ref} class="btn btn-sm btn-ghost w-full cursor-pointer">
                 <.icon name="hero-photo" class="w-4 h-4 mr-2" />
-                <%= if @form[:featured_image].value, do: "Change Image", else: "Upload Image" %>
+                <%= if @uploaded_featured_image, do: "Change Image", else: "Upload Image" %>
               </label>
               <.live_file_input upload={@uploads.featured_image} class="hidden" />
 
@@ -250,9 +253,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 <p class="text-error text-xs"><%= error_to_string(err) %></p>
               <% end %>
             </div>
-
-            <!-- Hidden input to preserve existing value -->
-            <input type="hidden" form="post-form" name={@form[:featured_image].name} value={@form[:featured_image].value} />
           </div>
 
           <!-- Content Images -->
@@ -445,8 +445,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   def handle_event("remove_featured_image", _params, socket) do
-    form = Form.validate(socket.assigns.form, %{"featured_image" => nil})
-    {:noreply, assign(socket, form: to_form(form))}
+    {:noreply, assign(socket, :uploaded_featured_image, nil)}
   end
 
   def handle_event("delete_post", _params, socket) do
@@ -468,7 +467,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    params = Map.put(params, "content_images", socket.assigns.content_images)
+    # Add uploaded image URLs to params (bypasses hidden input timing issues)
+    params =
+      params
+      |> Map.put("featured_image", socket.assigns.uploaded_featured_image)
+      |> Map.put("content_images", socket.assigns.content_images)
 
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
@@ -491,8 +494,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
     case uploaded_files do
       [{:ok, url} | _] ->
-        form = Form.validate(socket.assigns.form, %{"featured_image" => url})
-        {:noreply, assign(socket, form: to_form(form))}
+        {:noreply, assign(socket, :uploaded_featured_image, url)}
 
       [] ->
         {:noreply, socket}
