@@ -36,7 +36,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
         <h1 class="text-lg font-bold mb-4">Media Logs</h1>
 
         <!-- Filters Row -->
-        <div class="flex gap-2 mb-4 flex-wrap items-center">
+        <div class="flex gap-2 mb-4 flex-wrap items-end">
           <!-- Year Filter - Dropdown (both mobile and desktop) -->
           <div class="dropdown">
             <label tabindex="0" class="btn btn-sm btn-outline">
@@ -91,7 +91,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
             <%= for filter <- media_type_filters() do %>
               <.link
                 patch={~p"/media-logs?type=#{filter.type}&status=#{@status_filter}&year=#{@year_filter}"}
-                class={["btn btn-sm", if(@media_type_filter == filter.type, do: "btn-primary", else: "btn-ghost")]}
+                class={["btn btn-sm -mt-1", if(@media_type_filter == filter.type, do: "btn-primary", else: "btn-ghost")]}
               >
                 <%= filter.label %> <span class="badge badge-sm ml-1"><%= filter_count(@media_logs, filter.type, @year_filter) %></span>
               </.link>
