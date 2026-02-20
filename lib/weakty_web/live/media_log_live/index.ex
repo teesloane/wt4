@@ -103,10 +103,10 @@ defmodule WeaktyWeb.MediaLogLive.Index do
   end
 
   defp load_media_logs(socket) do
-    # Only load public media logs for public view, sorted by most recently consumed
+    # Only load consumed media logs (stuff that's been finished), sorted by most recently consumed
     all_media_logs =
       Weakty.MediaLogs.MediaLog
-      # |> Ash.Query.for_read(:published)
+      |> Ash.Query.filter(status == :consumed)
       |> Ash.Query.sort(date_consumed: :desc)
       |> Ash.read!()
       |> Ash.load!(:tags)
@@ -153,38 +153,8 @@ defmodule WeaktyWeb.MediaLogLive.Index do
     end
   end
 
-  defp media_type_color(media_type) do
-    case media_type do
-      :book -> "badge-info"
-      :comic -> "badge-accent"
-      :movie -> "badge-secondary"
-      :music -> "badge-primary"
-      :video_game -> "badge-success"
-      _ -> "badge-ghost"
-    end
-  end
 
-  defp status_color(status) do
-    case status do
-      :consuming -> "badge-warning"
-      :consumed -> "badge-success"
-      :want_to_consume -> "badge-info"
-      :on_hold -> "badge-ghost"
-      :abandoned -> "badge-error"
-      _ -> "badge-ghost"
-    end
-  end
 
-  defp format_media_type(media_type) do
-    case media_type do
-      :book -> "Book"
-      :comic -> "Comic"
-      :movie -> "Movie"
-      :music -> "Music"
-      :video_game -> "Game"
-      _ -> to_string(media_type)
-    end
-  end
 
   defp format_status(status) do
     case status do

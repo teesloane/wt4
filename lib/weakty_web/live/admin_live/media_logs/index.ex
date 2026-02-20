@@ -133,8 +133,6 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
               <tr>
                 <.sort_th col="title" label="Title" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <.sort_th col="creator" label="Creator" sort_by={@sort_by} sort_dir={@sort_dir} />
-                <.sort_th col="media_type" label="Type" sort_by={@sort_by} sort_dir={@sort_dir} />
-                <.sort_th col="status" label="Status" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <.sort_th col="rating" label="Rating" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <.sort_th col="date" label="Date" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <th>Actions</th>
@@ -173,8 +171,6 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                   <td>
                     <%= media_log.creator || raw("<span class='text-base-content/50'>—</span>") %>
                   </td>
-                  <td><.media_type_badge media_type={media_log.media_type} /></td>
-                  <td><.media_status_badge status={media_log.status} /></td>
                   <td>
                     <%= if media_log.rating do %>
                       <div class="text-warning"><%= String.duplicate("★", media_log.rating) %></div>
