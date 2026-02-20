@@ -115,7 +115,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <%= if Enum.empty?(@filtered_media_logs) do %>
           <div class="col-span-full card bg-base-200">
             <div class="card-body text-center">
@@ -175,10 +175,11 @@ defmodule WeaktyWeb.MediaLogLive.Index do
 
   defp load_media_logs(socket) do
     # Only load public media logs for public view, sorted by most recently consumed
+    # Falls back to date_finished, then updated_at for items without date_consumed
     all_media_logs =
       Weakty.MediaLogs.MediaLog
       |> Ash.Query.for_read(:published)
-      |> Ash.Query.sort(date_consumed: :desc)
+      |> Ash.Query.sort([date_consumed: :desc_nils_last, date_finished: :desc_nils_last, updated_at: :desc])
       |> Ash.read!()
       |> Ash.load!(:tags)
 
