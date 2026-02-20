@@ -176,12 +176,11 @@ defmodule WeaktyWeb.MediaLogLive.Index do
   defp load_media_logs(socket) do
     # Only load public media logs for public view, sorted by most recently consumed
     all_media_logs =
-      Weakty.MediaLogs.MediaLog.list_published_media_logs!()
+      Weakty.MediaLogs.MediaLog
+      |> Ash.Query.for_read(:published)
+      |> Ash.Query.sort(date_consumed: :desc)
+      |> Ash.read!()
       |> Ash.load!(:tags)
-      |> Enum.sort_by(
-        fn ml -> ml.date_consumed end,
-        {:desc, Date}
-      )
 
     # Apply filters
     filtered_media_logs =
