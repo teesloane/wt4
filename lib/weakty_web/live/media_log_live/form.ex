@@ -77,7 +77,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
           for={@form}
           phx-submit="save"
           phx-change="validate"
-          class="space-y-6"
+          class="space-y-6 items-center"
         >
           <input
             type="text"
