@@ -14,7 +14,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
      |> assign(:media_type_filter, "all")
      |> assign(:status_filter, "all")
      |> assign(:search, "")
-     |> assign(:sort_by, "updated_at")
+     |> assign(:sort_by, "date")
      |> assign(:sort_dir, "desc")
      |> load_media_logs(), layout: {WeaktyWeb.Layouts, :admin}}
   end
