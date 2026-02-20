@@ -37,6 +37,35 @@ defmodule WeaktyWeb.MediaLogLive.Index do
 
         <!-- Filters Row -->
         <div class="flex gap-2 mb-4 flex-wrap items-center">
+          <!-- Year Filter - Dropdown (both mobile and desktop) -->
+          <div class="dropdown">
+            <label tabindex="0" class="btn btn-sm btn-outline">
+              <%= if @year_filter == "all", do: "All Years", else: @year_filter %> ▼
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li>
+                <.link
+                  patch={~p"/media-logs?type=#{@media_type_filter}&status=#{@status_filter}&year=all"}
+                  class={if @year_filter == "all", do: "active"}
+                  onclick="document.activeElement.blur()"
+                >
+                  All Years
+                </.link>
+              </li>
+              <%= for year <- @available_years do %>
+                <li>
+                  <.link
+                    patch={~p"/media-logs?type=#{@media_type_filter}&status=#{@status_filter}&year=#{year}"}
+                    class={if @year_filter == to_string(year), do: "active"}
+                    onclick="document.activeElement.blur()"
+                  >
+                    <%= year %>
+                  </.link>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+
           <!-- Media Type Filter - Mobile Dropdown -->
           <div class="dropdown lg:hidden">
             <label tabindex="0" class="btn btn-sm btn-outline">
@@ -48,8 +77,9 @@ defmodule WeaktyWeb.MediaLogLive.Index do
                   <.link
                     patch={~p"/media-logs?type=#{filter.type}&status=#{@status_filter}&year=#{@year_filter}"}
                     class={if @media_type_filter == filter.type, do: "active"}
+                    onclick="document.activeElement.blur()"
                   >
-                    <%= filter.label %> (<%= filter_count(@media_logs, filter.type) %>)
+                    <%= filter.label %> (<%= filter_count(@media_logs, filter.type, @year_filter) %>)
                   </.link>
                 </li>
               <% end %>
@@ -63,36 +93,9 @@ defmodule WeaktyWeb.MediaLogLive.Index do
                 patch={~p"/media-logs?type=#{filter.type}&status=#{@status_filter}&year=#{@year_filter}"}
                 class={["btn btn-sm", if(@media_type_filter == filter.type, do: "btn-primary", else: "btn-ghost")]}
               >
-                <%= filter.label %> <span class="badge badge-sm ml-1"><%= filter_count(@media_logs, filter.type) %></span>
+                <%= filter.label %> <span class="badge badge-sm ml-1"><%= filter_count(@media_logs, filter.type, @year_filter) %></span>
               </.link>
             <% end %>
-          </div>
-
-          <!-- Year Filter - Dropdown (both mobile and desktop) -->
-          <div class="dropdown">
-            <label tabindex="0" class="btn btn-sm btn-outline">
-              <%= if @year_filter == "all", do: "All Years", else: @year_filter %> ▼
-            </label>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-              <li>
-                <.link
-                  patch={~p"/media-logs?type=#{@media_type_filter}&status=#{@status_filter}&year=all"}
-                  class={if @year_filter == "all", do: "active"}
-                >
-                  All Years
-                </.link>
-              </li>
-              <%= for year <- @available_years do %>
-                <li>
-                  <.link
-                    patch={~p"/media-logs?type=#{@media_type_filter}&status=#{@status_filter}&year=#{year}"}
-                    class={if @year_filter == to_string(year), do: "active"}
-                  >
-                    <%= year %>
-                  </.link>
-                </li>
-              <% end %>
-            </ul>
           </div>
         </div>
       </div>
@@ -238,9 +241,16 @@ defmodule WeaktyWeb.MediaLogLive.Index do
     ]
   end
 
-  defp filter_count(media_logs, "all"), do: length(media_logs)
-  defp filter_count(media_logs, type) when is_binary(type) do
+  defp filter_count(media_logs, "all", year_filter) do
+    media_logs
+    |> filter_by_year(year_filter)
+    |> length()
+  end
+
+  defp filter_count(media_logs, type, year_filter) when is_binary(type) do
     type_atom = String.to_existing_atom(type)
-    Enum.count(media_logs, fn ml -> ml.media_type == type_atom end)
+    media_logs
+    |> filter_by_year(year_filter)
+    |> Enum.count(fn ml -> ml.media_type == type_atom end)
   end
 end
