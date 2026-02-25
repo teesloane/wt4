@@ -194,12 +194,6 @@ defmodule WeaktyWeb.MediaLogLive.Index do
     |> Enum.sort(:desc)
   end
 
-  defp count_by_type(media_logs, media_type, status) do
-    Enum.count(media_logs, fn ml ->
-      ml.media_type == media_type && ml.status == status
-    end)
-  end
-
   defp media_type_emoji(media_type) do
     case media_type do
       :book -> "📚"
@@ -213,22 +207,6 @@ defmodule WeaktyWeb.MediaLogLive.Index do
 
 
 
-
-  defp format_status(status) do
-    case status do
-      :want_to_consume -> "Want"
-      :consuming -> "In Progress"
-      :consumed -> "Done"
-      :on_hold -> "On Hold"
-      :abandoned -> "Abandoned"
-      _ -> to_string(status)
-    end
-  end
-
-  defp format_status_filter("all"), do: "All Status"
-  defp format_status_filter("consumed"), do: "Consumed"
-  defp format_status_filter("consuming"), do: "Currently Consuming"
-  defp format_status_filter(_), do: "Status"
 
   defp media_type_filters do
     [
