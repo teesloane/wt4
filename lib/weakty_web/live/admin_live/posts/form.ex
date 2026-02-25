@@ -45,7 +45,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         accept: ~w(.jpg .jpeg .png .gif .webp),
         max_entries: 1,
         max_file_size: 5_000_000,
-        auto_upload: true
+        # auto_upload: true
       )
       |> allow_upload(:content_images,
         accept: ~w(.jpg .jpeg .png .gif .webp),
@@ -65,6 +65,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   @impl true
   def render(assigns) do
     ~H"""
+    <.form
+      id="post-form"
+      for={@form}
+      phx-submit="save"
+      phx-change="validate"
+    >
     <div class="flex min-h-screen">
       <!-- Main Content Area -->
       <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
@@ -102,13 +108,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             </div>
           </div>
         <% else %>
-          <.form
-            id="post-form"
-            for={@form}
-            phx-submit="save"
-            phx-change="validate"
-            class="space-y-6"
-          >
+          <div class="space-y-6">
             <!-- Title -->
             <div class="form-control">
               <input
@@ -131,7 +131,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 required
               ><%= @form[:markdown].value %></textarea>
             </div>
-          </.form>
+          </div>
         <% end %>
       </div>
 
@@ -223,36 +223,57 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Featured Image</span>
             </label>
-            <%= if @uploaded_featured_image do %>
-              <div class="mb-2 relative group">
-                <img src={@uploaded_featured_image} alt="Featured" class="w-full rounded-lg" />
-                <button
-                  type="button"
-                  phx-click="remove_featured_image"
-                  class="absolute top-2 right-2 btn btn-error btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ✕
-                </button>
-              </div>
-            <% end %>
 
-            <div class="space-y-2">
-              <label for={@uploads.featured_image.ref} class="btn btn-sm btn-ghost w-full cursor-pointer">
-                <.icon name="hero-photo" class="w-4 h-4 mr-2" />
-                <%= if @uploaded_featured_image, do: "Change Image", else: "Upload Image" %>
-              </label>
+            <section
+              phx-drop-target={@uploads.featured_image.ref}
+              class="border-2 border-dashed border-base-300 rounded-lg p-4 text-center [&.phx-drop-target-active]:border-primary [&.phx-drop-target-active]:bg-primary/5 transition-colors"
+            >
               <.live_file_input upload={@uploads.featured_image} class="hidden" />
 
-              <%= for entry <- @uploads.featured_image.entries do %>
-                <div class="text-xs text-base-content/60">
-                  Uploading: <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
+              <%= if @uploaded_featured_image && Enum.empty?(@uploads.featured_image.entries) do %>
+                <div class="relative group mb-3">
+                  <img src={@uploaded_featured_image} alt="Featured" class="w-full rounded-lg" />
+                  <button
+                    type="button"
+                    phx-click="remove_featured_image"
+                    class="absolute top-2 right-2 btn btn-error btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
                 </div>
               <% end %>
 
-              <%= for err <- upload_errors(@uploads.featured_image) do %>
-                <p class="text-error text-xs"><%= error_to_string(err) %></p>
+              <%= for entry <- @uploads.featured_image.entries do %>
+                <article class="mb-3">
+                  <.live_img_preview entry={entry} class="w-full rounded-lg mb-2" />
+                  <progress value={entry.progress} max="100" class="progress progress-primary w-full"></progress>
+                  <div class="flex justify-between text-xs text-base-content/60 mt-1">
+                    <span><%= entry.client_name %></span>
+                    <button
+                      type="button"
+                      phx-click="cancel-upload"
+                      phx-value-ref={entry.ref}
+                      class="text-error hover:underline"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </article>
               <% end %>
-            </div>
+
+              <%= if Enum.empty?(@uploads.featured_image.entries) do %>
+                <label for={@uploads.featured_image.ref} class="cursor-pointer block">
+                  <.icon name="hero-photo" class="w-8 h-8 mx-auto text-base-content/30 mb-1" />
+                  <span class="text-sm text-base-content/60">
+                    <%= if @uploaded_featured_image, do: "Drop or click to replace", else: "Drop image here or click to upload" %>
+                  </span>
+                </label>
+              <% end %>
+
+              <%= for err <- upload_errors(@uploads.featured_image) do %>
+                <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+              <% end %>
+            </section>
           </div>
 
           <!-- Content Images -->
@@ -298,7 +319,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
             <%= for entry <- @uploads.content_images.entries do %>
               <div class="text-xs text-base-content/60 mt-1">
-                <%= entry.client_name %> (<%= Float.round(entry.progress, 0) %>%)
+                <%= entry.client_name %> (<%= entry.progress %>%)
               </div>
             <% end %>
 
@@ -408,6 +429,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         </div>
       </div>
     </div>
+    </.form>
     """
   end
 
@@ -448,6 +470,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:noreply, assign(socket, :uploaded_featured_image, nil)}
   end
 
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :featured_image, ref)}
+  end
+
   def handle_event("delete_post", _params, socket) do
     case Weakty.Posts.Post.delete_post(socket.assigns.post) do
       :ok -> {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
@@ -467,10 +493,19 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    # Add uploaded image URLs to params (bypasses hidden input timing issues)
+    featured_image_urls =
+      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
+        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+        File.mkdir_p!(Path.dirname(dest))
+        File.cp!(path, dest)
+        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+      end)
+
+    featured_image = List.first(featured_image_urls) || socket.assigns.uploaded_featured_image
+
     params =
       params
-      |> Map.put("featured_image", socket.assigns.uploaded_featured_image)
+      |> Map.put("featured_image", featured_image)
       |> Map.put("content_images", socket.assigns.content_images)
 
     case Form.submit(socket.assigns.form, params: params) do
@@ -483,24 +518,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     end
   end
 
-  def handle_progress(:featured_image, entry, socket) when entry.done? do
-    uploaded_files =
-      consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
-        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
-      end)
-
-    case uploaded_files do
-      [{:ok, url} | _] ->
-        {:noreply, assign(socket, :uploaded_featured_image, url)}
-
-      [] ->
-        {:noreply, socket}
-    end
-  end
-
   def handle_progress(:content_images, entry, socket) when entry.done? do
     uploaded_files =
       consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
@@ -510,7 +527,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
       end)
 
-    new_urls = Enum.map(uploaded_files, fn {:ok, url} -> url end)
+    new_urls = uploaded_files
     content_images = socket.assigns.content_images ++ new_urls
     {:noreply, assign(socket, content_images: content_images)}
   end
