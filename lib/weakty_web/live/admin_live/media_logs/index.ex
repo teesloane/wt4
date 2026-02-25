@@ -302,48 +302,4 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     if sort_dir == "desc", do: Enum.reverse(sorted), else: sorted
   end
 
-  defp media_type_badge(assigns) do
-    ~H"""
-    <span class={"badge badge-sm #{media_type_color(@media_type)}"}>
-      <%= format_media_type(@media_type) %>
-    </span>
-    """
-  end
-
-  defp media_status_badge(assigns) do
-    ~H"""
-    <span class={"badge badge-sm #{status_color(@status)}"}>
-      <%= format_status(@status) %>
-    </span>
-    """
-  end
-
-  defp media_type_color(t) do
-    case t do
-      :book -> "badge-info"; :comic -> "badge-accent"; :movie -> "badge-secondary"
-      :music -> "badge-primary"; :video_game -> "badge-success"; _ -> "badge-ghost"
-    end
-  end
-
-  defp status_color(s) do
-    case s do
-      :consuming -> "badge-warning"; :consumed -> "badge-success"
-      :want_to_consume -> "badge-info"; :on_hold -> "badge-ghost"
-      :abandoned -> "badge-error"; _ -> "badge-ghost"
-    end
-  end
-
-  defp format_media_type(t) do
-    case t do
-      :book -> "Book"; :comic -> "Comic"; :movie -> "Movie"
-      :music -> "Music"; :video_game -> "Game"; _ -> to_string(t)
-    end
-  end
-
-  defp format_status(s) do
-    case s do
-      :want_to_consume -> "Want"; :consuming -> "In Progress"; :consumed -> "Done"
-      :on_hold -> "On Hold"; :abandoned -> "Abandoned"; _ -> to_string(s)
-    end
-  end
 end
