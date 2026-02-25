@@ -45,3 +45,5 @@ npm-debug.log
 scripts/weakty-ghost.json
 seed/weakty-ghost.json
 seed/books
+
+priv/static/uploads
