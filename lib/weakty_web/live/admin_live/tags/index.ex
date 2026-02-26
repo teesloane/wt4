@@ -13,10 +13,14 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
      |> assign(:current_path, "/admin/tags")
      |> assign(:editing_tag, nil)
      |> assign(:new_tag_name, "")
+     |> assign(:pending_upload_url, nil)
+     |> assign(:featured_image_removed, false)
      |> allow_upload(:featured_image,
        accept: ~w(.jpg .jpeg .png .gif .webp),
        max_entries: 1,
-       max_file_size: 5_000_000
+       max_file_size: 5_000_000,
+       auto_upload: true,
+       progress: &handle_progress/3
      )
      |> load_tags(), layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -24,32 +28,46 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
   @impl true
   def handle_event("start_edit", %{"id" => id}, socket) do
     tag = Enum.find(socket.assigns.tags, &(&1.id == id))
-    {:noreply, assign(socket, editing_tag: tag)}
+    {:noreply, assign(socket, editing_tag: tag, pending_upload_url: nil, featured_image_removed: false)}
   end
 
   @impl true
   def handle_event("cancel_edit", _, socket) do
-    {:noreply, assign(socket, editing_tag: nil)}
+    {:noreply, assign(socket, editing_tag: nil, pending_upload_url: nil, featured_image_removed: false)}
   end
 
   @impl true
   def handle_event("validate", _params, socket) do
-    # No-op validation handler
     {:noreply, socket}
   end
 
   @impl true
+  def handle_event("cancel-upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :featured_image, ref)}
+  end
+
+  @impl true
+  def handle_event("remove_featured_image", _, socket) do
+    {:noreply, assign(socket, pending_upload_url: nil, featured_image_removed: true)}
+  end
+
+  @impl true
   def handle_event("update_tag", %{"tag" => tag_params}, socket) do
-    # Handle image upload
     uploaded_files =
       consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
-        dest = Path.join(["priv/static/uploads", "#{entry.uuid}.#{ext(entry)}"])
+        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
         File.mkdir_p!(Path.dirname(dest))
         File.cp!(path, dest)
         {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
       end)
 
-    featured_image = List.first(uploaded_files) || Map.get(tag_params, "featured_image")
+    featured_image =
+      cond do
+        socket.assigns.featured_image_removed -> nil
+        url = List.first(uploaded_files) -> url
+        url = socket.assigns.pending_upload_url -> url
+        true -> Map.get(tag_params, "featured_image")
+      end
 
     params =
       tag_params
@@ -64,6 +82,8 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
          socket
          |> put_flash(:info, "Tag updated successfully")
          |> assign(:editing_tag, nil)
+         |> assign(:pending_upload_url, nil)
+         |> assign(:featured_image_removed, false)
          |> load_tags()}
 
       {:error, _} ->
@@ -73,16 +93,15 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
 
   @impl true
   def handle_event("create_tag", %{"tag" => tag_params}, socket) do
-    # Handle image upload
     uploaded_files =
       consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
-        dest = Path.join(["priv/static/uploads", "#{entry.uuid}.#{ext(entry)}"])
+        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
         File.mkdir_p!(Path.dirname(dest))
         File.cp!(path, dest)
         {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
       end)
 
-    featured_image = List.first(uploaded_files)
+    featured_image = List.first(uploaded_files) || socket.assigns.pending_upload_url
 
     params =
       tag_params
@@ -97,6 +116,8 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
          socket
          |> put_flash(:info, "Tag created successfully")
          |> assign(:new_tag_name, "")
+         |> assign(:pending_upload_url, nil)
+         |> assign(:featured_image_removed, false)
          |> load_tags()}
 
       {:error, _} ->
@@ -133,6 +154,12 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
         {:noreply, put_flash(socket, :error, "Failed to delete tag")}
     end
   end
+
+  def handle_progress(:featured_image, entry, socket) when entry.done? do
+    {:noreply, assign(socket, :pending_upload_url, save_upload(socket, entry))}
+  end
+
+  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
 
   @impl true
   def render(assigns) do
@@ -255,11 +282,50 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
             checked={false}
           />
 
-          <div class="form-control">
+          <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">Featured Image</span>
+              <span class="label-text font-semibold">Featured Image</span>
             </label>
-            <.live_file_input upload={@uploads.featured_image} class="file-input file-input-bordered w-full" />
+            <.live_file_input upload={@uploads.featured_image} class="hidden" />
+
+            <%= cond do %>
+              <% entry = List.first(@uploads.featured_image.entries) -> %>
+                <%!-- Upload in progress --%>
+                <div class="relative inline-block">
+                  <.live_img_preview entry={entry} class="w-20 h-20 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    phx-click="cancel-upload"
+                    phx-value-ref={entry.ref}
+                    class="absolute -top-1 -right-1 btn btn-error btn-xs btn-circle"
+                  >✕</button>
+                </div>
+                <progress value={entry.progress} max="100" class="progress progress-primary w-full mt-2"></progress>
+              <% @pending_upload_url -> %>
+                <%!-- Uploaded image --%>
+                <div class="relative inline-block">
+                  <img src={@pending_upload_url} alt="Featured image" class="w-20 h-20 object-cover rounded-lg" />
+                  <button
+                    type="button"
+                    phx-click="remove_featured_image"
+                    class="absolute -top-1 -right-1 btn btn-error btn-xs btn-circle"
+                  >✕</button>
+                </div>
+              <% true -> %>
+                <%!-- No image: show drop zone --%>
+                <section
+                  phx-drop-target={@uploads.featured_image.ref}
+                  class="border-2 border-dashed border-base-300 rounded-lg p-3 text-center [&.phx-drop-target-active]:border-primary [&.phx-drop-target-active]:bg-primary/5 transition-colors"
+                >
+                  <label for={@uploads.featured_image.ref} class="cursor-pointer block">
+                    <.icon name="hero-photo" class="w-6 h-6 mx-auto text-base-content/30 mb-1" />
+                    <span class="text-xs text-base-content/60">Drop image here or click to upload</span>
+                  </label>
+                  <%= for err <- upload_errors(@uploads.featured_image) do %>
+                    <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+                  <% end %>
+                </section>
+            <% end %>
           </div>
 
           <.input
@@ -307,19 +373,61 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
               checked={@editing_tag.public}
             />
 
-            <div class="form-control">
+            <div class="form-control mb-4">
               <label class="label">
-                <span class="label-text">Featured Image</span>
+                <span class="label-text font-semibold">Featured Image</span>
               </label>
-              <%= if @editing_tag.featured_image do %>
-                <img
-                  src={@editing_tag.featured_image}
-                  alt="Current featured image"
-                  class="w-32 h-32 object-cover rounded mb-2"
-                />
-                <input type="hidden" name="tag[featured_image]" value={@editing_tag.featured_image} />
+              <.live_file_input upload={@uploads.featured_image} class="hidden" />
+
+              <%= cond do %>
+                <% entry = List.first(@uploads.featured_image.entries) -> %>
+                  <%!-- Upload in progress --%>
+                  <div class="relative inline-block">
+                    <.live_img_preview entry={entry} class="w-20 h-20 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      phx-click="cancel-upload"
+                      phx-value-ref={entry.ref}
+                      class="absolute -top-1 -right-1 btn btn-error btn-xs btn-circle"
+                    >✕</button>
+                  </div>
+                  <progress value={entry.progress} max="100" class="progress progress-primary w-full mt-2"></progress>
+                <% @pending_upload_url -> %>
+                  <%!-- New upload saved --%>
+                  <div class="relative inline-block">
+                    <img src={@pending_upload_url} alt="Featured image" class="w-20 h-20 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      phx-click="remove_featured_image"
+                      class="absolute -top-1 -right-1 btn btn-error btn-xs btn-circle"
+                    >✕</button>
+                  </div>
+                <% !@featured_image_removed && @editing_tag.featured_image -> %>
+                  <%!-- Existing image from DB --%>
+                  <div class="relative inline-block">
+                    <img src={@editing_tag.featured_image} alt="Current featured image" class="w-20 h-20 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      phx-click="remove_featured_image"
+                      class="absolute -top-1 -right-1 btn btn-error btn-xs btn-circle"
+                    >✕</button>
+                    <input type="hidden" name="tag[featured_image]" value={@editing_tag.featured_image} />
+                  </div>
+                <% true -> %>
+                  <%!-- No image: show drop zone --%>
+                  <section
+                    phx-drop-target={@uploads.featured_image.ref}
+                    class="border-2 border-dashed border-base-300 rounded-lg p-3 text-center [&.phx-drop-target-active]:border-primary [&.phx-drop-target-active]:bg-primary/5 transition-colors"
+                  >
+                    <label for={@uploads.featured_image.ref} class="cursor-pointer block">
+                      <.icon name="hero-photo" class="w-6 h-6 mx-auto text-base-content/30 mb-1" />
+                      <span class="text-xs text-base-content/60">Drop image here or click to upload</span>
+                    </label>
+                    <%= for err <- upload_errors(@uploads.featured_image) do %>
+                      <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+                    <% end %>
+                  </section>
               <% end %>
-              <.live_file_input upload={@uploads.featured_image} class="file-input file-input-bordered w-full" />
             </div>
 
             <.input
@@ -348,8 +456,23 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     tags =
       Weakty.Tags.Tag.list_tags!()
       |> Ash.load!([:links, :posts, :media_logs, :projects], domain: Weakty.Tags)
+
     assign(socket, :tags, tags)
   end
+
+  defp save_upload(socket, entry) do
+    consume_uploaded_entry(socket, entry, fn %{path: path} ->
+      dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+      File.mkdir_p!(Path.dirname(dest))
+      File.cp!(path, dest)
+      {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+    end)
+  end
+
+  defp error_to_string(:too_large), do: "File too large (max 5MB)"
+  defp error_to_string(:too_many_files), do: "Too many files selected"
+  defp error_to_string(:not_accepted), do: "Invalid file type (only .jpg, .jpeg, .png, .gif, .webp)"
+  defp error_to_string(error), do: "Upload error: #{inspect(error)}"
 
   defp ext(entry) do
     [ext | _] = MIME.extensions(entry.client_type)

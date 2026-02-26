@@ -78,6 +78,7 @@ defmodule WeaktyWeb.Router do
       live "/media-logs/:id/edit", MediaLogLive.Form, :edit
       live "/tags", AdminLive.Tags.Index, :index
       live "/entities", AdminLive.Entities.Index, :index
+      live "/jobs", AdminLive.Jobs.Index, :index
     end
   end
 

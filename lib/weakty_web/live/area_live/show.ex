@@ -65,7 +65,6 @@ defmodule WeaktyWeb.AreaLive.Show do
       </div>
 
       <div class="mb-8">
-        <h2 class="text-2xl font-bold mb-4">Content</h2>
         <p class="text-base-content/70 mb-6">
           <%= length(@entities) %> item<%= if length(@entities) != 1, do: "s" %>
         </p>
@@ -98,6 +97,7 @@ defmodule WeaktyWeb.AreaLive.Show do
                         <%= entity.title %>
                       </.link>
                     </h3>
+
 
                     <%= if entity.content do %>
                       <p class="text-base-content/70 mb-4"><%= entity.content %></p>

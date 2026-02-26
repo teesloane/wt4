@@ -45,13 +45,16 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         accept: ~w(.jpg .jpeg .png .gif .webp),
         max_entries: 1,
         max_file_size: 5_000_000,
-        auto_upload: true
+        auto_upload: true,
+        progress: &handle_progress/3
+        
       )
       |> allow_upload(:content_images,
         accept: ~w(.jpg .jpeg .png .gif .webp),
         max_entries: 10,
         max_file_size: 5_000_000,
-        auto_upload: true
+        auto_upload: true,
+        progress: &handle_progress/3
       )
 
     {:ok, socket, layout: {WeaktyWeb.Layouts, :admin}}
@@ -545,11 +548,31 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
         handle_tag_update(post, socket.assigns.tags)
-        {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
+        message = if socket.assigns.post, do: "Post updated successfully.", else: "Post created successfully."
+        {:noreply, socket |> put_flash(:info, message) |> push_navigate(to: ~p"/admin/posts")}
 
       {:error, form} ->
         {:noreply, assign(socket, form: to_form(form))}
     end
+  end
+
+  def handle_progress(:featured_image, entry, socket) when entry.done? do
+    {:noreply, assign(socket, :uploaded_featured_image, save_upload(socket, entry))}
+  end
+
+  def handle_progress(:content_images, entry, socket) when entry.done? do
+    {:noreply, assign(socket, :content_images, socket.assigns.content_images ++ [save_upload(socket, entry)])}
+  end
+
+  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
+
+  defp save_upload(socket, entry) do
+    consume_uploaded_entry(socket, entry, fn %{path: path} ->
+      dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
+      File.mkdir_p!(Path.dirname(dest))
+      File.cp!(path, dest)
+      {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+    end)
   end
 
   defp maybe_auto_slug(params, current_auto_slug) do

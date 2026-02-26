@@ -20,7 +20,8 @@ defmodule Weakty.Application do
       WeaktyWeb.Endpoint,
       {Absinthe.Subscription, WeaktyWeb.Endpoint},
       AshGraphql.Subscription.Batcher,
-      {AshAuthentication.Supervisor, [otp_app: :weakty]}
+      {AshAuthentication.Supervisor, [otp_app: :weakty]},
+      {Oban, Application.fetch_env!(:weakty, Oban)}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

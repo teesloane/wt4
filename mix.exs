@@ -81,7 +81,8 @@ defmodule Weakty.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:mdex, "~> 0.2"},
-      {:htmd, "~> 0.1"}
+      {:htmd, "~> 0.1"},
+      {:oban, "~> 2.19"}
     ]
   end
 
