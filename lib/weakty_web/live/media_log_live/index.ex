@@ -11,6 +11,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
      |> assign(:media_type_filter, "all")
      |> assign(:status_filter, "all")
      |> assign(:year_filter, "all")
+     |> assign(:view, "table")
      |> load_media_logs()}
   end
 
@@ -31,18 +32,18 @@ defmodule WeaktyWeb.MediaLogLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-6xl px-4 py-8">
+    <div class="mx-auto max-w-3xl px-4 py-8">
       <div class="mb-8">
         <h1 class="text-lg font-bold mb-4">Media Logs</h1>
 
         <!-- Filters Row -->
-        <div class="flex gap-2 mb-4 flex-wrap items-end">
-          <!-- Year Filter - Dropdown (both mobile and desktop) -->
+        <div class="flex gap-2 mb-4 items-center">
+          <!-- Year Filter -->
           <div class="dropdown">
             <label tabindex="0" class="btn btn-sm btn-outline">
-              <%= if @year_filter == "all", do: "All Years", else: @year_filter %> ▼
+              <%= if @year_filter == "all", do: "All Years", else: @year_filter %> 
             </label>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40">
               <li>
                 <.link
                   patch={~p"/media-logs?type=#{@media_type_filter}&status=#{@status_filter}&year=all"}
@@ -66,12 +67,12 @@ defmodule WeaktyWeb.MediaLogLive.Index do
             </ul>
           </div>
 
-          <!-- Media Type Filter - Mobile Dropdown -->
-          <div class="dropdown lg:hidden">
+          <!-- Media Type Filter -->
+          <div class="dropdown">
             <label tabindex="0" class="btn btn-sm btn-outline">
-              Media Types ▼
+              <%= media_type_filter_label(@media_type_filter) %> 
             </label>
-            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-48">
               <%= for filter <- media_type_filters() do %>
                 <li>
                   <.link
@@ -79,63 +80,111 @@ defmodule WeaktyWeb.MediaLogLive.Index do
                     class={if @media_type_filter == filter.type, do: "active"}
                     onclick="document.activeElement.blur()"
                   >
-                    <%= filter.label %> (<%= filter_count(@media_logs, filter.type, @year_filter) %>)
+                    <%= filter.label %>
+                    <span class="badge badge-sm ml-auto"><%= filter_count(@media_logs, filter.type, @year_filter) %></span>
                   </.link>
                 </li>
               <% end %>
             </ul>
           </div>
 
-          <!-- Media Type Filter - Desktop Buttons -->
-          <div class="hidden lg:flex gap-2 flex-wrap">
-            <%= for filter <- media_type_filters() do %>
-              <.link
-                patch={~p"/media-logs?type=#{filter.type}&status=#{@status_filter}&year=#{@year_filter}"}
-                class={["btn btn-sm -mt-1", if(@media_type_filter == filter.type, do: "btn-primary", else: "btn-ghost")]}
-              >
-                <%= filter.label %> <span class="badge badge-sm ml-1"><%= filter_count(@media_logs, filter.type, @year_filter) %></span>
-              </.link>
-            <% end %>
+          <!-- View Toggle -->
+          <div class="join ml-auto flex-shrink-0">
+            <button
+              class={["join-item btn btn-sm", if(@view == "table", do: "btn-primary", else: "btn-ghost")]}
+              phx-click="set_view"
+              phx-value-view="table"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
+            <button
+              class={["join-item btn btn-sm", if(@view == "grid", do: "btn-primary", else: "btn-ghost")]}
+              phx-click="set_view"
+              phx-value-view="grid"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <%= if Enum.empty?(@filtered_media_logs) do %>
-          <div class="col-span-full card bg-base-200">
-            <div class="card-body text-center">
-              <p class="text-base-content/60">No media logs found</p>
-            </div>
+      <%= if Enum.empty?(@filtered_media_logs) do %>
+        <div class="card bg-base-200">
+          <div class="card-body text-center">
+            <p class="text-base-content/60">No media logs found</p>
+          </div>
+        </div>
+      <% else %>
+        <%= if @view == "table" do %>
+          <div class="overflow-x-auto">
+            <table class="table table-sm table-zebra w-full">
+              <thead>
+                <tr class="text-base-content/60">
+                  <th>Title</th>
+                  <th class="hidden sm:table-cell">Creator</th>
+                  <th class="hidden lg:table-cell">Finished</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%= for media_log <- @filtered_media_logs do %>
+                  <tr class="">
+                    <td>
+                      <div  class="font-medium">
+                        <%= media_log.title %>
+                        <%= if media_log.favourite do %>
+                          <span class="text-warning ml-1">★</span>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="hidden sm:table-cell text-base-content/70"><%= media_log.creator %></td>
+                    <td class="hidden lg:table-cell text-base-content/70 min-w-[148px]">
+                      <%= if media_log.date_consumed, do: Calendar.strftime(media_log.date_consumed, "%b %-d, %Y") %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
           </div>
         <% else %>
-          <%= for media_log <- @filtered_media_logs do %>
-            <.link navigate={~p"/media-logs/#{media_log.slug}"} class="card bg-base-100 p-2 hover:shadow-md transition-shadow cursor-pointer">
-              <figure class="">
-                <%= if media_log.thumbnail_url do %>
-                  <img src={media_log.thumbnail_url} alt={media_log.title} class="rounded-sm h-48 w-full object-cover" />
-                <% else %>
-                  <div class="bg-base-300 rounded-lg h-48 w-full flex items-center justify-center text-6xl">
-                    <%= media_type_emoji(media_log.media_type) %>
-                  </div>
-                <% end %>
-              </figure>
-              <div class="py-2">
-                <h2 class="text-sm gap-2 flex items-start">
-                  <%= media_log.title %>
-                  <%= if media_log.favourite do %>
-                    <span class="text-warning">★</span>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <%= for media_log <- @filtered_media_logs do %>
+              <div  class="card bg-base-100 hover:shadow-md transition-shadow cursor-pointer">
+                <figure>
+                  <%= if media_log.thumbnail_url do %>
+                    <img src={media_log.thumbnail_url} alt={media_log.title} class="h-64 w-full object-cover" />
+                  <% else %>
+                    <div class="bg-base-300 rounded-lg h-48 w-full flex items-center justify-center text-6xl">
+                      <%= media_type_emoji(media_log.media_type) %>
+                    </div>
                   <% end %>
-                </h2>
-                <%= if media_log.creator do %>
-                  <p class="text-sm text-base-content/60"><%= media_log.creator %></p>
-                <% end %>
-              </div>
-            </.link>
-          <% end %>
+                </figure>
+                <div class="py-2">
+                  <h2 class="text-sm gap-2 flex items-start">
+                    <%= media_log.title %>
+                    <%= if media_log.favourite do %>
+                      <span class="text-warning">★</span>
+                    <% end %>
+                  </h2>
+                  <%= if media_log.creator do %>
+                    <p class="text-sm text-base-content/60"><%= media_log.creator %></p>
+                  <% end %>
+                </div>
+                </div>
+            <% end %>
+          </div>
         <% end %>
-      </div>
+      <% end %>
     </div>
     """
+  end
+
+  @impl true
+  def handle_event("set_view", %{"view" => view}, socket) when view in ["table", "grid"] do
+    {:noreply, assign(socket, :view, view)}
   end
 
   defp load_media_logs(socket) do
@@ -207,6 +256,13 @@ defmodule WeaktyWeb.MediaLogLive.Index do
 
 
 
+
+  defp media_type_filter_label("all"), do: "All Types"
+  defp media_type_filter_label(type) do
+    Enum.find_value(media_type_filters(), "All Types", fn f ->
+      if f.type == type, do: f.label
+    end)
+  end
 
   defp media_type_filters do
     [

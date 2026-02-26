@@ -44,7 +44,7 @@ defmodule WeaktyWeb.Router do
       live "/projects", ProjectLive.Index, :index
       live "/projects/:slug", ProjectLive.Show, :show
       live "/media-logs", MediaLogLive.Index, :index
-      live "/media-logs/:slug", MediaLogLive.Show, :show
+      # live "/media-logs/:slug", MediaLogLive.Show, :show
       # in each liveview, add one of the following at the top of the module:
       #
       # If an authenticated user must be present:

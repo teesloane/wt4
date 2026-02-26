@@ -320,9 +320,14 @@ defmodule ObsidianBookImporter do
   defp map_rating(_),                do: nil
 
   # Returns HTTP(S) URLs only; Obsidian [[internal]] links are discarded.
+  # Downloads external URLs to local storage and returns the local path.
   defp extract_cover(fm) do
     url = Map.get(fm, "cover") || Map.get(fm, "image")
-    http_url(url)
+
+    case http_url(url) do
+      nil -> nil
+      external_url -> Weakty.ImageDownloader.maybe_download(external_url, "media")
+    end
   end
 
   defp extract_external_url(fm) do

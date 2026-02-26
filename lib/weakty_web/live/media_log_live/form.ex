@@ -372,6 +372,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
+    params = maybe_download_thumbnail(params)
+
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, media_log} ->
         handle_tag_update(media_log, socket.assigns.tags)
@@ -430,6 +432,16 @@ defmodule WeaktyWeb.MediaLogLive.Form do
       {:noreply, assign(socket, form: form, search_results: [])}
     else
       {:noreply, socket}
+    end
+  end
+
+  defp maybe_download_thumbnail(params) do
+    case params["thumbnail_url"] do
+      url when is_binary(url) and url != "" ->
+        Map.put(params, "thumbnail_url", Weakty.ImageDownloader.maybe_download(url, "media"))
+
+      _ ->
+        params
     end
   end
 
