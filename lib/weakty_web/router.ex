@@ -106,7 +106,7 @@ defmodule WeaktyWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
-    live "/archive", TimelineLive.Index, :index
+    live "/archive", ArchiveLive.Index, :index
 
     auth_routes AuthController, Weakty.Accounts.User, path: "/auth"
     sign_out_route AuthController

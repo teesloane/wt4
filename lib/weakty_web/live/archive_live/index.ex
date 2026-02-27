@@ -1,4 +1,4 @@
-defmodule WeaktyWeb.TimelineLive.Index do
+defmodule WeaktyWeb.ArchiveLive.Index do
   use WeaktyWeb, :live_view
 
   @impl true
@@ -22,22 +22,22 @@ defmodule WeaktyWeb.TimelineLive.Index do
         Archive
       </h1>
 
-      <div class="divide-y divide-base-content/10">
+      <div class="capitalize">
         <%= for entity <- @entities do %>
-          <div class="flex items-center gap-4 py-3 group">
-            <span class="opacity-30 w-4 flex-shrink-0" title={to_string(entity.entity_type)}>
-              <.icon name={entity_icon(entity.entity_type)} class="w-4 h-4" />
+          <div class="flex items-center gap-4 py-3 group text-sm">
+            <time class=" opacity-30 flex-shrink-0">
+              <%= Calendar.strftime(entity.published_at, "%Y-%m-%d") %>
+            </time>
+            <span class="opacity-30 min-w-32 flex-shrink-0" title={to_string(entity.entity_type)}>
+              <%= entity.entity_type %> 
             </span>
             <%= if entity.entity_type == :media_log do %>
-              <span class="flex-1 text-sm opacity-50 truncate"><%= entity.title %></span>
+              <span class="flex-1 w-2/4 text-sm opacity-50 truncate"><%= entity.title %></span>
             <% else %>
-              <a href={"#{entity.source_path}/#{entity.slug}"} class="flex-1 text-sm opacity-80 group-hover:opacity-100 transition-opacity truncate">
+              <a href={"#{entity.source_path}/#{entity.slug}"} class="flex-1  opacity-80 group-hover:opacity-100 transition-opacity truncate">
                 <%= entity.title %>
               </a>
             <% end %>
-            <time class="text-xs opacity-30 flex-shrink-0 tabular-nums">
-              <%= Calendar.strftime(entity.published_at, "%Y-%m-%d") %>
-            </time>
           </div>
         <% end %>
       </div>
