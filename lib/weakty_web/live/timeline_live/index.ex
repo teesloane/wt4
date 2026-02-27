@@ -22,48 +22,31 @@ defmodule WeaktyWeb.TimelineLive.Index do
         Archive
       </h1>
 
-      <div class="space-y-12">
-        <%= for {entity, index} <- Enum.with_index(@entities) do %>
-          <article class="pb-8">
-            <div class="flex items-center gap-3 text-sm opacity-60 mb-4">
-              <span class="lowercase tracking-wide"><%= entity.entity_type %></span>
-              <span>·</span>
-              <time><%= Calendar.strftime(entity.published_at, "%d %b %Y") %></time>
-            </div>
-
-            <h2 class="text-2xl font-normal mb-3 averia">
-              <a href={"#{entity.source_path}/#{entity.slug}"} class="hover:opacity-70 transition-opacity">
-                <%= entity.title %>
-              </a>
-              <%= if entity.url do %>
-                <a href={entity.url} target="_blank" rel="noopener noreferrer" class="text-base opacity-60 hover:opacity-100 ml-2">
-                  →
-                </a>
-              <% end %>
-            </h2>
-
-            <%= if entity.content do %>
-              <p class="opacity-80 leading-relaxed mb-4"><%= entity.content %></p>
-            <% end %>
-
-            <%= if entity.tags && length(entity.tags) > 0 do %>
-              <div class="flex flex-wrap gap-3 text-sm opacity-60">
-                <%= for tag <- entity.tags do %>
-                  <span>#<%= tag.name %></span>
-                <% end %>
-              </div>
-            <% end %>
-          </article>
-
-          <!-- Dotted divider (not for last item) -->
-          <%= if index < length(@entities) - 1 do %>
-            <div class="flex items-center gap-2 opacity-30 my-8">
-              <div class="flex-1 border-t border-dotted border-base-content"></div>
-            </div>
-          <% end %>
+      <div class="divide-y divide-base-content/10">
+        <%= for entity <- @entities do %>
+          <div class="flex items-center gap-4 py-3 group">
+            <span class="opacity-30 w-4 flex-shrink-0" title={to_string(entity.entity_type)}>
+              <.icon name={entity_icon(entity.entity_type)} class="w-4 h-4" />
+            </span>
+            <a href={"#{entity.source_path}/#{entity.slug}"} class="flex-1 text-sm opacity-80 group-hover:opacity-100 transition-opacity truncate">
+              <%= entity.title %>
+            </a>
+            <time class="text-xs opacity-30 flex-shrink-0 tabular-nums">
+              <%= Calendar.strftime(entity.published_at, "%Y-%m-%d") %>
+            </time>
+          </div>
         <% end %>
       </div>
     </.page_container>
     """
   end
+
+  defp entity_icon(:post),      do: "hero-pencil"
+  defp entity_icon(:link),      do: "hero-link"
+  defp entity_icon(:til),       do: "hero-light-bulb"
+  defp entity_icon(:bookmark),  do: "hero-bookmark"
+  defp entity_icon(:media_log), do: "hero-play"
+  defp entity_icon(:photo),     do: "hero-photo"
+  defp entity_icon(:quote),     do: "hero-chat-bubble-left"
+  defp entity_icon(_),          do: "hero-ellipsis-horizontal"
 end

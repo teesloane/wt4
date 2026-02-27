@@ -45,6 +45,9 @@ defmodule WeaktyWeb.Router do
       live "/projects/:slug", ProjectLive.Show, :show
       live "/media-logs", MediaLogLive.Index, :index
       # live "/media-logs/:slug", MediaLogLive.Show, :show
+      live "/quotes", QuoteLive.Index, :index
+      live "/til", TilLive.Index, :index
+      live "/til/:slug", TilLive.Show, :show
       # in each liveview, add one of the following at the top of the module:
       #
       # If an authenticated user must be present:
@@ -68,14 +71,20 @@ defmodule WeaktyWeb.Router do
       live "/posts/new", AdminLive.Posts.Form, :new
       live "/posts/:id/edit", AdminLive.Posts.Form, :edit
       live "/projects", AdminLive.Projects.Index, :index
-      live "/projects/new", ProjectLive.Form, :new
-      live "/projects/:id/edit", ProjectLive.Form, :edit
+      live "/projects/new", AdminLive.Projects.Form, :new
+      live "/projects/:id/edit", AdminLive.Projects.Form, :edit
       live "/links", AdminLive.Links.Index, :index
       live "/links/new", LinkLive.Form, :new
       live "/links/:id/edit", LinkLive.Form, :edit
       live "/media-logs", AdminLive.MediaLogs.Index, :index
       live "/media-logs/new", MediaLogLive.Form, :new
       live "/media-logs/:id/edit", MediaLogLive.Form, :edit
+      live "/quotes", AdminLive.Quotes.Index, :index
+      live "/quotes/new", QuoteLive.Form, :new
+      live "/quotes/:id/edit", QuoteLive.Form, :edit
+      live "/til", AdminLive.Tils.Index, :index
+      live "/til/new", TilLive.Form, :new
+      live "/til/:id/edit", TilLive.Form, :edit
       live "/tags", AdminLive.Tags.Index, :index
       live "/entities", AdminLive.Entities.Index, :index
       live "/jobs", AdminLive.Jobs.Index, :index
