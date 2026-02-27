@@ -35,10 +35,40 @@ window.addEventListener("phx:copy-to-clipboard", (e) => {
   })
 })
 
+// Global search keyboard shortcut (Cmd+K / Ctrl+K)
+window.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    e.preventDefault()
+    window.dispatchEvent(new CustomEvent("open-search"))
+  }
+})
+
+const SearchModal = {
+  mounted() {
+    this.handleOpenSearch = () => {
+      this.pushEvent("open_search", {})
+    }
+
+    this.handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        this.pushEvent("close_search", {})
+      }
+    }
+
+    window.addEventListener("open-search", this.handleOpenSearch)
+    window.addEventListener("keydown", this.handleKeyDown)
+  },
+
+  destroyed() {
+    window.removeEventListener("open-search", this.handleOpenSearch)
+    window.removeEventListener("keydown", this.handleKeyDown)
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, SearchModal},
 })
 
 // Show progress bar on live navigation and form submits

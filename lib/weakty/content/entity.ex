@@ -117,6 +117,19 @@ defmodule Weakty.Content.Entity do
       get? true
       filter expr(entity_type == ^arg(:entity_type) and source_id == ^arg(:source_id))
     end
+
+    read :search do
+      argument :query, :string, allow_nil?: false
+
+      filter expr(
+        public == true and
+          (contains(title, ^arg(:query)) or
+            contains(content, ^arg(:query)) or
+            exists(tags, contains(name, ^arg(:query))))
+      )
+
+      prepare build(sort: [published_at: :desc], limit: 15, load: [:tags])
+    end
   end
 
   code_interface do
@@ -124,6 +137,7 @@ defmodule Weakty.Content.Entity do
     define :get_entity_by_source, action: :by_source, args: [:entity_type, :source_id]
     define :upsert_entity, action: :create
     define :delete_entity, action: :destroy
+    define :search_entities, action: :search, args: [:query]
   end
 
   policies do
