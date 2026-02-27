@@ -138,11 +138,22 @@ defmodule Weakty.Content.Entity do
 
       prepare build(sort: [published_at: :desc], limit: 15, load: [:tags])
     end
+
+    read :related do
+      argument :tag_ids, {:array, :uuid}, allow_nil?: false
+      argument :exclude_id, :uuid, allow_nil?: false
+      filter expr(
+        public == true and
+        source_id != ^arg(:exclude_id) and
+        exists(tags, id in ^arg(:tag_ids))
+      )
+    end
   end
 
   code_interface do
     define :list_entities, action: :timeline
     define :get_entity_by_source, action: :by_source, args: [:entity_type, :source_id]
+    define :related_entities, action: :related, args: [:tag_ids, :exclude_id]
     define :upsert_entity, action: :create
     define :delete_entity, action: :destroy
     define :search_entities, action: :search, args: [:query]

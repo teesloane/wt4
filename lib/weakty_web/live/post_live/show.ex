@@ -8,11 +8,14 @@ defmodule WeaktyWeb.PostLive.Show do
     post = Weakty.Posts.Post
       |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
       |> Ash.read_one!()
-      |> Ash.load!(:user)
+      |> Ash.load!([:user, :tags])
+
+    related = get_related_content(post)
 
     {:ok,
      socket
      |> assign(post: post)
+     |> assign(related: related)
      |> assign(og_content: post)
      |> assign(page_title: post.title)}
   end
@@ -90,6 +93,37 @@ defmodule WeaktyWeb.PostLive.Show do
         </div>
       <% end %>
     </article>
+
+    <%= if @related != [] do %>
+      <aside class="text-sm border-base-300 mt-4 pt-4 border border-base-300 p-4  mx-auto">
+        <h3 class="uppercase tracking-widest opacity-40 mb-8">Maybe Related?</h3>
+        <div class="space-y-2">
+          <%= for entity <- @related do %>
+            <div class="flex items-baseline opacity-50 hover:opacity-70 ">
+              <div class="flex items-baseline gap-3 w-full min-w-0">
+              <%= if entity.published_at do %>
+                <span class="flex-shrink-0"><%= format_date(entity.published_at) %></span>
+              <% end %>
+
+                <.link
+                  navigate={"#{entity.source_path}/#{entity.slug}"}
+                  class="hover:opacity-60 transition-opacity truncate w-full flex-1"
+                >
+                  <%= entity.title %>
+                </.link>
+
+                
+                <span class="capitalize flex-shrink-0">(<%= entity.entity_type %>:</span>
+                <%= for tag <- Enum.slice(entity.tags, 0..2) do %>
+                #<%= tag.name %>
+                <% end %>
+                )
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </aside>
+    <% end %>
     </.page_container>
     """
   end
@@ -116,6 +150,33 @@ defmodule WeaktyWeb.PostLive.Show do
   def handle_event("delete", _params, socket) do
     Ash.destroy!(socket.assigns.post)
     {:noreply, push_navigate(socket, to: ~p"/posts")}
+  end
+
+  defp get_related_content(post) do
+    tag_ids = Enum.map(post.tags, & &1.id)
+
+    if Enum.empty?(tag_ids) do
+      []
+    else
+      case Weakty.Content.Entity.related_entities(tag_ids, post.id) do
+        {:ok, entities} ->
+          entities
+          |> Ash.load!(:tags, domain: Weakty.Content)
+          |> Enum.map(fn entity ->
+            score = Enum.count(entity.tags, fn t -> t.id in tag_ids end)
+            {score, entity}
+          end)
+          |> Enum.sort_by(fn {score, entity} ->
+            type_priority = if entity.entity_type == :post, do: 0, else: 1
+            {-score, type_priority}
+          end)
+          |> Enum.take(6)
+          |> Enum.map(fn {_score, entity} -> entity end)
+
+        _ ->
+          []
+      end
+    end
   end
 
   defp format_date(datetime) do
