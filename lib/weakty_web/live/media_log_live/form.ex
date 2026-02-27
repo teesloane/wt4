@@ -274,7 +274,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Thumbnail URL</span>
             </label>
-            <input type="url" form="media-log-form" name={@form[:thumbnail_url].name} value={@form[:thumbnail_url].value} class="input input-bordered input-sm w-full text-sm" placeholder="https://..." />
+            <input form="media-log-form" name={@form[:thumbnail_url].name} value={@form[:thumbnail_url].value} class="input input-bordered input-sm w-full text-sm" placeholder="https://..." />
             <%= if @form[:thumbnail_url].value do %>
               <img src={@form[:thumbnail_url].value} alt="Preview" class="mt-2 w-20 h-auto rounded" />
             <% end %>

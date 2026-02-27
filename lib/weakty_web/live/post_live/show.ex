@@ -23,27 +23,22 @@ defmodule WeaktyWeb.PostLive.Show do
     <.page_container>
     <article>
       <header class="text-center mb-16">
-        <div class="text-sm lowercase tracking-wider mb-6 opacity-70">
-          <%= @post.post_type || "essay" %>
-        </div>
 
         <h1 class="text-xl font-normal leading-tight tracking-wider uppercase mb-8 averia">
           <%= @post.title %>
         </h1>
 
         <div class="flex items-center justify-center gap-4 mt-8">
-          <div class="w-12 h-12 rounded-full bg-base-200 border-2 border-base-300 flex-shrink-0">
-            <!-- Avatar placeholder - you can add user avatar here -->
-          </div>
-          <div class="text-left">
-            <div class="text-lg font-normal mb-1">
-              <%= if @post.user, do: @post.user.email |> to_string() |> String.split("@") |> hd(), else: "Anonymous" %>
-            </div>
-            <div class="text-sm opacity-60">
+          <div class="text-center">
+            <div class="text-sm lowercase flex divide-solid tracking-wider gap-3  mb-6 opacity-70">
               <%= if @post.published_at do %>
-                <%= format_date(@post.published_at) %> · <%= estimate_read_time(@post.html) %> min read
+                <span class="capitalize"><%= @post.post_type || "" %></span>
+                  <span> • </span>
+                  <span> <%= format_date(@post.published_at) %> </span>
+                  <span> • </span>
+                  <span> <%= estimate_read_time(@post.html) %> min read</span>
               <% else %>
-                <%= format_date(@post.updated_at) %> · Draft
+                <%= format_date(@post.updated_at) %> • Draft
               <% end %>
             </div>
           </div>
@@ -124,7 +119,7 @@ defmodule WeaktyWeb.PostLive.Show do
   end
 
   defp format_date(datetime) do
-    Calendar.strftime(datetime, "%d %b %Y")
+    Calendar.strftime(datetime, "%Y/%m/%d")
   end
 
   defp estimate_read_time(html) when is_binary(html) do

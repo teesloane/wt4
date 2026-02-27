@@ -68,15 +68,16 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   @impl true
   def render(assigns) do
     ~H"""
+    <div class="flex min-h-screen">
     <.form
       id="post-form"
       for={@form}
       phx-submit="save"
       phx-change="validate"
+      class="w-full"
     >
-    <div class="flex min-h-screen">
       <!-- Main Content Area -->
-      <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
+      <div class="flex-1 max-w-4xl w-full mx-auto px-8 py-8">
         <div class="flex items-center gap-4 mb-8">
           <.link navigate={~p"/admin/posts"} class="btn btn-ghost btn-sm">
             <.icon name="hero-arrow-left" class="w-4 h-4" />
@@ -137,9 +138,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
           </div>
         <% end %>
       </div>
+      </.form>
 
       <!-- Sidebar -->
-      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
+      <div class="w-128 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
         <h2 class="text-xl font-bold mb-6">Post settings</h2>
 
         <div class="space-y-6">
@@ -231,7 +233,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               phx-drop-target={@uploads.featured_image.ref}
               class="border-2 border-dashed border-base-300 rounded-lg p-4 text-center [&.phx-drop-target-active]:border-primary [&.phx-drop-target-active]:bg-primary/5 transition-colors"
             >
-              <.live_file_input upload={@uploads.featured_image} class="hidden" />
+              <.live_file_input form="post-form" upload={@uploads.featured_image} class="hidden" />
 
               <%= if @uploaded_featured_image && Enum.empty?(@uploads.featured_image.entries) do %>
                 <div class="relative group mb-3">
@@ -318,7 +320,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               phx-drop-target={@uploads.content_images.ref}
               class="border-2 border-dashed border-base-300 rounded-lg p-4 text-center [&.phx-drop-target-active]:border-primary [&.phx-drop-target-active]:bg-primary/5 transition-colors"
             >
-              <.live_file_input upload={@uploads.content_images} class="hidden" />
+              <.live_file_input form="post-form" upload={@uploads.content_images} class="hidden" />
 
               <%= for entry <- @uploads.content_images.entries do %>
                 <article class="mb-2 text-left">
@@ -452,7 +454,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         </div>
       </div>
     </div>
-    </.form>
     """
   end
 
