@@ -201,13 +201,6 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                       >
                         <.icon name="hero-pencil" class="w-4 h-4" />
                       </.link>
-                      <.link
-                        navigate={~p"/media-logs/#{media_log.slug}"}
-                        class="btn btn-ghost btn-xs"
-                        title="View"
-                      >
-                        <.icon name="hero-eye" class="w-4 h-4" />
-                      </.link>
                       <button
                         phx-click="delete"
                         phx-value-id={media_log.id}
