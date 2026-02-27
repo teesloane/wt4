@@ -121,12 +121,20 @@ defmodule Weakty.Content.Entity do
     read :search do
       argument :query, :string, allow_nil?: false
 
-      filter expr(
-        public == true and
-          (contains(title, ^arg(:query)) or
-            contains(content, ^arg(:query)) or
-            exists(tags, contains(name, ^arg(:query))))
-      )
+      prepare fn query, _context ->
+        require Ash.Query
+        term = Ash.Query.get_argument(query, :query)
+        pattern = "%#{String.downcase(String.trim(term))}%"
+
+        Ash.Query.filter(
+          query,
+          entity_type != :media_log and
+            public == true and
+            (fragment("lower(coalesce(title, '')) LIKE ?", ^pattern) or
+              fragment("lower(coalesce(content, '')) LIKE ?", ^pattern) or
+              exists(tags, fragment("lower(coalesce(name, '')) LIKE ?", ^pattern)))
+        )
+      end
 
       prepare build(sort: [published_at: :desc], limit: 15, load: [:tags])
     end

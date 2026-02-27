@@ -5,27 +5,74 @@ defmodule WeaktyWeb.SearchLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, assign(socket, open: false, query: "", results: []), layout: false}
+    {:ok, assign(socket, open: false, query: "", results: [], selected_index: 0), layout: false}
   end
 
   @impl true
   def handle_event("open_search", _params, socket) do
-    {:noreply, assign(socket, open: true)}
+    {:noreply, assign(socket, open: true, selected_index: 0)}
   end
 
   def handle_event("close_search", _params, socket) do
-    {:noreply, assign(socket, open: false, query: "", results: [])}
+    {:noreply, assign(socket, open: false, query: "", results: [], selected_index: 0)}
   end
 
-  def handle_event("search", %{"query" => query}, socket) do
-    results =
-      if String.length(String.trim(query)) >= 2 do
-        Weakty.Content.Entity.search_entities!(query)
-      else
-        []
-      end
+  def handle_event("select_result", %{"url" => url}, socket) do
+    {:noreply,
+     socket
+     |> assign(open: false, query: "", results: [], selected_index: 0)
+     |> push_event("search:navigate", %{url: url})}
+  end
 
-    {:noreply, assign(socket, query: query, results: results)}
+  # Arrow/Enter keys via phx-keydown (no debounce)
+  def handle_event("keydown", %{"key" => "ArrowDown"}, socket) do
+    count = length(socket.assigns.results)
+    new_index = min(socket.assigns.selected_index + 1, count - 1)
+
+    {:noreply,
+     socket
+     |> assign(selected_index: new_index)
+     |> push_event("search:scroll-to", %{id: "search-result-#{new_index}"})}
+  end
+
+  def handle_event("keydown", %{"key" => "ArrowUp"}, socket) do
+    new_index = max(socket.assigns.selected_index - 1, 0)
+
+    {:noreply,
+     socket
+     |> assign(selected_index: new_index)
+     |> push_event("search:scroll-to", %{id: "search-result-#{new_index}"})}
+  end
+
+  def handle_event("keydown", %{"key" => "Enter"}, socket) do
+    case Enum.at(socket.assigns.results, socket.assigns.selected_index) do
+      nil ->
+        {:noreply, socket}
+
+      result ->
+        {:noreply,
+         socket
+         |> assign(open: false, query: "", results: [], selected_index: 0)
+         |> push_event("search:navigate", %{url: "#{result.source_path}/#{result.slug}"})}
+    end
+  end
+
+  def handle_event("keydown", _params, socket), do: {:noreply, socket}
+
+  # Text search via phx-keyup (debounced)
+  def handle_event("search", %{"value" => query}, socket) do
+    if query == socket.assigns.query do
+      {:noreply, socket}
+    else
+      results =
+        if String.length(String.trim(query)) >= 2 do
+          Weakty.Content.Entity.search_entities!(query)
+        else
+          []
+        end
+
+      {:noreply, assign(socket, query: query, results: results, selected_index: 0)}
+    end
   end
 
   @impl true
@@ -35,7 +82,7 @@ defmodule WeaktyWeb.SearchLive do
       <div :if={@open} class="fixed inset-0 z-[200]">
         <%!-- Backdrop --%>
         <div
-          class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
           phx-click="close_search"
         >
         </div>
@@ -66,7 +113,7 @@ defmodule WeaktyWeb.SearchLive do
                 value={@query}
                 name="query"
                 phx-keyup="search"
-                phx-debounce="200"
+                phx-debounce="100"
                 placeholder="Search posts, projects, links, media..."
                 class="flex-1 py-4 bg-transparent text-base placeholder:text-base-content/40 focus:outline-none"
                 phx-mounted={JS.focus()}
@@ -78,18 +125,23 @@ defmodule WeaktyWeb.SearchLive do
             </div>
 
             <%!-- Results area --%>
-            <div class="max-h-80 overflow-y-auto">
+            <div id="search-results" class="max-h-80 overflow-y-auto">
               <%= if @query != "" do %>
                 <%= if Enum.empty?(@results) do %>
                   <div class="px-4 py-8 text-center text-base-content/50 text-sm">
                     No results for "<%= @query %>"
                   </div>
                 <% else %>
-                  <%= for result <- @results do %>
-                    <.link
-                      navigate={"#{result.source_path}/#{result.slug}"}
-                      phx-click="close_search"
-                      class="flex items-center gap-4 px-4 py-3 hover:bg-base-200 transition-colors group"
+                  <%= for {result, index} <- Enum.with_index(@results) do %>
+                    <a
+                      id={"search-result-#{index}"}
+                      href="#"
+                      phx-click="select_result"
+                      phx-value-url={"#{result.source_path}/#{result.slug}"}
+                      class={[
+                        "flex items-center gap-4 px-4 py-3 transition-colors group",
+                        if(index == @selected_index, do: "bg-base-200", else: "hover:bg-base-200")
+                      ]}
                     >
                       <%!-- Thumbnail or type icon --%>
                       <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-base-200 overflow-hidden flex items-center justify-center">
@@ -131,7 +183,7 @@ defmodule WeaktyWeb.SearchLive do
                           d="M8.25 4.5l7.5 7.5-7.5 7.5"
                         />
                       </svg>
-                    </.link>
+                    </a>
                   <% end %>
                 <% end %>
               <% else %>
@@ -143,6 +195,9 @@ defmodule WeaktyWeb.SearchLive do
 
             <%!-- Footer hints --%>
             <div class="flex gap-4 px-4 py-2 border-t border-base-300 text-xs text-base-content/40">
+              <span class="flex items-center gap-1">
+                <kbd class="kbd kbd-xs">↑↓</kbd> navigate
+              </span>
               <span class="flex items-center gap-1">
                 <kbd class="kbd kbd-xs">↵</kbd> select
               </span>

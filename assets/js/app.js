@@ -52,16 +52,31 @@ const SearchModal = {
     this.handleKeyDown = (e) => {
       if (e.key === "Escape") {
         this.pushEvent("close_search", {})
+        return
+      }
+      if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "Enter") {
+        if (document.activeElement?.id === "search-input") {
+          e.preventDefault()
+          this.pushEvent("keydown", {key: e.key})
+        }
       }
     }
 
+    this.handleEvent("search:navigate", ({url}) => {
+      window.location.href = url
+    })
+
+    this.handleEvent("search:scroll-to", ({id}) => {
+      document.getElementById(id)?.scrollIntoView({block: "nearest"})
+    })
+
     window.addEventListener("open-search", this.handleOpenSearch)
-    window.addEventListener("keydown", this.handleKeyDown)
+    window.addEventListener("keydown", this.handleKeyDown, true)
   },
 
   destroyed() {
     window.removeEventListener("open-search", this.handleOpenSearch)
-    window.removeEventListener("keydown", this.handleKeyDown)
+    window.removeEventListener("keydown", this.handleKeyDown, true)
   }
 }
 
