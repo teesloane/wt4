@@ -98,6 +98,8 @@ defmodule Weakty.Tags.Tag do
         Weakty.Repo.delete_all(from mt in "media_log_tags", where: mt.tag_id == ^tag.id)
         Weakty.Repo.delete_all(from pt in "project_tags", where: pt.tag_id == ^tag.id)
         Weakty.Repo.delete_all(from et in "entity_tags", where: et.tag_id == ^tag.id)
+        Weakty.Repo.delete_all(from tt in "til_tags", where: tt.tag_id == ^tag.id)
+        Weakty.Repo.delete_all(from qt in "quote_tags", where: qt.tag_id == ^tag.id)
 
         changeset
       end)
