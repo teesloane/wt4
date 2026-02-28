@@ -44,6 +44,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
        media_log: media_log,
        tags: existing_tags,
        tag_input: "",
+       tag_suggestions: [],
        media_type: media_type,
        search_query: "",
        search_results: []
@@ -293,26 +294,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Tags</span>
             </label>
-            <%= if length(@tags) > 0 do %>
-              <div class="flex flex-wrap gap-1 mb-2">
-                <%= for tag <- @tags do %>
-                  <div class="badge badge-sm gap-1">
-                    <%= tag %>
-                    <button type="button" phx-click="remove_tag" phx-value-tag={tag} class="btn btn-xs btn-circle btn-ghost">✕</button>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
-            <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
-              <input
-                type="text"
-                name="tag_input"
-                value={@tag_input}
-                placeholder="Add a tag"
-                class="input input-bordered input-sm join-item flex-1 text-sm"
-              />
-              <button type="submit" class="btn btn-sm btn-ghost join-item">Add</button>
-            </form>
+            <.tag_adder tags={@tags} tag_input={@tag_input} suggestions={@tag_suggestions} />
           </div>
 
           <div class="divider"></div>

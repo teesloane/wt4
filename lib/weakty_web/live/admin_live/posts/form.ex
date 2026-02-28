@@ -37,7 +37,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
     socket =
       socket
-      |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "", auto_slug: "")
+      |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "", auto_slug: "", tag_suggestions: [])
       |> assign(:current_path, "/admin/posts")
       |> assign(:content_images, (post && post.content_images) || [])
       |> assign(:uploaded_featured_image, post && post.featured_image)
@@ -188,37 +188,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Tags</span>
             </label>
-
-            <%= if length(@tags) > 0 do %>
-              <div class="flex flex-wrap gap-2 mb-2">
-                <%= for tag <- @tags do %>
-                  <div class="badge badge-lg gap-2">
-                    <%= tag %>
-                    <button
-                      type="button"
-                      phx-click="remove_tag"
-                      phx-value-tag={tag}
-                      class="btn btn-xs btn-circle btn-ghost"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
-
-            <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
-              <input
-                type="text"
-                name="tag_input"
-                value={@tag_input}
-                placeholder="Add a tag"
-                class="input input-bordered input-sm join-item flex-1 text-sm"
-              />
-              <button type="submit" class="btn btn-sm btn-ghost join-item">
-                Add
-              </button>
-            </form>
+            <.tag_adder tags={@tags} tag_input={@tag_input} suggestions={@tag_suggestions} />
           </div>
 
           <div class="divider"></div>

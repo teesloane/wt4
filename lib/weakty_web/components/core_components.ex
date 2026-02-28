@@ -95,7 +95,7 @@ defmodule WeaktyWeb.CoreComponents do
   def page_container(assigns) do
     ~H"""
     <div class={@class}>
-      <h1 :if={@title} class="text-2xl font-normal mb-16 text-center uppercase prose tracking-wide averia">
+      <h1 :if={@title} class="text-xl font-normal mb-8 mt-8 text-center uppercase prose tracking-wide averia">
         <%= @title %>
       </h1>
 
@@ -566,6 +566,52 @@ defmodule WeaktyWeb.CoreComponents do
   end
 
   @doc """
+  Renders a tag add/remove widget.
+  Fires phx events: `add_tag` (phx-submit), `remove_tag` (phx-click with `tag` value),
+  `update_tag_input` (phx-change), and `select_tag` (phx-click with `tag` value for suggestions).
+  """
+  attr :tags, :list, required: true
+  attr :tag_input, :string, required: true
+  attr :suggestions, :list, default: []
+
+  def tag_adder(assigns) do
+    ~H"""
+    <div>
+      <div :if={length(@tags) > 0} class="flex flex-wrap gap-1 mb-2">
+        <div :for={tag <- @tags} class="badge badge-sm gap-1">
+          <%= tag %>
+          <button type="button" phx-click="remove_tag" phx-value-tag={tag} class="btn btn-xs btn-circle btn-ghost">✕</button>
+        </div>
+      </div>
+      <div class="relative">
+        <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
+          <input
+            type="text"
+            name="tag_input"
+            value={@tag_input}
+            placeholder="Add a tag"
+            autocomplete="off"
+            class="input input-bordered input-sm join-item flex-1 text-sm"
+          />
+          <button type="submit" class="btn btn-sm btn-ghost join-item">Add</button>
+        </form>
+        <div :if={length(@suggestions) > 0} class="absolute z-10 w-full bg-base-100 border border-base-300 rounded-b shadow-lg max-h-40 overflow-y-auto">
+          <button
+            :for={s <- @suggestions}
+            type="button"
+            phx-click="select_tag"
+            phx-value-tag={s}
+            class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200"
+          >
+            <%= s %>
+          </button>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
   Renders a single content row (title + date, optional type label).
   Use inside a `<div class="space-y-3">` for a list.
   """
@@ -577,7 +623,7 @@ defmodule WeaktyWeb.CoreComponents do
   def content_item(assigns) do
     ~H"""
     <div class="flex items-baseline gap-6">
-      <span :if={@label} class="text-xs opacity-30 tabular-nums flex-shrink-0 min-w-24 capitalize">
+      <span :if={@label} class="text-xs opacity-50 tabular-nums flex-shrink-0 min-w-24 capitalize">
         <%= @label %>
       </span>
       <%= if @href do %>

@@ -35,7 +35,7 @@ defmodule WeaktyWeb.LinkLive.Form do
 
       {:ok,
        socket
-       |> assign(form: form, link: link, tags: existing_tags, tag_input: "")
+       |> assign(form: form, link: link, tags: existing_tags, tag_input: "", tag_suggestions: [])
        |> assign(:current_path, "/admin/links"),
        layout: {WeaktyWeb.Layouts, :admin}}
     else
@@ -99,44 +99,7 @@ defmodule WeaktyWeb.LinkLive.Form do
           <label class="label">
             <span class="label-text text-sm">Tags</span>
           </label>
-
-          <%= if length(@tags) > 0 do %>
-            <div class="flex flex-wrap gap-2 mb-2">
-              <%= for tag <- @tags do %>
-                <div class="badge badge-lg gap-2">
-                  <%= tag %>
-                  <button
-                    type="button"
-                    phx-click="remove_tag"
-                    phx-value-tag={tag}
-                    class="btn btn-xs btn-circle btn-ghost"
-                  >
-                    ✕
-                  </button>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
-
-          <div class="join w-full">
-            <input
-              type="text"
-              value={@tag_input}
-              phx-change="update_tag_input"
-              name="tag_input"
-              placeholder="Add a tag (press Enter)"
-              class="input input-bordered join-item w-full"
-              phx-keydown="add_tag"
-              phx-key="Enter"
-            />
-            <button
-              type="button"
-              phx-click="add_tag"
-              class="btn btn-primary join-item"
-            >
-              Add
-            </button>
-          </div>
+          <.tag_adder tags={@tags} tag_input={@tag_input} suggestions={@tag_suggestions} />
         </div>
 
         <.input field={@form[:public]} type="checkbox" label="Public" />
