@@ -1,8 +1,7 @@
 <Layouts.flash_group flash={@flash} />
 
-<div class="max-w-xl mx-auto px-6 py-24 space-y-20">
+<.page_container class="max-w-xl mx-auto px-6 py-24 space-y-20">
   <header>
-    <h1 class="text-xl font-normal uppercase tracking-widest averia">weakty</h1>
   </header>
 
   <section>
@@ -50,16 +49,6 @@
   <section>
     <p class="text-xs uppercase tracking-widest opacity-30 mb-6">Short Stories</p>
     <div class="space-y-3">
-      <%= for til <- @recent_tils do %>
-        <div class="flex justify-between items-baseline gap-6">
-          <a href={~p"/til/#{til.slug}"} class="hover:opacity-50 transition-opacity text-sm">
-            <%= til.title %>
-          </a>
-          <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
-            <%= if til.published_at, do: Calendar.strftime(til.published_at, "%Y-%m-%d") %>
-          </time>
-        </div>
-      <% end %>
     </div>
     <div class="mt-5">
       <a href={~p"/til"} class="text-xs opacity-30 hover:opacity-60 transition-opacity">
@@ -67,4 +56,4 @@
       </a>
     </div>
   </section>
-</div>
+</.page_container>

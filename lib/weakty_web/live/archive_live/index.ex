@@ -17,29 +17,15 @@ defmodule WeaktyWeb.ArchiveLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_container>
-      <h1 class="text-4xl font-normal mb-16 text-center uppercase tracking-wide averia">
-        Archive
-      </h1>
-
-      <div class="capitalize">
-        <%= for entity <- @entities do %>
-          <div class="flex items-center gap-4 py-3 group text-sm">
-            <time class=" opacity-30 flex-shrink-0">
-              <%= Calendar.strftime(entity.published_at, "%Y-%m-%d") %>
-            </time>
-            <span class="opacity-30 min-w-32 flex-shrink-0" title={to_string(entity.entity_type)}>
-              <%= entity.subtype || entity.entity_type %>
-            </span>
-            <%= if entity.entity_type == :media_log do %>
-              <span class="flex-1 w-2/4 text-sm opacity-50 truncate"><%= entity.title %></span>
-            <% else %>
-              <a href={"#{entity.source_path}/#{entity.slug}"} class="flex-1  opacity-80 group-hover:opacity-100 transition-opacity truncate">
-                <%= entity.title %>
-              </a>
-            <% end %>
-          </div>
-        <% end %>
+    <.page_container title="Archive">
+      <div class="space-y-3">
+        <.content_item
+          :for={e <- @entities}
+          href={if e.entity_type != :media_log, do: "#{e.source_path}/#{e.slug}"}
+          title={e.title}
+          date={e.published_at}
+          label={to_string(e.subtype || e.entity_type)}
+        />
       </div>
     </.page_container>
     """

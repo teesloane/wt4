@@ -43,7 +43,7 @@
   <body>
   <%= if !String.starts_with?(@conn.request_path, "/admin") do %>
     <nav class="sticky top-0 z-40 border-b border-base-300 bg-base-100">
-      <div class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between averia">
+      <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between averia">
         <!-- Logo -->
         <.link navigate={~p"/"} class="font-bold text-sm tracking-widest uppercase">
           WEAKTY

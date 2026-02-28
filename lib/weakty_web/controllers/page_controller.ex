@@ -18,17 +18,10 @@ defmodule WeaktyWeb.PageController do
       |> Ash.read!()
       |> List.first()
 
-    recent_tils =
-      Weakty.Tils.Til
-      |> Ash.Query.filter(public == true)
-      |> Ash.Query.sort(published_at: :desc)
-      |> Ash.Query.limit(5)
-      |> Ash.read!()
 
     render(conn, :home,
       posts: posts,
       currently_reading: currently_reading,
-      recent_tils: recent_tils
     )
   end
 end

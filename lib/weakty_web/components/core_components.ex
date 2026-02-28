@@ -89,10 +89,16 @@ defmodule WeaktyWeb.CoreComponents do
       </.page_container>
   """
   slot :inner_block, required: true
+  attr :title, :string, default: nil
+  attr :class, :string, default: "max-w-2xl mx-auto px-6 py-16"
 
   def page_container(assigns) do
     ~H"""
-    <div class="max-w-[65ch] mx-auto px-6 py-16">
+    <div class={@class}>
+      <h1 :if={@title} class="text-2xl font-normal mb-16 text-center uppercase prose tracking-wide averia">
+        <%= @title %>
+      </h1>
+
       <%= render_slot(@inner_block) %>
     </div>
     """
@@ -556,6 +562,35 @@ defmodule WeaktyWeb.CoreComponents do
         </div>
       </li>
     </ul>
+    """
+  end
+
+  @doc """
+  Renders a single content row (title + date, optional type label).
+  Use inside a `<div class="space-y-3">` for a list.
+  """
+  attr :title, :string, required: true
+  attr :date, :any, default: nil
+  attr :href, :string, default: nil
+  attr :label, :string, default: nil
+
+  def content_item(assigns) do
+    ~H"""
+    <div class="flex items-baseline gap-6">
+      <span :if={@label} class="text-xs opacity-30 tabular-nums flex-shrink-0 min-w-24 capitalize">
+        <%= @label %>
+      </span>
+      <%= if @href do %>
+        <a href={@href} class="flex-1 no-underline hover:opacity-50 transition-opacity text-sm truncate">
+          <%= @title %>
+        </a>
+      <% else %>
+        <span class="flex-1 text-sm opacity-50 truncate"><%= @title %></span>
+      <% end %>
+      <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
+        <%= if @date, do: Calendar.strftime(@date, "%Y-%m-%d") %>
+      </time>
+    </div>
     """
   end
 
