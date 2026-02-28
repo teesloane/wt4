@@ -29,7 +29,7 @@ defmodule WeaktyWeb.ArchiveLive.Index do
               <%= Calendar.strftime(entity.published_at, "%Y-%m-%d") %>
             </time>
             <span class="opacity-30 min-w-32 flex-shrink-0" title={to_string(entity.entity_type)}>
-              <%= entity.entity_type %> 
+              <%= entity.subtype || entity.entity_type %>
             </span>
             <%= if entity.entity_type == :media_log do %>
               <span class="flex-1 w-2/4 text-sm opacity-50 truncate"><%= entity.title %></span>
@@ -45,12 +45,4 @@ defmodule WeaktyWeb.ArchiveLive.Index do
     """
   end
 
-  defp entity_icon(:post),      do: "hero-pencil"
-  defp entity_icon(:link),      do: "hero-link"
-  defp entity_icon(:til),       do: "hero-light-bulb"
-  defp entity_icon(:bookmark),  do: "hero-bookmark"
-  defp entity_icon(:media_log), do: "hero-play"
-  defp entity_icon(:photo),     do: "hero-photo"
-  defp entity_icon(:quote),     do: "hero-chat-bubble-left"
-  defp entity_icon(_),          do: "hero-ellipsis-horizontal"
 end

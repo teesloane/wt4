@@ -6,7 +6,7 @@ defmodule WeaktyWeb.TilLive.Show do
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
     til =
-      Weakty.Tils.Til
+      Weakty.Posts.Post
       |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
       |> Ash.read_one!()
       |> Ash.load!(:tags)
@@ -39,7 +39,7 @@ defmodule WeaktyWeb.TilLive.Show do
             <%= Phoenix.HTML.raw(@til.html) %>
           </div>
         <% else %>
-          <p class="opacity-80 leading-relaxed"><%= @til.body %></p>
+          <p class="opacity-80 leading-relaxed"><%= @til.markdown %></p>
         <% end %>
 
         <%= if @til.tags && length(@til.tags) > 0 do %>

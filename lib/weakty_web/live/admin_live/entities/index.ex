@@ -99,8 +99,8 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
               <%= for entity <- @entities do %>
                 <tr class="hover">
                   <td>
-                    <span class={"badge badge-sm #{type_badge_class(entity.entity_type)}"}>
-                      <%= entity.entity_type %>
+                    <span class={"badge badge-sm"}>
+                      <%= entity.subtype || entity.entity_type %>
                     </span>
                   </td>
                   <td>
@@ -226,20 +226,15 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
     if sort_dir == "desc", do: Enum.reverse(sorted), else: sorted
   end
 
-  defp type_badge_class(type) do
-    case to_string(type) do
-      "post" -> "badge-primary"; "link" -> "badge-secondary"
-      "project" -> "badge-accent"; "media_log" -> "badge-info"
-      _ -> "badge-ghost"
-    end
-  end
 
   defp edit_path_for_entity(entity) do
-    case entity.entity_type do
-      :post -> "/admin/posts/#{entity.source_id}/edit"
-      :project -> "/admin/projects/#{entity.source_id}/edit"
-      :link -> "/admin/links/#{entity.source_id}/edit"
-      :media_log -> "/admin/media-logs/#{entity.source_id}/edit"
+    case {entity.entity_type, entity.subtype} do
+      {:post, "til"} -> "/admin/til/#{entity.source_id}/edit"
+      {:post, "quote"} -> "/admin/quotes/#{entity.source_id}/edit"
+      {:post, _} -> "/admin/posts/#{entity.source_id}/edit"
+      {:project, _} -> "/admin/projects/#{entity.source_id}/edit"
+      {:link, _} -> "/admin/links/#{entity.source_id}/edit"
+      {:media_log, _} -> "/admin/media-logs/#{entity.source_id}/edit"
       _ -> "#"
     end
   end

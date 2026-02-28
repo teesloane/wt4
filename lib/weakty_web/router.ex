@@ -31,7 +31,7 @@ defmodule WeaktyWeb.Router do
     pipe_through :browser
 
     # RSS feed
-    get "/rss", RssController, :posts
+    get "/posts/rss", RssController, :posts
 
     ash_authentication_live_session :authenticated_routes do
       live "/now", UpdateLive.Index, :index

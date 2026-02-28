@@ -14,7 +14,13 @@ defmodule Weakty.Changes.DestroyEntity do
   def change(changeset, opts, _context) do
     Ash.Changeset.after_action(changeset, fn _changeset, record ->
       case Weakty.Content.Entity.get_entity_by_source(opts[:entity_type], record.id) do
+        {:ok, nil} ->
+          {:ok, record}
+
         {:ok, entity} ->
+          import Ecto.Query
+          Weakty.Repo.delete_all(from et in "entity_tags", where: et.entity_id == ^entity.id)
+
           case Weakty.Content.Entity.delete_entity(entity) do
             :ok -> {:ok, record}
             {:ok, _} -> {:ok, record}
@@ -24,8 +30,8 @@ defmodule Weakty.Changes.DestroyEntity do
         {:error, %Ash.Error.Query.NotFound{}} ->
           {:ok, record}
 
-        {:error, error} ->
-          {:error, error}
+        {:error, _} ->
+          {:ok, record}
       end
     end)
   end

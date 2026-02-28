@@ -24,20 +24,26 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
             <.icon name="hero-plus" class="w-4 h-4" />
             New Post
           </.link>
-          <.link navigate="/admin/links/new" class="btn btn-sm">
+          <.link navigate="/admin/til/new" class="btn btn-sm">
             <.icon name="hero-plus" class="w-4 h-4" />
-            New Link
+            New TIL
+          </.link>
+          <.link navigate="/admin/quotes/new" class="btn btn-sm">
+            <.icon name="hero-plus" class="w-4 h-4" />
+            New Quote
           </.link>
         </div>
       </:actions>
     </.admin_header>
 
     <div class="p-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         <.stat_card label="Total Posts" value={@stats.total_posts} />
-        <.stat_card label="Published Posts" value={@stats.published_posts} />
-        <.stat_card label="Draft Posts" value={@stats.draft_posts} />
-        <.stat_card label="Total Links" value={@stats.total_links} />
+        <.stat_card label="Published" value={@stats.published_posts} />
+        <.stat_card label="Drafts" value={@stats.draft_posts} />
+        <.stat_card label="Links" value={@stats.total_links} />
+        <.stat_card label="TILs" value={@stats.total_tils} />
+        <.stat_card label="Quotes" value={@stats.total_quotes} />
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -48,6 +54,14 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
               <.link navigate="/admin/posts" class="btn btn-ghost justify-start">
                 <.icon name="hero-document-text" class="w-5 h-5" />
                 Manage Posts
+              </.link>
+              <.link navigate="/admin/til" class="btn btn-ghost justify-start">
+                <.icon name="hero-light-bulb" class="w-5 h-5" />
+                Manage TILs
+              </.link>
+              <.link navigate="/admin/quotes" class="btn btn-ghost justify-start">
+                <.icon name="hero-chat-bubble-left" class="w-5 h-5" />
+                Manage Quotes
               </.link>
               <.link navigate="/admin/links" class="btn btn-ghost justify-start">
                 <.icon name="hero-link" class="w-5 h-5" />
@@ -118,9 +132,14 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
   end
 
   defp load_stats(socket) do
-    posts = Weakty.Posts.Post.list_posts!()
+    require Ash.Query
+
+    all_posts = Weakty.Posts.Post.list_posts!()
+    posts = Enum.filter(all_posts, &(&1.post_type in [:post, :update, :page]))
     published_posts = Enum.filter(posts, &(&1.status == :published))
     draft_posts = Enum.filter(posts, &(&1.status == :draft))
+    tils = Enum.filter(all_posts, &(&1.post_type == :til))
+    quotes = Enum.filter(all_posts, &(&1.post_type == :quote))
     links = Ash.read!(Weakty.Links.Link)
 
     recent_posts = posts |> Enum.take(5)
@@ -131,7 +150,9 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
       total_posts: length(posts),
       published_posts: length(published_posts),
       draft_posts: length(draft_posts),
-      total_links: length(links)
+      total_links: length(links),
+      total_tils: length(tils),
+      total_quotes: length(quotes)
     })
     |> assign(:recent_posts, recent_posts)
     |> assign(:recent_links, recent_links)

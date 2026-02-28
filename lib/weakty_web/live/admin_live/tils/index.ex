@@ -2,6 +2,7 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
   use WeaktyWeb, :live_view
 
   import WeaktyWeb.AdminComponents
+  require Ash.Query
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
 
@@ -16,9 +17,15 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    til = Ash.get!(Weakty.Tils.Til, id)
+    post = Ash.get!(Weakty.Posts.Post, id)
 
-    case Ash.destroy(til) do
+    case Ash.destroy(post) do
+      :ok ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "TIL deleted")
+         |> load_tils()}
+
       {:ok, _} ->
         {:noreply,
          socket
@@ -121,7 +128,8 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
 
   defp load_tils(socket) do
     tils =
-      Weakty.Tils.Til
+      Weakty.Posts.Post
+      |> Ash.Query.filter(post_type == :til)
       |> Ash.Query.sort(published_at: :desc)
       |> Ash.read!(load: [:tags])
     assign(socket, :tils, tils)

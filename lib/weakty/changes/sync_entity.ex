@@ -25,6 +25,7 @@ defmodule Weakty.Changes.SyncEntity do
         entity_params = %{
           entity_type: opts[:entity_type],
           source_id: record.id,
+          subtype: resolve_value(record, opts[:subtype]) |> to_string_or_nil(),
           title: resolve_value(record, opts[:title] || :title),
           content: resolve_value(record, opts[:content]) |> truncate(max_len),
           url: resolve_value(record, opts[:url]),
@@ -148,4 +149,7 @@ defmodule Weakty.Changes.SyncEntity do
   defp truncate(nil, _max), do: nil
   defp truncate(str, max) when byte_size(str) <= max, do: str
   defp truncate(str, max), do: String.slice(str, 0, max - 1) <> "..."
+
+  defp to_string_or_nil(nil), do: nil
+  defp to_string_or_nil(value), do: to_string(value)
 end

@@ -4,6 +4,9 @@ defmodule Weakty.Posts.PostType do
   :update,
   :post,
   :page,
+  :til,
+  :quote,
+  :fiction,
   ]
 
 end

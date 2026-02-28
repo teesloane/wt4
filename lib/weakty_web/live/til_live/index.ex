@@ -7,8 +7,8 @@ defmodule WeaktyWeb.TilLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     tils =
-      Weakty.Tils.Til
-      |> Ash.Query.filter(public == true)
+      Weakty.Posts.Post
+      |> Ash.Query.filter(post_type == :til and public == true)
       |> Ash.Query.sort(published_at: :desc)
       |> Ash.read!(load: [:tags])
 

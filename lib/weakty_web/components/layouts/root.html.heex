@@ -42,7 +42,7 @@
   </head>
   <body>
   <%= if !String.starts_with?(@conn.request_path, "/admin") do %>
-    <nav class="border-b border-base-300">
+    <nav class="sticky top-0 z-40 border-b border-base-300 bg-base-100">
       <div class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between averia">
         <!-- Logo -->
         <.link navigate={~p"/"} class="font-bold text-sm tracking-widest uppercase">
@@ -62,6 +62,9 @@
           </.link>
           <.link navigate={~p"/now"} class="text-sm tracking-wide uppercase hover:opacity-60 transition-opacity">
             NOW
+          </.link>
+          <.link navigate={~p"/posts/rss"} class="text-sm tracking-wide uppercase hover:opacity-60 transition-opacity">
+            RSS
           </.link>
           <button
             class="btn btn-ghost btn-sm btn-circle"
@@ -116,6 +119,9 @@
             </.link>
             <.link navigate={~p"/links"} class="text-sm tracking-wide uppercase hover:opacity-60 transition-opacity py-2">
               NOW
+            </.link>
+            <.link navigate={~p"/posts/rss"} class="text-sm tracking-wide uppercase hover:opacity-60 transition-opacity py-2">
+              RSS
             </.link>
           </div>
         </div>

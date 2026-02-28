@@ -71,8 +71,6 @@ config :weakty,
   Weakty.Posts,
   Weakty.Projects,
   Weakty.MediaLogs,
-  Weakty.Quotes,
-  Weakty.Tils
   ],
   ash_authentication: [return_error_on_invalid_magic_link_token?: true]
 

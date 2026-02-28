@@ -11,7 +11,7 @@ defmodule WeaktyWeb.TilLive.Form do
       case params["id"] do
         nil -> nil
         id ->
-          Weakty.Tils.Til
+          Weakty.Posts.Post
           |> Ash.get!(id)
           |> Ash.load!(:tags)
       end
@@ -20,15 +20,17 @@ defmodule WeaktyWeb.TilLive.Form do
 
     form =
       if til do
-        Form.for_update(til, :update, domain: Weakty.Tils, forms: [auto?: false])
+        Form.for_update(til, :update, domain: Weakty.Posts, forms: [auto?: false])
       else
-        Form.for_create(Weakty.Tils.Til, :create,
-          domain: Weakty.Tils,
+        Form.for_create(Weakty.Posts.Post, :create,
+          domain: Weakty.Posts,
           forms: [auto?: false],
           prepare_source: fn changeset ->
             changeset
             |> Ash.Changeset.set_context(%{user_id: socket.assigns.current_user.id})
             |> Ash.Changeset.force_change_attribute(:user_id, socket.assigns.current_user.id)
+            |> Ash.Changeset.force_change_attribute(:post_type, :til)
+            |> Ash.Changeset.force_change_attribute(:status, :published)
           end
         )
       end
@@ -71,10 +73,10 @@ defmodule WeaktyWeb.TilLive.Form do
             required
           />
           <textarea
-            name={@form[:body].name}
+            name={@form[:markdown].name}
             class="textarea textarea-ghost w-full min-h-[400px] text-base leading-relaxed px-0 focus:outline-none font-mono"
             placeholder="Write in markdown..."
-          ><%= @form[:body].value %></textarea>
+          ><%= @form[:markdown].value %></textarea>
         </.form>
       </div>
 
@@ -160,8 +162,8 @@ defmodule WeaktyWeb.TilLive.Form do
 
   def handle_event("save", %{"form" => params}, socket) do
     case Form.submit(socket.assigns.form, params: params) do
-      {:ok, til} ->
-        handle_tag_update(til, socket.assigns.tags)
+      {:ok, post} ->
+        handle_tag_update(post, socket.assigns.tags)
         {:noreply,
          socket
          |> put_flash(:info, "Saved successfully.")
@@ -184,10 +186,10 @@ defmodule WeaktyWeb.TilLive.Form do
     end
   end
 
-  defp handle_tag_update(til, tags) do
+  defp handle_tag_update(post, tags) do
     Weakty.Tags.TagManager.apply_tags(
-      til, :til, tags,
-      Weakty.Tils.TilTag, :til_id
+      post, :post, tags,
+      Weakty.Posts.PostTag, :post_id
     )
   end
 

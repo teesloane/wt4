@@ -389,6 +389,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 <option value="update" selected={@form[:post_type].value == :update || @form[:post_type].value == "update"}>
                   Update
                 </option>
+                <option value="fiction" selected={@form[:post_type].value == :fiction || @form[:post_type].value == "fiction"}>
+                  Fiction
+                </option>
               </select>
             </div>
 
@@ -505,7 +508,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   def handle_event("delete_post", _params, socket) do
     case Weakty.Posts.Post.delete_post(socket.assigns.post) do
       :ok -> {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
-      {:error, _} -> {:noreply, put_flash(socket, :error, "Failed to delete post")}
+      {:error, e} ->
+        IO.inspect(e, label: "Failed to delete post >>>>>>>>>>>>>")
+        {:noreply, put_flash(socket, :error, "Failed to delete post")}
     end
   end
 

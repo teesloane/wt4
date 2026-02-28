@@ -2,6 +2,7 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
   use WeaktyWeb, :live_view
 
   import WeaktyWeb.AdminComponents
+  require Ash.Query
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
 
@@ -16,9 +17,15 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    quote_record = Ash.get!(Weakty.Quotes.Quote, id)
+    post = Ash.get!(Weakty.Posts.Post, id)
 
-    case Ash.destroy(quote_record) do
+    case Ash.destroy(post) do
+      :ok ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Quote deleted")
+         |> load_quotes()}
+
       {:ok, _} ->
         {:noreply,
          socket
@@ -71,7 +78,7 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
               <%= for q <- @quotes do %>
                 <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/quotes/#{q.id}/edit")}>
                   <td class="max-w-sm">
-                    <div class="text-sm truncate italic">"<%= q.body %>"</div>
+                    <div class="text-sm truncate italic">"<%= q.markdown %>"</div>
                   </td>
                   <td class="text-sm text-base-content/70">
                     <%= q.attribution || "-" %>
@@ -111,7 +118,11 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
   end
 
   defp load_quotes(socket) do
-    quotes = Ash.read!(Weakty.Quotes.Quote, load: [:tags])
+    quotes =
+      Weakty.Posts.Post
+      |> Ash.Query.filter(post_type == :quote)
+      |> Ash.Query.sort(inserted_at: :desc)
+      |> Ash.read!(load: [:tags])
     assign(socket, :quotes, quotes)
   end
 end

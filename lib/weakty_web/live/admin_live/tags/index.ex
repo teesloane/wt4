@@ -150,7 +150,9 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
          |> put_flash(:info, "Tag deleted successfully")
          |> load_tags()}
 
-      {:error, _} ->
+      {:error, e} ->
+        IO.inspect(e, label: "failed to delete tag....")
+
         {:noreply, put_flash(socket, :error, "Failed to delete tag")}
     end
   end

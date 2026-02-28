@@ -7,8 +7,8 @@ defmodule WeaktyWeb.QuoteLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     quotes =
-      Weakty.Quotes.Quote
-      |> Ash.Query.filter(public == true)
+      Weakty.Posts.Post
+      |> Ash.Query.filter(post_type == :quote and public == true)
       |> Ash.Query.sort(inserted_at: :desc)
       |> Ash.read!()
 
@@ -27,7 +27,7 @@ defmodule WeaktyWeb.QuoteLive.Index do
         <%= for quote <- @quotes do %>
           <blockquote class="border-l-2 border-base-content/20 pl-6">
             <p class="text-xl font-normal leading-relaxed averia mb-4">
-              "<%= quote.body %>"
+              "<%= quote.markdown %>"
             </p>
             <%= if quote.attribution do %>
               <footer class="text-sm opacity-60">

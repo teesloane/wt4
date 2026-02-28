@@ -74,6 +74,14 @@ defmodule Weakty.Posts.Post do
       default :post
     end
 
+    attribute :attribution, :string do
+      public? true
+    end
+
+    attribute :attribution_url, :string do
+      public? true
+    end
+
     timestamps()
   end
 
@@ -112,7 +120,7 @@ defmodule Weakty.Posts.Post do
 
         # Delete associated entity if it exists
         case Weakty.Content.Entity.get_entity_by_source(:post, post.id) do
-          {:ok, entity} -> Weakty.Content.Entity.delete_entity(entity)
+          {:ok, entity} when not is_nil(entity) -> Weakty.Content.Entity.delete_entity(entity)
           _ -> :ok
         end
 
@@ -125,7 +133,8 @@ defmodule Weakty.Posts.Post do
 
     create :create do
       accept [:title, :slug, :markdown, :html, :featured_image, :content_images, :excerpt,
-              :status, :featured, :public, :published_at, :user_id, :post_type]
+              :status, :featured, :public, :published_at, :user_id, :post_type,
+              :attribution, :attribution_url]
 
       argument :tags, {:array, :map} do
         allow_nil? true
@@ -173,7 +182,8 @@ defmodule Weakty.Posts.Post do
 
     update :update do
       accept [:title, :slug, :markdown, :html, :featured_image, :content_images, :excerpt,
-              :status, :featured, :public, :published_at, :post_type]
+              :status, :featured, :public, :published_at, :post_type,
+              :attribution, :attribution_url]
       require_atomic? false
 
       argument :tags, {:array, :map} do
@@ -249,12 +259,22 @@ defmodule Weakty.Posts.Post do
 
     read :published_posts do
       prepare build(sort: [published_at: :desc])
-      filter expr(status == :published and post_type == :post)
+      filter expr(status == :published and post_type in [:post, :fiction])
     end
 
     read :published_updates do
       prepare build(sort: [published_at: :desc])
       filter expr(status == :published and post_type == :update)
+    end
+
+    read :tils do
+      prepare build(sort: [published_at: :desc])
+      filter expr(post_type == :til)
+    end
+
+    read :quotes do
+      prepare build(sort: [inserted_at: :desc])
+      filter expr(post_type == :quote)
     end
   end
 
@@ -266,7 +286,10 @@ defmodule Weakty.Posts.Post do
     define :list_updates_only, action: :updates
     define :list_published_posts_only, action: :published_posts
     define :list_published_updates, action: :published_updates
+    define :list_tils, action: :tils
+    define :list_quotes, action: :quotes
     define :get_post, action: :read, get?: true
+    define :get_by_slug, action: :get_by_slug
     define :create_post, action: :create
     define :update_post, action: :update
     define :publish_post, action: :publish
@@ -283,10 +306,11 @@ defmodule Weakty.Posts.Post do
   changes do
     change {Weakty.Changes.SyncEntity,
       entity_type: :post,
+      subtype: :post_type,
       title: :title,
       content: {Weakty.Posts.Helpers, :content_for_entity},
       slug: :slug,
-      source_path: "/posts",
+      source_path: {Weakty.Posts.Helpers, :source_path_for_entity},
       hero_url: :featured_image,
       public: :public,
       published_at: :published_at,

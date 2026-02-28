@@ -11,7 +11,7 @@ defmodule WeaktyWeb.QuoteLive.Form do
       case params["id"] do
         nil -> nil
         id ->
-          Weakty.Quotes.Quote
+          Weakty.Posts.Post
           |> Ash.get!(id)
           |> Ash.load!(:tags)
       end
@@ -20,15 +20,17 @@ defmodule WeaktyWeb.QuoteLive.Form do
 
     form =
       if quote_record do
-        Form.for_update(quote_record, :update, domain: Weakty.Quotes, forms: [auto?: false])
+        Form.for_update(quote_record, :update, domain: Weakty.Posts, forms: [auto?: false])
       else
-        Form.for_create(Weakty.Quotes.Quote, :create,
-          domain: Weakty.Quotes,
+        Form.for_create(Weakty.Posts.Post, :create,
+          domain: Weakty.Posts,
           forms: [auto?: false],
           prepare_source: fn changeset ->
             changeset
             |> Ash.Changeset.set_context(%{user_id: socket.assigns.current_user.id})
             |> Ash.Changeset.force_change_attribute(:user_id, socket.assigns.current_user.id)
+            |> Ash.Changeset.force_change_attribute(:post_type, :quote)
+            |> Ash.Changeset.force_change_attribute(:status, :published)
           end
         )
       end
@@ -67,11 +69,11 @@ defmodule WeaktyWeb.QuoteLive.Form do
               <span class="label-text text-sm font-semibold">Quote</span>
             </label>
             <textarea
-              name={@form[:body].name}
+              name={@form[:markdown].name}
               class="textarea textarea-bordered w-full min-h-[160px] text-lg leading-relaxed"
               placeholder="The quote text..."
               required
-            ><%= @form[:body].value %></textarea>
+            ><%= @form[:markdown].value %></textarea>
           </div>
         </.form>
       </div>
@@ -172,9 +174,12 @@ defmodule WeaktyWeb.QuoteLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
+    # Auto-generate title from first 60 chars of markdown for new quotes
+    params = maybe_inject_quote_title(params, socket.assigns.quote)
+
     case Form.submit(socket.assigns.form, params: params) do
-      {:ok, q} ->
-        handle_tag_update(q, socket.assigns.tags)
+      {:ok, post} ->
+        handle_tag_update(post, socket.assigns.tags)
         {:noreply,
          socket
          |> put_flash(:info, "Saved successfully.")
@@ -197,10 +202,17 @@ defmodule WeaktyWeb.QuoteLive.Form do
     end
   end
 
-  defp handle_tag_update(quote_record, tags) do
+  defp maybe_inject_quote_title(params, nil) do
+    # New quote: generate title from first 60 chars of markdown
+    markdown = params["markdown"] || ""
+    Map.put_new(params, "title", String.slice(markdown, 0, 60))
+  end
+  defp maybe_inject_quote_title(params, _existing), do: params
+
+  defp handle_tag_update(post, tags) do
     Weakty.Tags.TagManager.apply_tags(
-      quote_record, :quote, tags,
-      Weakty.Quotes.QuoteTag, :quote_id
+      post, :post, tags,
+      Weakty.Posts.PostTag, :post_id
     )
   end
 end
