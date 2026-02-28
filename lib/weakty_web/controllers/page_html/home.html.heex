@@ -1,12 +1,70 @@
 <Layouts.flash_group flash={@flash} />
 
-<div class="max-w-3xl mx-auto px-6 py-24">
-  <header class="text-center">
-    <h1 class="text-5xl font-normal mb-6 uppercase tracking-wide averia">
-      Weakty
-    </h1>
-    <p class="text-lg opacity-70 leading-relaxed max-w-lg mx-auto">
-      A quiet place for writing, links, and reflections.
-    </p>
+<div class="max-w-xl mx-auto px-6 py-24 space-y-20">
+  <header>
+    <h1 class="text-xl font-normal uppercase tracking-widest averia">weakty</h1>
   </header>
+
+  <section>
+    <p class="text-xs uppercase tracking-widest opacity-30 mb-6">Writing</p>
+    <div class="space-y-3">
+      <%= for post <- @posts do %>
+        <div class="flex justify-between items-baseline gap-6">
+          <a href={~p"/posts/#{post.slug}"} class="hover:opacity-50 transition-opacity text-sm">
+            <%= post.title %>
+          </a>
+          <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
+            <%= if post.published_at, do: Calendar.strftime(post.published_at, "%Y-%m-%d") %>
+          </time>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-5">
+      <a href={~p"/posts"} class="text-xs opacity-30 hover:opacity-60 transition-opacity">
+        all posts →
+      </a>
+    </div>
+  </section>
+
+  <%= if @currently_reading do %>
+    <section>
+      <p class="text-xs uppercase tracking-widest opacity-30 mb-6">Currently Reading</p>
+      <div class="flex items-start gap-4">
+        <%= if @currently_reading.thumbnail_url do %>
+          <img
+            src={@currently_reading.thumbnail_url}
+            alt={@currently_reading.title}
+            class="w-12 flex-shrink-0 rounded shadow-sm"
+          />
+        <% end %>
+        <div>
+          <p class="text-sm"><%= @currently_reading.title %></p>
+          <%= if @currently_reading.creator do %>
+            <p class="text-xs opacity-40 mt-1"><%= @currently_reading.creator %></p>
+          <% end %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+
+  <section>
+    <p class="text-xs uppercase tracking-widest opacity-30 mb-6">Short Stories</p>
+    <div class="space-y-3">
+      <%= for til <- @recent_tils do %>
+        <div class="flex justify-between items-baseline gap-6">
+          <a href={~p"/til/#{til.slug}"} class="hover:opacity-50 transition-opacity text-sm">
+            <%= til.title %>
+          </a>
+          <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
+            <%= if til.published_at, do: Calendar.strftime(til.published_at, "%Y-%m-%d") %>
+          </time>
+        </div>
+      <% end %>
+    </div>
+    <div class="mt-5">
+      <a href={~p"/til"} class="text-xs opacity-30 hover:opacity-60 transition-opacity">
+        all →
+      </a>
+    </div>
+  </section>
 </div>
