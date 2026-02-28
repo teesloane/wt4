@@ -24,11 +24,13 @@ defmodule WeaktyWeb.ArchiveLive.Index do
           href={if e.entity_type != :media_log, do: "#{e.source_path}/#{e.slug}"}
           title={e.title}
           date={e.published_at}
-          label={to_string(e.subtype || e.entity_type)}
+          label={human_label(e.subtype || e.entity_type)}
         />
       </div>
     </.page_container>
     """
   end
 
+  defp human_label("fiction"), do: "short story"
+  defp human_label(label), do: label |> to_string() |> String.replace("_", " ")
 end

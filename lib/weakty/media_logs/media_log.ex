@@ -349,6 +349,7 @@ defmodule Weakty.MediaLogs.MediaLog do
       content: :notes,
       slug: :slug,
       source_path: "/media-logs",
+      subtype: :media_type,
       thumbnail_url: :thumbnail_url,
       rating: :rating,
       status: :status,
