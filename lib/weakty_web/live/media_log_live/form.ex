@@ -45,6 +45,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
        tags: existing_tags,
        tag_input: "",
        tag_suggestions: [],
+       all_tags: Weakty.Tags.Tag.list_tags!() |> Enum.map(& &1.name),
        media_type: media_type,
        search_query: "",
        search_results: []
@@ -336,16 +337,24 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   def handle_event("update_tag_input", %{"tag_input" => value}, socket) do
-    {:noreply, assign(socket, tag_input: value)}
+    suggestions = suggest_tags(value, socket.assigns.all_tags, socket.assigns.tags)
+    {:noreply, assign(socket, tag_input: value, tag_suggestions: suggestions)}
   end
 
   def handle_event("add_tag", %{"tag_input" => value}, socket) do
     tag = String.trim(value)
-
     if tag != "" and tag not in socket.assigns.tags do
-      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "")}
+      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
     else
-      {:noreply, socket}
+      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
+    end
+  end
+
+  def handle_event("select_tag", %{"tag" => tag}, socket) do
+    if tag not in socket.assigns.tags do
+      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
+    else
+      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
     end
   end
 
@@ -428,10 +437,15 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   defp handle_tag_update(media_log, tags) do
-    Weakty.Tags.TagManager.apply_tags(
-      media_log, :media_log, tags,
-      Weakty.MediaLogs.MediaLogTag, :media_log_id
-    )
+    Weakty.Tags.TagManager.apply_tags(media_log, :media_log, tags, Weakty.MediaLogs.MediaLogTag, :media_log_id)
+  end
+
+  defp suggest_tags("", _all, _current), do: []
+  defp suggest_tags(input, all_tags, current) do
+    q = String.downcase(input)
+    all_tags
+    |> Enum.filter(fn t -> String.contains?(String.downcase(t), q) and t not in current end)
+    |> Enum.take(8)
   end
 
   defp creator_label(media_type) do
