@@ -30,6 +30,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
     post = Ash.get!(Weakty.Posts.Post, id)
 
     case Weakty.Posts.Post.delete_post(post) do
+      :ok ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Post deleted successfully")
+         |> load_posts()}
+
       {:ok, _} ->
         {:noreply,
          socket

@@ -1,6 +1,7 @@
 defmodule WeaktyWeb.AdminLive.Posts.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
+  import WeaktyWeb.FormHelpers
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
 
@@ -487,8 +488,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   def handle_event("delete_post", _params, socket) do
     case Weakty.Posts.Post.delete_post(socket.assigns.post) do
       :ok -> {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
-      {:error, e} ->
-        IO.inspect(e, label: "Failed to delete post >>>>>>>>>>>>>")
+      {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to delete post")}
     end
   end
@@ -606,14 +606,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   defp format_datetime_for_input(_), do: ""
-
-  defp suggest_tags("", _all, _current), do: []
-  defp suggest_tags(input, all_tags, current) do
-    q = String.downcase(input)
-    all_tags
-    |> Enum.filter(fn t -> String.contains?(String.downcase(t), q) and t not in current end)
-    |> Enum.take(8)
-  end
 
   defp ext(entry) do
     [ext | _] = MIME.extensions(entry.client_type)

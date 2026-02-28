@@ -2,6 +2,7 @@
 defmodule WeaktyWeb.LinkLive.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
+  import WeaktyWeb.FormHelpers
 
   @impl true
   def mount(params, _session, socket) do
@@ -171,11 +172,4 @@ defmodule WeaktyWeb.LinkLive.Form do
     Weakty.Tags.TagManager.apply_tags(link, :link, tags, Weakty.Links.LinkTag, :link_id)
   end
 
-  defp suggest_tags("", _all, _current), do: []
-  defp suggest_tags(input, all_tags, current) do
-    q = String.downcase(input)
-    all_tags
-    |> Enum.filter(fn t -> String.contains?(String.downcase(t), q) and t not in current end)
-    |> Enum.take(8)
-  end
 end

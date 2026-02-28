@@ -1,6 +1,7 @@
 defmodule WeaktyWeb.TilLive.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
+  import WeaktyWeb.FormHelpers
   require Logger
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
@@ -185,14 +186,6 @@ defmodule WeaktyWeb.TilLive.Form do
 
   defp handle_tag_update(post, tags) do
     Weakty.Tags.TagManager.apply_tags(post, :post, tags, Weakty.Posts.PostTag, :post_id)
-  end
-
-  defp suggest_tags("", _all, _current), do: []
-  defp suggest_tags(input, all_tags, current) do
-    q = String.downcase(input)
-    all_tags
-    |> Enum.filter(fn t -> String.contains?(String.downcase(t), q) and t not in current end)
-    |> Enum.take(8)
   end
 
   defp format_date(nil), do: ""
