@@ -45,22 +45,14 @@ defmodule WeaktyWeb.UpdateLive.Index do
 
         <!-- Previous Updates List -->
         <%= if !Enum.empty?(@updates) do %>
-          <div class="space-y-12">
-            <h2 class="text-lg font-normal tracking-wide averia opacity-60 mb-8">Previous Updates</h2>
-            <%= for update <- @updates do %>
-              <article class="last:border-b-0 mb-2">
-                <div class="flex justify-between">
-                  <h3 class="text-md font-normal tracking-wide averia">
-                    <.link navigate={~p"/posts/#{update.slug}"} class="hover:opacity-70 transition-opacity">
-                      <%= update.title %>
-                    </.link>
-                  </h3>
-                  <div class="text-sm opacity-60">
-                    <%= format_date(update.published_at) %>
-                  </div>
-                </div>
-              </article>
-            <% end %>
+          <h2 class="text-lg font-normal tracking-wide averia opacity-60 mb-8">Previous Updates</h2>
+          <div class="space-y-3">
+            <.content_item
+              :for={update <- @updates}
+              href={~p"/posts/#{update.slug}"}
+              title={update.title}
+              date={update.published_at}
+            />
           </div>
         <% end %>
       <% else %>
@@ -70,7 +62,5 @@ defmodule WeaktyWeb.UpdateLive.Index do
     """
   end
 
-  defp format_date(datetime) do
-    Calendar.strftime(datetime, "%d %b %Y")
-  end
+
 end

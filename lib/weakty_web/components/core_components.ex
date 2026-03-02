@@ -584,11 +584,13 @@ defmodule WeaktyWeb.CoreComponents do
         </div>
       </div>
       <div class="relative">
-        <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
+        <form phx-submit="add_tag" class="join w-full">
           <input
             type="text"
             name="tag_input"
             value={@tag_input}
+            phx-change="update_tag_input"
+            phx-debounce="100"
             placeholder="Add a tag"
             autocomplete="off"
             class="input input-bordered input-sm join-item flex-1 text-sm"

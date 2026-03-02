@@ -16,6 +16,7 @@ defmodule WeaktyWeb.PostLive.Show do
      socket
      |> assign(post: post)
      |> assign(related: related)
+     |> assign(post_tag_ids: MapSet.new(post.tags, & &1.id))
      |> assign(og_content: post)
      |> assign(page_title: post.title)}
   end
@@ -23,14 +24,9 @@ defmodule WeaktyWeb.PostLive.Show do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_container>
+    <.page_container title={@post.title}>
     <article>
       <header class="text-center mb-16">
-
-        <h1 class="text-xl font-normal leading-tight tracking-wider uppercase mb-8 averia">
-          <%= @post.title %>
-        </h1>
-
         <div class="flex items-center justify-center gap-4 mt-8">
           <div class="text-center">
             <div class="text-sm lowercase flex divide-solid tracking-wider gap-3  mb-6 opacity-70">
@@ -56,7 +52,7 @@ defmodule WeaktyWeb.PostLive.Show do
         />
       <% end %>
 
-      <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto py-12">
+      <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto pb-12">
 
         <%= raw(@post.html) %>
       </div>
@@ -114,7 +110,7 @@ defmodule WeaktyWeb.PostLive.Show do
 
                 
                 <span class="capitalize flex-shrink-0">(<%= entity.entity_type %>:</span>
-                <%= for tag <- Enum.slice(entity.tags, 0..2) do %>
+                <%= for tag <- Enum.filter(entity.tags, fn t -> MapSet.member?(@post_tag_ids, t.id) end) do %>
                 #<%= tag.name %>
                 <% end %>
                 )
