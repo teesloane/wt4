@@ -461,6 +461,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     end
   end
 
+  def handle_event("add_tag", _params, socket), do: {:noreply, socket}
+
   def handle_event("select_tag", %{"tag" => tag}, socket) do
     if tag not in socket.assigns.tags do
       {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}

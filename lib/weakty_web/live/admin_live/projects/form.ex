@@ -3,6 +3,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   alias AshPhoenix.Form
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
+  import WeaktyWeb.FormHelpers
 
   @impl true
   def mount(params, _session, socket) do
@@ -43,6 +44,8 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
         preview: false,
         tags: existing_tags,
         tag_input: "",
+        tag_suggestions: [],
+        all_tags: Weakty.Tags.Tag.list_tags!() |> Enum.map(& &1.name),
         links: existing_links,
         link_name: "",
         link_url: ""
@@ -333,20 +336,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Tags</span>
             </label>
-            <%= if length(@tags) > 0 do %>
-              <div class="flex flex-wrap gap-2 mb-2">
-                <%= for tag <- @tags do %>
-                  <div class="badge badge-lg gap-2">
-                    <%= tag %>
-                    <button type="button" phx-click="remove_tag" phx-value-tag={tag} class="btn btn-xs btn-circle btn-ghost">✕</button>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
-            <form phx-submit="add_tag" phx-change="update_tag_input" class="join w-full">
-              <input type="text" name="tag_input" value={@tag_input} placeholder="Add a tag" class="input input-bordered input-sm join-item flex-1 text-sm" />
-              <button type="submit" class="btn btn-sm btn-ghost join-item">Add</button>
-            </form>
+            <.tag_adder tags={@tags} tag_input={@tag_input} suggestions={@tag_suggestions} />
           </div>
 
           <!-- Excerpt -->
@@ -419,15 +409,26 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   end
 
   def handle_event("update_tag_input", %{"tag_input" => value}, socket) do
-    {:noreply, assign(socket, tag_input: value)}
+    suggestions = suggest_tags(value, socket.assigns.all_tags, socket.assigns.tags)
+    {:noreply, assign(socket, tag_input: value, tag_suggestions: suggestions)}
   end
 
   def handle_event("add_tag", %{"tag_input" => value}, socket) do
     tag = String.trim(value)
     if tag != "" and tag not in socket.assigns.tags do
-      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "")}
+      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
     else
-      {:noreply, socket}
+      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
+    end
+  end
+
+  def handle_event("add_tag", _params, socket), do: {:noreply, socket}
+
+  def handle_event("select_tag", %{"tag" => tag}, socket) do
+    if tag not in socket.assigns.tags do
+      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
+    else
+      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
     end
   end
 
