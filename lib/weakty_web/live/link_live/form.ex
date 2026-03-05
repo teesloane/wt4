@@ -2,7 +2,6 @@
 defmodule WeaktyWeb.LinkLive.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
-  import WeaktyWeb.FormHelpers
 
   @impl true
   def mount(params, _session, socket) do
@@ -36,8 +35,7 @@ defmodule WeaktyWeb.LinkLive.Form do
 
       {:ok,
        socket
-       |> assign(form: form, link: link, tags: existing_tags, tag_input: "", tag_suggestions: [],
-                 all_tags: Weakty.Tags.Tag.list_tags!() |> Enum.map(& &1.name))
+       |> assign(form: form, link: link, tags: existing_tags)
        |> assign(:current_path, "/admin/links"),
        layout: {WeaktyWeb.Layouts, :admin}}
     else
@@ -101,7 +99,7 @@ defmodule WeaktyWeb.LinkLive.Form do
           <label class="label">
             <span class="label-text text-sm">Tags</span>
           </label>
-          <.tag_adder tags={@tags} tag_input={@tag_input} suggestions={@tag_suggestions} />
+          <.live_component module={WeaktyWeb.TagAdder} id="tag-adder" tags={@tags} />
         </div>
 
         <.input field={@form[:public]} type="checkbox" label="Public" />
@@ -131,32 +129,9 @@ defmodule WeaktyWeb.LinkLive.Form do
     {:noreply, assign(socket, form: form)}
   end
 
-  def handle_event("update_tag_input", %{"tag_input" => value}, socket) do
-    suggestions = suggest_tags(value, socket.assigns.all_tags, socket.assigns.tags)
-    {:noreply, assign(socket, tag_input: value, tag_suggestions: suggestions)}
-  end
-
-  def handle_event("add_tag", %{"tag_input" => value}, socket) do
-    tag = String.trim(value)
-    if tag != "" and tag not in socket.assigns.tags do
-      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
-    else
-      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
-    end
-  end
-
-  def handle_event("add_tag", _params, socket), do: {:noreply, socket}
-
-  def handle_event("select_tag", %{"tag" => tag}, socket) do
-    if tag not in socket.assigns.tags do
-      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
-    else
-      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
-    end
-  end
-
-  def handle_event("remove_tag", %{"tag" => tag}, socket) do
-    {:noreply, assign(socket, tags: List.delete(socket.assigns.tags, tag))}
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   def handle_event("save", %{"form" => params}, socket) do

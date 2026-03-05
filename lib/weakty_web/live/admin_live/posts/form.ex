@@ -1,7 +1,6 @@
 defmodule WeaktyWeb.AdminLive.Posts.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
-  import WeaktyWeb.FormHelpers
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
 
@@ -38,8 +37,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
     socket =
       socket
-      |> assign(form: form, post: post, preview: false, tags: existing_tags, tag_input: "", auto_slug: "", tag_suggestions: [],
-                all_tags: Weakty.Tags.Tag.list_tags!() |> Enum.map(& &1.name))
+      |> assign(form: form, post: post, preview: false, tags: existing_tags, auto_slug: "")
       |> assign(:current_path, "/admin/posts")
       |> assign(:content_images, (post && post.content_images) || [])
       |> assign(:uploaded_featured_image, post && post.featured_image)
@@ -190,7 +188,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Tags</span>
             </label>
-            <.tag_adder tags={@tags} tag_input={@tag_input} suggestions={@tag_suggestions} />
+            <.live_component module={WeaktyWeb.TagAdder} id="tag-adder" tags={@tags} />
           </div>
 
           <div class="divider"></div>
@@ -447,34 +445,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:noreply, assign(socket, preview: !socket.assigns.preview)}
   end
 
-  def handle_event("update_tag_input", %{"tag_input" => value}, socket) do
-    suggestions = suggest_tags(value, socket.assigns.all_tags, socket.assigns.tags)
-    {:noreply, assign(socket, tag_input: value, tag_suggestions: suggestions)}
-  end
-
-  def handle_event("add_tag", %{"tag_input" => value}, socket) do
-    tag = String.trim(value)
-    if tag != "" and tag not in socket.assigns.tags do
-      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
-    else
-      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
-    end
-  end
-
-  def handle_event("add_tag", _params, socket), do: {:noreply, socket}
-
-  def handle_event("select_tag", %{"tag" => tag}, socket) do
-    if tag not in socket.assigns.tags do
-      {:noreply, assign(socket, tags: socket.assigns.tags ++ [tag], tag_input: "", tag_suggestions: [])}
-    else
-      {:noreply, assign(socket, tag_input: "", tag_suggestions: [])}
-    end
-  end
-
-  def handle_event("remove_tag", %{"tag" => tag}, socket) do
-    {:noreply, assign(socket, tags: List.delete(socket.assigns.tags, tag))}
-  end
-
   def handle_event("remove_featured_image", _params, socket) do
     {:noreply, assign(socket, :uploaded_featured_image, nil)}
   end
@@ -552,6 +522,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
+  end
 
   defp save_upload(socket, entry) do
     consume_uploaded_entry(socket, entry, fn %{path: path} ->

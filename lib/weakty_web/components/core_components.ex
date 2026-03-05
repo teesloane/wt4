@@ -566,65 +566,6 @@ defmodule WeaktyWeb.CoreComponents do
   end
 
   @doc """
-  Renders a tag combo box — selected tags appear as chips inside the input area.
-  Fires phx events: `add_tag` (phx-keydown, filter on key=="Enter" in handler),
-  `remove_tag` (phx-click with `tag` value), `update_tag_input` (phx-change),
-  and `select_tag` (phx-click with `tag` value for suggestions).
-  Note: `add_tag` handlers must pattern match `%{"key" => "Enter"}` and have a catch-all.
-  Note: `add_tag` handlers should read the tag value from `socket.assigns.tag_input`.
-  """
-  attr :tags, :list, required: true
-  attr :tag_input, :string, required: true
-  attr :suggestions, :list, default: []
-
-  def tag_adder(assigns) do
-    ~H"""
-    <div>
-      <div class={[
-        "flex flex-wrap gap-1.5 items-center px-2 py-1.5 min-h-10 border border-base-300 bg-base-100 focus-within:border-primary cursor-text",
-        if(@suggestions == [], do: "rounded-lg", else: "rounded-t-lg")
-      ]}>
-        <span :for={tag <- @tags} class="badge badge-sm gap-1 flex-shrink-0">
-          <%= tag %>
-          <button
-            type="button"
-            phx-click="remove_tag"
-            phx-value-tag={tag}
-            class="leading-none opacity-50 hover:opacity-100"
-          >✕</button>
-        </span>
-        <form phx-submit="add_tag" class="flex-1 min-w-[80px]">
-          <input
-            type="text"
-            name="tag_input"
-            value={@tag_input}
-            phx-change="update_tag_input"
-            phx-debounce="100"
-            placeholder={if @tags == [], do: "Add tags...", else: ""}
-            autocomplete="off"
-            class="w-full outline-none bg-transparent text-sm py-0.5"
-          />
-        </form>
-      </div>
-      <div
-        :if={length(@suggestions) > 0}
-        class="w-full bg-base-100 border border-base-300 border-t-0 rounded-b-lg max-h-40 overflow-y-auto"
-      >
-        <button
-          :for={s <- @suggestions}
-          type="button"
-          phx-click="select_tag"
-          phx-value-tag={s}
-          class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200"
-        >
-          <%= s %>
-        </button>
-      </div>
-    </div>
-    """
-  end
-
-  @doc """
   Renders a single content row (title + date, optional type label).
   Use inside a `<div class="space-y-3">` for a list.
   """
