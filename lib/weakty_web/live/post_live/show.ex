@@ -25,24 +25,21 @@ defmodule WeaktyWeb.PostLive.Show do
   def render(assigns) do
     ~H"""
     <.page_container title={@post.title}>
-    <article>
-      <header class="text-center mb-16">
-        <div class="flex items-center justify-center gap-4 mt-8">
-          <div class="text-center">
-            <div class="text-sm lowercase flex divide-solid tracking-wider gap-3  mb-6 opacity-70">
-              <%= if @post.published_at do %>
-                <span class="capitalize"><%= @post.post_type || "" %></span>
-                  <span> • </span>
-                  <span> <%= format_date(@post.published_at) %> </span>
-                  <span> • </span>
-                  <span> <%= estimate_read_time(@post.html) %> min read</span>
-              <% else %>
-                <%= format_date(@post.updated_at) %> • Draft
-              <% end %>
-            </div>
-          </div>
+      <:header>
+        <div class="text-sm lowercase flex justify-center tracking-wider gap-3 mb-6 opacity-70">
+          <%= if @post.published_at do %>
+            <span class="capitalize"><%= @post.post_type || "" %></span>
+            <span> • </span>
+            <span><%= format_date(@post.published_at) %></span>
+            <span> • </span>
+            <span><%= estimate_read_time(@post.html) %> min read</span>
+          <% else %>
+            <span><%= format_date(@post.updated_at) %> • Draft</span>
+          <% end %>
         </div>
-      </header>
+      </:header>
+
+    <article>
 
       <%= if @post.featured_image do %>
         <img

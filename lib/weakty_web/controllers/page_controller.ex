@@ -10,6 +10,14 @@ defmodule WeaktyWeb.PageController do
       |> Ash.Query.limit(5)
       |> Ash.read!()
 
+    update =
+      Weakty.Posts.Post
+      |> Ash.Query.filter(status == :published and post_type == :update)
+      |> Ash.Query.sort(published_at: :desc)
+      |> Ash.Query.limit(1)
+      |> Ash.read!()
+      |> List.first()
+
     currently_reading =
       Weakty.MediaLogs.MediaLog
       |> Ash.Query.filter(media_type == :book and status == :consuming and public == true)
@@ -22,6 +30,7 @@ defmodule WeaktyWeb.PageController do
     render(conn, :home,
       posts: posts,
       currently_reading: currently_reading,
+      update: update
     )
   end
 end

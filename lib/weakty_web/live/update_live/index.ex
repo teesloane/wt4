@@ -49,7 +49,7 @@ defmodule WeaktyWeb.UpdateLive.Index do
           <div class="space-y-3">
             <.content_item
               :for={update <- @updates}
-              href={~p"/posts/#{update.slug}"}
+              href={~p"/now/#{update.slug}"}
               title={update.title}
               date={update.published_at}
             />

@@ -89,6 +89,7 @@ defmodule WeaktyWeb.CoreComponents do
       </.page_container>
   """
   slot :inner_block, required: true
+  slot :header
   attr :title, :string, default: nil
   attr :class, :string, default: "max-w-2xl mx-auto px-6 py-16"
 
@@ -98,6 +99,10 @@ defmodule WeaktyWeb.CoreComponents do
       <h1 :if={@title} class="text-xl font-normal mb-8 mt-8 text-center uppercase prose tracking-wide averia">
         <%= @title %>
       </h1>
+
+      <%= if @header != [] do %>
+        <%= render_slot(@header) %>
+      <% end %>
 
       <%= render_slot(@inner_block) %>
     </div>
@@ -573,6 +578,7 @@ defmodule WeaktyWeb.CoreComponents do
   attr :date, :any, default: nil
   attr :href, :string, default: nil
   attr :label, :string, default: nil
+  attr :current, :boolean, default: false
 
   def content_item(assigns) do
     ~H"""
@@ -581,7 +587,7 @@ defmodule WeaktyWeb.CoreComponents do
         <%= @label %>
       </span>
       <%= if @href do %>
-        <a href={@href} class="flex-1 no-underline hover:opacity-50 transition-opacity text-sm truncate">
+        <a href={@href} class={"flex-1 no-underline hover:opacity-50 transition-opacity text-sm truncate #{if @current, do: "font-bold", else: ""}"}>
           <%= @title %>
         </a>
       <% else %>
