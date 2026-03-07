@@ -15,6 +15,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
      |> assign(:state_filter, "all")
      |> assign(:states, @states)
      |> assign(:workers, load_workers())
+     |> assign(:image_audit, nil)
      |> load_jobs(),
      layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -46,6 +47,11 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
   def handle_event("refresh", _params, socket) do
     {:noreply, load_jobs(socket)}
+  end
+
+  def handle_event("run_image_audit", _params, socket) do
+    results = audit_images()
+    {:noreply, assign(socket, :image_audit, results)}
   end
 
   @impl true
@@ -165,6 +171,63 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
           </div>
         <% end %>
       </div>
+      <div>
+        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">Audits</h2>
+
+        <div class="bg-base-200 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <span class="font-mono text-sm font-medium">ImageAudit</span>
+              <span class="text-xs text-base-content/50 ml-3">checks posts for broken local image paths</span>
+            </div>
+            <button phx-click="run_image_audit" class="btn btn-sm btn-ghost">
+              <.icon name="hero-play" class="w-4 h-4" />
+              Run now
+            </button>
+          </div>
+
+          <%= cond do %>
+            <% @image_audit == nil -> %>
+              <%!-- not yet run --%>
+            <% @image_audit == [] -> %>
+              <p class="text-sm text-success flex items-center gap-2">
+                <.icon name="hero-check-circle" class="w-4 h-4" /> All local images found.
+              </p>
+            <% true -> %>
+              <% missing = Enum.filter(@image_audit, & !&1.exists) %>
+              <% ok = Enum.filter(@image_audit, & &1.exists) %>
+              <p class="text-xs text-base-content/50 mb-3">
+                <%= length(ok) %> ok · <span class="text-error"><%= length(missing) %> missing</span>
+              </p>
+              <%= if missing != [] do %>
+                <div class="overflow-x-auto">
+                  <table class="table table-sm font-sans">
+                    <thead>
+                      <tr>
+                        <th>Post</th>
+                        <th>Kind</th>
+                        <th>Path</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <%= for item <- missing do %>
+                        <tr>
+                          <td>
+                            <.link navigate={~p"/admin/posts/#{item.post_id}/edit"} class="hover:opacity-70">
+                              <%= item.post_title %>
+                            </.link>
+                          </td>
+                          <td class="text-base-content/40"><%= item.kind %></td>
+                          <td><code class="text-xs text-error font-mono"><%= item.path %></code></td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% end %>
+          <% end %>
+        </div>
+      </div>
     </div>
     """
   end
@@ -195,6 +258,41 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
     assign(socket, :jobs, Weakty.Repo.all(query))
   end
+
+  defp audit_images do
+    require Ash.Query
+
+    posts =
+      Weakty.Posts.Post
+      |> Ash.Query.filter(status == :published)
+      |> Ash.read!()
+
+    static_dir = Path.join([:code.priv_dir(:weakty), "static"])
+
+    Enum.flat_map(posts, fn post ->
+      markdown_images =
+        ~r/!\[.*?\]\(([^)]+)\)/
+        |> Regex.scan(post.markdown || "", capture: :all_but_first)
+        |> List.flatten()
+        |> Enum.reject(&external?/1)
+        |> Enum.map(fn path ->
+          clean_path = path |> String.split("?") |> hd() |> String.split("#") |> hd()
+          %{post_title: post.title, post_id: post.id, path: path, kind: :inline, exists: File.exists?(Path.join(static_dir, clean_path))}
+        end)
+
+      featured_image =
+        if post.featured_image && !external?(post.featured_image) do
+          clean_path = post.featured_image |> String.split("?") |> hd() |> String.split("#") |> hd()
+          [%{post_title: post.title, post_id: post.id, path: post.featured_image, kind: :featured, exists: File.exists?(Path.join(static_dir, clean_path))}]
+        else
+          []
+        end
+
+      markdown_images ++ featured_image
+    end)
+  end
+
+  defp external?(url), do: String.starts_with?(url, ["http://", "https://", "//"])
 
   defp short_worker(worker), do: worker |> String.split(".") |> List.last()
 
