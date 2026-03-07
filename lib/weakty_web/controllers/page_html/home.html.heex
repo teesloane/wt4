@@ -1,19 +1,39 @@
 <Layouts.flash_group flash={@flash} />
 
-<% section_class = "w-full h-[45vh] p-8 px-12 flex flex-col justify-center border border-base-300" %>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 flex flex-col">
-  <section class={[section_class, "text-3xl"]}>
+<% section_class = "w-full  mx-auto min-h-[45vh] p-8 px-12 flex flex-col justify-center border border-base-300" %>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-0 flex flex-col max-w-[2560px] mx-auto">
+  <section class={[section_class, "md:text-xl lg:text-2xl"]}>
   Hello, my name is Ty.
   
   <div class="mt-8 text-content-200">
     This is where I write and share my work.
   </div>
   </section>
+
+  <%!--
+
   <section class={section_class}>Some things I've made:</section>
-  <section class={section_class}>My most recent piece of fiction is: _____</section>
+  --%>
+
+  <section class={section_class}>
+    <div class="w-full">
+      <.home_grid_header> The latest story I wrote is: </.home_grid_header>
+      <%= if @recent_fiction do %>
+        <.content_item
+        href={~p"/posts/#{@recent_fiction.slug}"}
+        size="xl"
+        title={@recent_fiction.title} />
+      <% else %>
+        <p class="text-base-content/40 text-sm">No fiction yet</p>
+      <% end %>
+      <.view_all href={~p"/fiction"} label="View other stories" />
+    </div>
+  </section>
   <section class={section_class}>
     <.home_grid_header> Currently reading: </.home_grid_header>
-    <%= @currently_reading.title %>
+        <.content_item
+        size="xl"
+        title={@currently_reading.title} />
       <.view_all href={~p"/media-logs?type=book&status=all&year=all"} label="View the media log" />
   </section>
 
@@ -29,8 +49,42 @@
     </div>
   </section>
 
-  <section class={section_class}>Other short stories</section>
-  <section class={section_class}>Recent areas of interest</section>
+  <%!-- Quote section
+  <section class={section_class}>
+    <%= if @random_quote do %>
+      <span class="text-[50px]">“</span>
+      <blockquote class="space-y-4 -mt-8">
+        <span class="text-sm opacity-80"><%= @random_quote.markdown %></span>
+        <%= if @random_quote.attribution do %>
+          <footer class="text-xs opacity-40">
+            <%= if @random_quote.attribution_url do %>
+              <a href={@random_quote.attribution_url} class="hover:opacity-70 transition-opacity">— <%= @random_quote.attribution %></a>
+            <% else %>
+              — <%= @random_quote.attribution %>
+            <% end %>
+          </footer>
+        <% end %>
+      </blockquote>
+    <% end %>
+  </section>
+  --%>
+
+  <section class={section_class}>
+    <div class="w-full">
+      <.home_grid_header> Areas of interest </.home_grid_header>
+      <div class="space-y-3">
+        <%= for area <- @top_areas do %>
+          <div class="flex items-baseline gap-3">
+            <a href={~p"/areas/#{area.slug}"} class="flex-1 text-sm hover:opacity-50 transition-opacity">
+              <%= area.name %>
+            </a>
+            <span class="text-xs opacity-30 tabular-nums">[<%= area.count %>]</span>
+          </div>
+        <% end %>
+      </div>
+      <.view_all href={~p"/areas"} label="View all areas" />
+    </div>
+  </section>
   <section class={section_class}>
     <div class="w-full">
     <.home_grid_header> Now </.home_grid_header>
@@ -43,6 +97,7 @@
       <.view_all href={~p"/now"} label="View previous updates" />
     </div>
   </section>
+  <section class={[section_class, "hidden lg:flex xl:hidden"]}>Thank you.</section>
 </div>
 
 <%!--

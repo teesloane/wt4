@@ -353,15 +353,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 name={@form[:post_type].name}
                 class="select select-bordered select-sm w-full text-sm"
               >
-                <option value="post" selected={@form[:post_type].value == :post || @form[:post_type].value == "post"}>
-                  Post
-                </option>
-                <option value="update" selected={@form[:post_type].value == :update || @form[:post_type].value == "update"}>
-                  Update
-                </option>
-                <option value="fiction" selected={@form[:post_type].value == :fiction || @form[:post_type].value == "fiction"}>
-                  Fiction
-                </option>
+                <%= for type <- Weakty.Posts.PostType.values(), type not in [:til, :quote] do %>
+                  <option value={type} selected={@form[:post_type].value == type || @form[:post_type].value == to_string(type)}>
+                    <%= type |> to_string() |> String.capitalize() %>
+                  </option>
+                <% end %>
               </select>
             </div>
 

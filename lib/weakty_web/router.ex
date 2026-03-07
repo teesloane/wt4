@@ -47,6 +47,7 @@ defmodule WeaktyWeb.Router do
       live "/media-logs", MediaLogLive.Index, :index
       # live "/media-logs/:slug", MediaLogLive.Show, :show
       live "/quotes", QuoteLive.Index, :index
+      live "/fiction", FictionLive.Index, :index
       live "/til", TilLive.Index, :index
       live "/til/:slug", TilLive.Show, :show
       # in each liveview, add one of the following at the top of the module:

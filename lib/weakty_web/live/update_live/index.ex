@@ -23,17 +23,10 @@ defmodule WeaktyWeb.UpdateLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_container>
+    <.page_container title={"NOW: #{@featured_update.title}"}>
       <%= if @featured_update do %>
         <!-- Featured Update (Most Recent) -->
-        <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto py-12">
-          <div class="mb-8 flex">
-            <div class="flex flex-1 justify-center mb-8">
-              <h1 class="text-2xl font-normal text-center tracking-wide averia">
-                NOW: <%= @featured_update.title %>
-              </h1>
-            </div>
-          </div>
+        <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto">
 
           <div class="prose max-w-none">
             <%= raw(@featured_update.html) %>

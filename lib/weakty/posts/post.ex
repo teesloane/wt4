@@ -276,6 +276,12 @@ defmodule Weakty.Posts.Post do
       prepare build(sort: [inserted_at: :desc])
       filter expr(post_type == :quote)
     end
+
+    read :fiction do
+      prepare build(sort: [published_at: :desc])
+      filter expr(status == :published and post_type == :fiction)
+    end
+
   end
 
   code_interface do
@@ -288,6 +294,7 @@ defmodule Weakty.Posts.Post do
     define :list_published_updates, action: :published_updates
     define :list_tils, action: :tils
     define :list_quotes, action: :quotes
+    define :list_fiction, action: :fiction
     define :get_post, action: :read, get?: true
     define :get_by_slug, action: :get_by_slug
     define :create_post, action: :create

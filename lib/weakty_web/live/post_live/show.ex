@@ -26,17 +26,22 @@ defmodule WeaktyWeb.PostLive.Show do
     ~H"""
     <.page_container title={@post.title}>
       <:header>
-        <div class="text-sm lowercase flex justify-center tracking-wider gap-3 mb-6 opacity-70">
-          <%= if @post.published_at do %>
-            <span class="capitalize"><%= @post.post_type || "" %></span>
-            <span> • </span>
-            <span><%= format_date(@post.published_at) %></span>
-            <span> • </span>
-            <span><%= estimate_read_time(@post.html) %> min read</span>
-          <% else %>
-            <span><%= format_date(@post.updated_at) %> • Draft</span>
-          <% end %>
-        </div>
+        <dl class="flex justify-center gap-8 mb-8 text-xs tracking-widest">
+          <div class="flex flex-col items-center gap-1">
+            <dt class="uppercase opacity-30">Type</dt>
+            <dd class="capitalize opacity-60"><%= @post.post_type || "—" %></dd>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <dt class="uppercase opacity-30">Date</dt>
+            <dd class="opacity-60 tabular-nums">
+              <%= if @post.published_at, do: format_date(@post.published_at), else: "Draft" %>
+            </dd>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <dt class="uppercase opacity-30">Read</dt>
+            <dd class="opacity-60"><%= estimate_read_time(@post.html) %> min</dd>
+          </div>
+        </dl>
       </:header>
 
     <article>

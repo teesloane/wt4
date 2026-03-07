@@ -24,15 +24,18 @@ defmodule WeaktyWeb.UpdateLive.Show do
     ~H"""
     <.page_container title={@post.title}>
       <:header>
-        <div class="text-sm lowercase flex justify-center tracking-wider gap-3 mb-6 opacity-70">
-          <%= if @post.published_at do %>
-            <span>Now (an update)</span>
-            <span> • </span>
-            <span><%= format_date(@post.published_at) %></span>
-          <% else %>
-            <span><%= format_date(@post.updated_at) %> • Draft</span>
-          <% end %>
-        </div>
+        <dl class="flex justify-center gap-8 mb-8 text-xs tracking-widest">
+          <div class="flex flex-col items-center gap-1">
+            <dt class="uppercase opacity-30">Type</dt>
+            <dd class="capitalize opacity-60">Update</dd>
+          </div>
+          <div class="flex flex-col items-center gap-1">
+            <dt class="uppercase opacity-30">Date</dt>
+            <dd class="opacity-60 tabular-nums">
+              <%= if @post.published_at, do: format_date(@post.published_at), else: "Draft" %>
+            </dd>
+          </div>
+        </dl>
       </:header>
 
       <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto py-12">
