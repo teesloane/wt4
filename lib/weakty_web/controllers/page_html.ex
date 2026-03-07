@@ -12,7 +12,9 @@ defmodule WeaktyWeb.PageHTML do
   # out first so that we don't have to worry about
   # the truncating happening mid-tag
   def truncate_html(html, max) when is_binary(html) do
-    text = Regex.replace(~r/<[^>]+>/s, html, "")
+    text = html
+      |> then(&Regex.replace(~r/<[^>]+>/s, &1, ""))
+      |> decode_html_entities()
     if String.length(text) <= max do
       text
     else
@@ -28,6 +30,17 @@ defmodule WeaktyWeb.PageHTML do
   end
 
   def truncate_html(_, _), do: ""
+
+  defp decode_html_entities(text) do
+    text
+    |> String.replace("&amp;", "&")
+    |> String.replace("&quot;", "\"")
+    |> String.replace("&#39;", "'")
+    |> String.replace("&apos;", "'")
+    |> String.replace("&lt;", "<")
+    |> String.replace("&gt;", ">")
+    |> String.replace("&nbsp;", " ")
+  end
 
   attr :href, :string, required: true
   attr :label, :string, required: true
