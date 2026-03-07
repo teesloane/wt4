@@ -130,11 +130,6 @@ defmodule WeaktyWeb.TilLive.Form do
     {:noreply, assign(socket, form: form)}
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("save", %{"form" => params}, socket) do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
@@ -151,6 +146,11 @@ defmodule WeaktyWeb.TilLive.Form do
          |> put_flash(:error, "Could not save.")
          |> assign(form: to_form(form))}
     end
+  end
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   def handle_event("delete", _params, socket) do

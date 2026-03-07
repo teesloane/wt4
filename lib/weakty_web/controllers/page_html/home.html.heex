@@ -30,11 +30,24 @@
     </div>
   </section>
   <section class={section_class}>
-    <.home_grid_header> Currently reading: </.home_grid_header>
-        <.content_item
-        size="xl"
-        title={@currently_reading.title} />
+    <div class="w-full">
+      <.home_grid_header> Currently reading: </.home_grid_header>
+      <%= if Enum.empty?(@currently_reading) do %>
+        <p class="text-base-content/40 text-sm">Nothing at the moment</p>
+      <% else %>
+        <div class="space-y-3">
+          <%= for book <- @currently_reading do %>
+            <div>
+              <div class="text-sm"><%= book.title %></div>
+              <%= if book.creator do %>
+                <div class="text-xs opacity-40 mt-0.5"><%= book.creator %></div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
       <.view_all href={~p"/media-logs?type=book&status=all&year=all"} label="View the media log" />
+    </div>
   </section>
 
   <section class={section_class}>

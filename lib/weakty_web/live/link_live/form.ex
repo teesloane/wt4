@@ -129,11 +129,6 @@ defmodule WeaktyWeb.LinkLive.Form do
     {:noreply, assign(socket, form: form)}
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("save", %{"form" => params}, socket) do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, link} ->
@@ -143,6 +138,11 @@ defmodule WeaktyWeb.LinkLive.Form do
       {:error, form} ->
         {:noreply, assign(socket, form: to_form(form))}
     end
+  end
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   defp handle_tag_update(link, tags) do

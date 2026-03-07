@@ -88,6 +88,7 @@ defmodule WeaktyWeb.Router do
       live "/til/new", TilLive.Form, :new
       live "/til/:id/edit", TilLive.Form, :edit
       live "/tags", AdminLive.Tags.Index, :index
+      live "/tags/:id", AdminLive.Tags.Show, :show
       live "/entities", AdminLive.Entities.Index, :index
       live "/jobs", AdminLive.Jobs.Index, :index
     end

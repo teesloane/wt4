@@ -333,11 +333,6 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     {:noreply, assign(socket, form: form, media_type: media_type)}
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("save", %{"form" => params}, socket) do
     params = maybe_download_thumbnail(params)
 
@@ -356,6 +351,11 @@ defmodule WeaktyWeb.MediaLogLive.Form do
          |> put_flash(:error, "Could not save. Please check the fields below.")
          |> assign(form: to_form(form))}
     end
+  end
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   def handle_event("delete_media_log", _params, socket) do

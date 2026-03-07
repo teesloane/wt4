@@ -143,11 +143,6 @@ defmodule WeaktyWeb.QuoteLive.Form do
     {:noreply, assign(socket, form: form)}
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("save", %{"form" => params}, socket) do
     # Auto-generate title from first 60 chars of markdown for new quotes
     params = maybe_inject_quote_title(params, socket.assigns.quote)
@@ -167,6 +162,11 @@ defmodule WeaktyWeb.QuoteLive.Form do
          |> put_flash(:error, "Could not save.")
          |> assign(form: to_form(form))}
     end
+  end
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   def handle_event("delete", _params, socket) do

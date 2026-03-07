@@ -44,6 +44,16 @@ defmodule WeaktyWeb.UpdateLive.Show do
         </div>
       </article>
 
+      <%= if @current_user && @current_user.id == @post.user_id do %>
+        <div class="border-t border-base-300 mt-16 pt-8 text-center">
+          <div class="flex gap-3 justify-center">
+            <.link navigate={~p"/admin/posts/#{@post.id}/edit"} class="btn btn-primary btn-sm">
+              Edit
+            </.link>
+          </div>
+        </div>
+      <% end %>
+
       <%= if !Enum.empty?(@updates) do %>
         <div class="border-t border-base-300 my-12"></div>
         <h2 class="text-lg font-normal tracking-wide averia opacity-60 mb-8">Updates</h2>

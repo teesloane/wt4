@@ -24,9 +24,7 @@ defmodule WeaktyWeb.PageController do
       Weakty.MediaLogs.MediaLog
       |> Ash.Query.filter(media_type == :book and status == :consuming and public == true)
       |> Ash.Query.sort(date_started: :desc)
-      |> Ash.Query.limit(1)
       |> Ash.read!()
-      |> List.first()
 
 
     quotes =

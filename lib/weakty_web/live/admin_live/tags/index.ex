@@ -15,6 +15,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
      |> assign(:new_tag_name, "")
      |> assign(:pending_upload_url, nil)
      |> assign(:featured_image_removed, false)
+     |> assign(:view, "grid")
      |> allow_upload(:featured_image,
        accept: ~w(.jpg .jpeg .png .gif .webp),
        max_entries: 1,
@@ -157,6 +158,11 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     end
   end
 
+  @impl true
+  def handle_event("set_view", %{"view" => view}, socket) when view in ["grid", "table"] do
+    {:noreply, assign(socket, :view, view)}
+  end
+
   def handle_progress(:featured_image, entry, socket) when entry.done? do
     {:noreply, assign(socket, :pending_upload_url, save_upload(socket, entry))}
   end
@@ -202,72 +208,137 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
           </div>
         </div>
       <% else %>
-        <div class="overflow-x-auto">
-          <table class="table table-zebra">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Slug</th>
-                <th>Public</th>
-                <th>Posts</th>
-                <th>Links</th>
-                <th>Media</th>
-                <th>Projects</th>
-                <th>Total</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <%= for tag <- @tags do %>
-                <tr class="hover">
-                  <td>
-                    <span class="badge badge-lg"><%= tag.name %></span>
-                  </td>
-                  <td>
-                    <code class="text-sm text-base-content/70"><%= tag.slug %></code>
-                  </td>
-                  <td>
-                    <%= if tag.public do %>
-                      <span class="badge badge-success badge-sm">Yes</span>
-                    <% else %>
-                      <span class="badge badge-ghost badge-sm">No</span>
-                    <% end %>
-                  </td>
-                  <td><div class="text-sm"><%= length(tag.posts) %></div></td>
-                  <td><div class="text-sm"><%= length(tag.links) %></div></td>
-                  <td><div class="text-sm"><%= length(tag.media_logs) %></div></td>
-                  <td><div class="text-sm"><%= length(tag.projects) %></div></td>
-                  <td>
-                    <div class="font-semibold">
-                      <%= length(tag.posts) + length(tag.links) + length(tag.media_logs) + length(tag.projects) %>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="flex gap-2">
-                      <button
-                        phx-click="start_edit"
-                        phx-value-id={tag.id}
-                        class="btn btn-ghost btn-xs"
-                        title="Edit"
-                      >
-                        <.icon name="hero-pencil" class="w-4 h-4" />
-                      </button>
-                      <button
-                        phx-click="delete"
-                        phx-value-id={tag.id}
-                        data-confirm="Are you sure you want to delete this tag? This will remove it from all posts and links."
-                        class="btn btn-ghost btn-xs text-error"
-                        title="Delete"
-                      >
-                        <.icon name="hero-trash" class="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
+        <div class="flex justify-end mb-4">
+          <div class="join">
+            <button
+              class={["join-item btn btn-sm", if(@view == "grid", do: "btn-active", else: "btn-ghost")]}
+              phx-click="set_view"
+              phx-value-view="grid"
+            >
+              <.icon name="hero-squares-2x2" class="w-4 h-4" />
+            </button>
+            <button
+              class={["join-item btn btn-sm", if(@view == "table", do: "btn-active", else: "btn-ghost")]}
+              phx-click="set_view"
+              phx-value-view="table"
+            >
+              <.icon name="hero-bars-3" class="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        <%= if @view == "grid" do %>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-0">
+            <%= for tag <- @tags do %>
+                  <.link navigate={~p"/admin/tags/#{tag.id}"} class="font-medium text-sm leading-tight hover:opacity-60 transition-opacity">
+              <div class="border border-base-300/50 p-3 hover:bg-base-200/50 transition-colors">
+                <div class="flex items-start justify-between gap-1 mb-2">
+
+                  <%= tag.name %>
+                  <%= if tag.public do %>
+                      <.icon name="hero-eye" class="w-3 h-3" />
+                  <% end %>
+                </div>
+                <div class="flex gap-3 flex-wrap text-xs text-base-content/40 mb-3">
+                  <%= for {type, posts} <- Enum.group_by(tag.posts, & &1.post_type) do %>
+                    <span class="flex items-center gap-0.5" title={to_string(type)}>
+                      <.icon name={post_type_icon(type)} class="w-3 h-3" /><%= length(posts) %>
+                    </span>
+                  <% end %>
+                  <%= if length(tag.links) > 0 do %>
+                    <span class="flex items-center gap-0.5">
+                      <.icon name="hero-link" class="w-3 h-3" /><%= length(tag.links) %>
+                    </span>
+                  <% end %>
+                  <%= if length(tag.media_logs) > 0 do %>
+                    <span class="flex items-center gap-0.5">
+                      <.icon name="hero-film" class="w-3 h-3" /><%= length(tag.media_logs) %>
+                    </span>
+                  <% end %>
+                  <%= if length(tag.projects) > 0 do %>
+                    <span class="flex items-center gap-0.5">
+                      <.icon name="hero-folder" class="w-3 h-3" /><%= length(tag.projects) %>
+                    </span>
+                  <% end %>
+                </div>
+                <div :if={false} class="flex gap-1">
+                  <button phx-click="start_edit" phx-value-id={tag.id} class="btn btn-ghost btn-xs">
+                    <.icon name="hero-pencil" class="w-3 h-3" />
+                  </button>
+                  <button
+                    phx-click="delete"
+                    phx-value-id={tag.id}
+                    data-confirm="Are you sure you want to delete this tag?"
+                    class="btn btn-ghost btn-xs text-error"
+                  >
+                    <.icon name="hero-trash" class="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+                  </.link>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="overflow-x-auto">
+            <table class="table table-zebra">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th>Public</th>
+                  <th>Posts</th>
+                  <th>Links</th>
+                  <th>Media</th>
+                  <th>Projects</th>
+                  <th>Total</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%= for tag <- @tags do %>
+                  <tr class="hover">
+                    <td>
+                      <.link navigate={~p"/admin/tags/#{tag.id}"} class="badge badge-lg hover:opacity-60 transition-opacity"><%= tag.name %></.link>
+                    </td>
+                    <td><code class="text-sm text-base-content/70"><%= tag.slug %></code></td>
+                    <td>
+                      <%= if tag.public do %>
+                        <span class="badge badge-success badge-sm">Yes</span>
+                      <% else %>
+                        <span class="badge badge-ghost badge-sm">No</span>
+                      <% end %>
+                    </td>
+                    <td><div class="text-sm"><%= length(tag.posts) %></div></td>
+                    <td><div class="text-sm"><%= length(tag.links) %></div></td>
+                    <td><div class="text-sm"><%= length(tag.media_logs) %></div></td>
+                    <td><div class="text-sm"><%= length(tag.projects) %></div></td>
+                    <td>
+                      <div class="font-semibold">
+                        <%= length(tag.posts) + length(tag.links) + length(tag.media_logs) + length(tag.projects) %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="flex gap-2">
+                        <button phx-click="start_edit" phx-value-id={tag.id} class="btn btn-ghost btn-xs" title="Edit">
+                          <.icon name="hero-pencil" class="w-4 h-4" />
+                        </button>
+                        <button
+                          phx-click="delete"
+                          phx-value-id={tag.id}
+                          data-confirm="Are you sure you want to delete this tag? This will remove it from all posts and links."
+                          class="btn btn-ghost btn-xs text-error"
+                          title="Delete"
+                        >
+                          <.icon name="hero-trash" class="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
       <% end %>
     </div>
     <%!-- New Tag Modal --%>
@@ -458,6 +529,9 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     tags =
       Weakty.Tags.Tag.list_tags!()
       |> Ash.load!([:links, :posts, :media_logs, :projects], domain: Weakty.Tags)
+      |> Enum.sort_by(fn tag ->
+        length(tag.posts) + length(tag.links) + length(tag.media_logs) + length(tag.projects)
+      end, :desc)
 
     assign(socket, :tags, tags)
   end
@@ -480,4 +554,13 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
     [ext | _] = MIME.extensions(entry.client_type)
     ext
   end
+
+  defp post_type_icon(:post), do: "hero-document-text"
+  defp post_type_icon(:update), do: "hero-arrow-path"
+  defp post_type_icon(:til), do: "hero-light-bulb"
+  defp post_type_icon(:quote), do: "hero-chat-bubble-left"
+  defp post_type_icon(:fiction), do: "hero-book-open"
+  defp post_type_icon(:process), do: "hero-beaker"
+  defp post_type_icon(:page), do: "hero-document"
+  defp post_type_icon(_), do: "hero-document-text"
 end

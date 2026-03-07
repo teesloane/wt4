@@ -12,16 +12,19 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
      |> assign(:page_title, "Posts")
      |> assign(:current_path, "/admin/posts")
      |> assign(:filter, "all")
+     |> assign(:type, "all")
      |> load_posts(), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
     filter = Map.get(params, "filter", "all")
+    type = Map.get(params, "type", "all")
 
     {:noreply,
      socket
      |> assign(:filter, filter)
+     |> assign(:type, type)
      |> load_posts()}
   end
 
@@ -60,25 +63,36 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
     </.admin_header>
 
     <div class="p-8">
-      <div class="mb-4 flex gap-2">
-        <.link
-          patch={~p"/admin/posts?filter=all"}
-          class={["btn btn-sm", if(@filter == "all", do: "btn-active", else: "btn-ghost")]}
-        >
-          All Posts
-        </.link>
-        <.link
-          patch={~p"/admin/posts?filter=published"}
-          class={["btn btn-sm", if(@filter == "published", do: "btn-active", else: "btn-ghost")]}
-        >
-          Published
-        </.link>
-        <.link
-          patch={~p"/admin/posts?filter=drafts"}
-          class={["btn btn-sm", if(@filter == "drafts", do: "btn-active", else: "btn-ghost")]}
-        >
-          Drafts
-        </.link>
+      <div class="mb-4 flex gap-2 flex-wrap items-center">
+        <.link patch={~p"/admin/posts?filter=all&type=#{@type}"} class={["btn btn-sm", if(@filter == "all", do: "btn-active", else: "btn-ghost")]}>All [<%= @counts.all %>]</.link>
+        <.link patch={~p"/admin/posts?filter=published&type=#{@type}"} class={["btn btn-sm", if(@filter == "published", do: "btn-active", else: "btn-ghost")]}>Published [<%= @counts.published %>]</.link>
+        <.link patch={~p"/admin/posts?filter=drafts&type=#{@type}"} class={["btn btn-sm", if(@filter == "drafts", do: "btn-active", else: "btn-ghost")]}>Drafts [<%= @counts.drafts %>]</.link>
+        <.link patch={~p"/admin/posts?filter=untagged&type=#{@type}"} class={["btn btn-sm", if(@filter == "untagged", do: "btn-active", else: "btn-ghost")]}>Untagged [<%= @counts.untagged %>]</.link>
+
+        <div class="w-px h-5 bg-base-300 mx-1"></div>
+
+        <div class="dropdown">
+          <div tabindex="0" role="button" class={["btn btn-sm", if(@type != "all", do: "btn-active", else: "btn-ghost")]}>
+            <%= if @type == "all", do: "Type", else: String.capitalize(@type) %>
+            [<%= Map.get(@counts.by_type, @type, if(@type == "all", do: @counts.all, else: 0)) %>]
+            <.icon name="hero-chevron-down" class="w-3 h-3" />
+          </div>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow border border-base-300 mt-1">
+            <li>
+              <.link patch={~p"/admin/posts?filter=#{@filter}&type=all"} class={if(@type == "all", do: "active", else: "")}>
+                All Types
+              </.link>
+            </li>
+            <%= for type <- Weakty.Posts.PostType.values() do %>
+              <% count = Map.get(@counts.by_type, to_string(type), 0) %>
+              <li>
+                <.link patch={~p"/admin/posts?filter=#{@filter}&type=#{type}"} class={if(@type == to_string(type), do: "active", else: "")}>
+                  <%= type |> to_string() |> String.capitalize() %> [<%= count %>]
+                </.link>
+              </li>
+            <% end %>
+          </ul>
+        </div>
       </div>
 
       <%= if @posts == [] do %>
@@ -98,7 +112,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
           <%= for post <- @posts do %>
             <div
               class="flex gap-4 p-2 bg-base-100 rounded-lg hover:bg-base-200/50 cursor-pointer transition-colors "
-              phx-click={JS.navigate(~p"/admin/posts/#{post.id}/edit")}
+              phx-click={JS.navigate("/admin/posts/#{post.id}/edit?return_to=#{URI.encode_www_form("/admin/posts?filter=#{@filter}&type=#{@type}")}")}
             >
               <!-- Featured Image Thumbnail -->
               <div class="flex-shrink-0 relative">
@@ -153,33 +167,35 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
   end
 
   defp load_posts(socket) do
+    all_posts = Weakty.Posts.Post.list_posts!() |> Ash.load!([:tags, :user])
+
+    counts = %{
+      all: length(all_posts),
+      published: Enum.count(all_posts, &(&1.status == :published)),
+      drafts: Enum.count(all_posts, &(&1.status == :draft)),
+      untagged: Enum.count(all_posts, &Enum.empty?(&1.tags)),
+      by_type: Enum.frequencies_by(all_posts, &to_string(&1.post_type))
+    }
+
     posts =
       case socket.assigns.filter do
-        "published" -> Weakty.Posts.Post.list_published_posts!()
-        "drafts" -> Weakty.Posts.Post.list_drafts!()
-        _ -> Weakty.Posts.Post.list_posts!()
+        "published" -> Enum.filter(all_posts, &(&1.status == :published))
+        "drafts" -> Enum.filter(all_posts, &(&1.status == :draft))
+        "untagged" -> Enum.filter(all_posts, &Enum.empty?(&1.tags))
+        _ -> all_posts
       end
 
-    # Load tags and user relationships
-    posts = Ash.load!(posts, [:tags, :user])
-
-    # Sort only in "all posts" mode: published by date, then drafts at top
     posts =
-      if socket.assigns.filter == "all" do
-        {drafts, published} = Enum.split_with(posts, fn post -> post.status == :draft end)
-
-        # Sort published by published_at (most recent first)
-        published = Enum.sort_by(published, & &1.published_at, {:desc, DateTime})
-
-        # Sort drafts by updated_at (most recent first)
-        drafts = Enum.sort_by(drafts, & &1.updated_at, {:desc, DateTime})
-
-        # Drafts at top, then published
-        drafts ++ published
-      else
-        posts
+      case socket.assigns.type do
+        "all" -> posts
+        type -> Enum.filter(posts, fn post -> to_string(post.post_type) == type end)
       end
 
-    assign(socket, :posts, posts)
+    {drafts, published} = Enum.split_with(posts, fn post -> post.status == :draft end)
+    published = Enum.sort_by(published, & &1.published_at, {:desc, DateTime})
+    drafts = Enum.sort_by(drafts, & &1.updated_at, {:desc, DateTime})
+    posts = drafts ++ published
+
+    socket |> assign(:posts, posts) |> assign(:counts, counts)
   end
 end

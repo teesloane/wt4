@@ -104,7 +104,7 @@ defmodule WeaktyWeb.PostLive.Show do
               <% end %>
 
                 <.link
-                  navigate={"#{entity.source_path}/#{entity.slug}"}
+                  href={"#{entity.source_path}/#{entity.slug}"}
                   class="hover:opacity-60 transition-opacity truncate w-full flex-1"
                 >
                   <%= entity.title %>

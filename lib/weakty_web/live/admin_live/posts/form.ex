@@ -35,9 +35,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
       |> Form.validate(%{})
       |> to_form()
 
+    return_to = Map.get(params, "return_to", "/admin/posts")
+
     socket =
       socket
-      |> assign(form: form, post: post, preview: false, tags: existing_tags, auto_slug: "")
+      |> assign(form: form, post: post, preview: false, tags: existing_tags, auto_slug: "", return_to: return_to)
       |> assign(:current_path, "/admin/posts")
       |> assign(:content_images, (post && post.content_images) || [])
       |> assign(:uploaded_featured_image, post && post.featured_image)
@@ -79,7 +81,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
       <!-- Main Content Area -->
       <div class="flex-1 max-w-4xl w-full mx-auto px-8 py-8">
         <div class="flex items-center gap-4 mb-8">
-          <.link navigate={~p"/admin/posts"} class="btn btn-ghost btn-sm">
+          <.link navigate={@return_to} class="btn btn-ghost btn-sm">
             <.icon name="hero-arrow-left" class="w-4 h-4" />
             Posts
           </.link>
@@ -87,6 +89,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <%= if @post, do: "Draft - Saved (not implemented)", else: "New Post" %>
           </div>
           <div class="flex-1"></div>
+          <%= if @post do %>
+            <.link navigate={permalink_for_post(@post)} class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
+              View
+            </.link>
+          <% end %>
           <button
             phx-click="toggle_preview"
             class="btn btn-ghost btn-sm"
@@ -502,7 +510,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
       {:ok, post} ->
         handle_tag_update(post, socket.assigns.tags)
         message = if socket.assigns.post, do: "Post updated successfully.", else: "Post created successfully."
-        {:noreply, socket |> put_flash(:info, message) |> push_navigate(to: ~p"/admin/posts")}
+        {:noreply, socket |> put_flash(:info, message) |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, form} ->
         {:noreply, assign(socket, form: to_form(form))}
@@ -584,4 +592,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     [ext | _] = MIME.extensions(entry.client_type)
     ext
   end
+
+  defp permalink_for_post(%{post_type: :update, slug: slug}), do: "/now/#{slug}"
+  defp permalink_for_post(%{post_type: :til, slug: slug}), do: "/til/#{slug}"
+  defp permalink_for_post(%{slug: slug}), do: "/posts/#{slug}"
 end
