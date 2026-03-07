@@ -50,7 +50,7 @@ defmodule WeaktyWeb.AreaLive.Show do
         </.link>
 
         <%= if @tag.featured_image do %>
-          <div class="w-full h-64 mb-8 rounded-lg overflow-hidden">
+          <div class="w-full h-64 mb-8 rounded-none overflow-hidden">
             <img src={@tag.featured_image} alt={@tag.name} class="w-full h-full object-cover" />
           </div>
         <% end %>
@@ -79,7 +79,7 @@ defmodule WeaktyWeb.AreaLive.Show do
       <% else %>
         <div class="space-y-6">
           <%= for entity <- @entities do %>
-            <div class="card bg-base-100 shadow-lg">
+            <div class="card bg-base-100 shadow-sm">
               <div class="card-body">
                 <div class="flex items-start justify-between gap-4">
                   <div class="flex-1">

@@ -35,6 +35,7 @@ defmodule WeaktyWeb.Router do
 
     ash_authentication_live_session :authenticated_routes do
       live "/now", UpdateLive.Index, :index
+      live "/now/:slug", UpdateLive.Show, :show
       live "/areas", AreaLive.Index, :index
       live "/areas/:slug", AreaLive.Show, :show
       live "/links", LinkLive.Index, :index
@@ -46,6 +47,7 @@ defmodule WeaktyWeb.Router do
       live "/media-logs", MediaLogLive.Index, :index
       # live "/media-logs/:slug", MediaLogLive.Show, :show
       live "/quotes", QuoteLive.Index, :index
+      live "/fiction", FictionLive.Index, :index
       live "/til", TilLive.Index, :index
       live "/til/:slug", TilLive.Show, :show
       # in each liveview, add one of the following at the top of the module:

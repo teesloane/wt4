@@ -7,6 +7,7 @@ defmodule Weakty.Posts.PostType do
   :til,
   :quote,
   :fiction,
+  :process,
   ]
 
 end

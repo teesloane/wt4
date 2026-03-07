@@ -89,15 +89,20 @@ defmodule WeaktyWeb.CoreComponents do
       </.page_container>
   """
   slot :inner_block, required: true
+  slot :header
   attr :title, :string, default: nil
   attr :class, :string, default: "max-w-2xl mx-auto px-6 py-16"
 
   def page_container(assigns) do
     ~H"""
     <div class={@class}>
-      <h1 :if={@title} class="text-xl font-normal mb-8 mt-8 text-center uppercase prose tracking-wide averia">
+      <h1 :if={@title} class="text-xl font-normal mb-16 mt-8 text-center uppercase prose tracking-wide averia">
         <%= @title %>
       </h1>
+
+      <%= if @header != [] do %>
+        <%= render_slot(@header) %>
+      <% end %>
 
       <%= render_slot(@inner_block) %>
     </div>
@@ -573,19 +578,21 @@ defmodule WeaktyWeb.CoreComponents do
   attr :date, :any, default: nil
   attr :href, :string, default: nil
   attr :label, :string, default: nil
+  attr :current, :boolean, default: false
+  attr :size, :string, default: "sm", values: ~w(sm base lg xl)
 
   def content_item(assigns) do
     ~H"""
     <div class="flex items-baseline gap-6">
-      <span :if={@label} class="text-xs opacity-50 tabular-nums flex-shrink-0 min-w-24 capitalize">
+      <span :if={@label} class="text-xs opacity-90 tabular-nums flex-shrink-0 min-w-24 capitalize">
         <%= @label %>
       </span>
       <%= if @href do %>
-        <a href={@href} class="flex-1 no-underline hover:opacity-50 transition-opacity text-sm truncate">
+        <a href={@href} class={"flex-1 no-underline opacity-full hover:underline transition-all text-#{@size} truncate #{if @current, do: "font-bold", else: ""}"}>
           <%= @title %>
         </a>
       <% else %>
-        <span class="flex-1 text-sm opacity-50 truncate"><%= @title %></span>
+        <span class={"flex-1 text-#{@size} opacity-90 truncate"}><%= @title %></span>
       <% end %>
       <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
         <%= if @date, do: Calendar.strftime(@date, "%Y-%m-%d") %>
