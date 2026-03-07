@@ -103,7 +103,7 @@ defmodule WeaktyWeb.CoreComponents do
       </h1>
 
       <%= if @header != [] do %>
-      <div class="mb-16 lg:mb-32">
+      <div class="mb-16 lg:mb-24">
         <%= render_slot(@header) %>
         </div>
       <% end %>
@@ -596,7 +596,7 @@ defmodule WeaktyWeb.CoreComponents do
           <%= @title %>
         </a>
       <% else %>
-        <span class={"flex-1 text-#{@size} opacity-90 truncate"}><%= @title %></span>
+        <span class={"flex-1 text-#{@size} opacity-50 truncate"}><%= @title %></span>
       <% end %>
       <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
         <%= if @date, do: Calendar.strftime(@date, "%Y-%m-%d") %>

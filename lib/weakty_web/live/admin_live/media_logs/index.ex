@@ -33,7 +33,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     media_log = Ash.get!(Weakty.MediaLogs.MediaLog, id)
 
     case Weakty.MediaLogs.MediaLog.delete_media_log(media_log) do
-      {:ok, _} ->
+      :ok ->
         {:noreply, socket |> put_flash(:info, "Deleted.") |> load_media_logs()}
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to delete media log")}
