@@ -92,10 +92,12 @@ defmodule WeaktyWeb.CoreComponents do
   slot :header
   attr :title, :string, default: nil
   attr :class, :string, default: "max-w-2xl mx-auto px-6 py-16"
+  attr :size, :string, default: "2xl", values: ~w(sm base lg xl 2xl 3xl 4xl 5xl 6xl)
+
 
   def page_container(assigns) do
     ~H"""
-    <div class={@class}>
+    <div class={[@class, "max-w-#{@size}"]}>
       <h1 :if={@title} class="text-xl font-normal mb-16 mt-8 text-center uppercase prose tracking-wide averia">
         <%= @title %>
       </h1>

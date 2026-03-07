@@ -32,15 +32,14 @@ defmodule WeaktyWeb.MediaLogLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-3xl px-4 py-8">
+    <.page_container title="Media Log" size="4xl">
       <div class="mb-8">
-        <h1 class="text-lg font-bold mb-4">Media Logs</h1>
 
         <!-- Filters Row -->
         <div class="flex gap-2 mb-4 items-center">
           <!-- Year Filter -->
           <div class="dropdown">
-            <label tabindex="0" class="btn btn-sm btn-outline">
+            <label tabindex="0" class="btn btn-sm ">
               <%= if @year_filter == "all", do: "All Years", else: @year_filter %> 
             </label>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40">
@@ -69,7 +68,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
 
           <!-- Media Type Filter -->
           <div class="dropdown">
-            <label tabindex="0" class="btn btn-sm btn-outline">
+            <label tabindex="0" class="btn btn-sm">
               <%= media_type_filter_label(@media_type_filter) %> 
             </label>
             <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-48">
@@ -91,7 +90,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
           <!-- View Toggle -->
           <div class="join ml-auto flex-shrink-0">
             <button
-              class={["join-item btn btn-sm", if(@view == "table", do: "btn-primary", else: "btn-ghost")]}
+              class={["join-item btn btn-sm", if(@view == "table", do: "btn-outline", else: "btn-ghost")]}
               phx-click="set_view"
               phx-value-view="table"
             >
@@ -100,7 +99,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
               </svg>
             </button>
             <button
-              class={["join-item btn btn-sm", if(@view == "grid", do: "btn-primary", else: "btn-ghost")]}
+              class={["join-item btn btn-sm", if(@view == "grid", do: "btn-outline", else: "btn-ghost")]}
               phx-click="set_view"
               phx-value-view="grid"
             >
@@ -150,12 +149,12 @@ defmodule WeaktyWeb.MediaLogLive.Index do
             </table>
           </div>
         <% else %>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
             <%= for media_log <- @filtered_media_logs do %>
-              <div  class="card bg-base-100 hover:shadow-md transition-shadow cursor-pointer">
+              <div  class="card bg-base-100">
                 <figure>
                   <%= if media_log.thumbnail_url do %>
-                    <img src={media_log.thumbnail_url} alt={media_log.title} class="h-64 w-full object-cover" />
+                    <img src={media_log.thumbnail_url} alt={media_log.title} class="h-48 w-full object-cover" />
                   <% else %>
                     <div class="bg-base-300 rounded-lg h-48 w-full flex items-center justify-center text-6xl">
                       <%= media_type_emoji(media_log.media_type) %>
@@ -178,7 +177,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
           </div>
         <% end %>
       <% end %>
-    </div>
+    </.page_container>
     """
   end
 
