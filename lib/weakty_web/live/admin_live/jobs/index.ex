@@ -9,6 +9,8 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
   @impl true
   def mount(_params, _session, socket) do
+    Phoenix.PubSub.subscribe(Weakty.PubSub, "oban:jobs")
+
     {:ok,
      socket
      |> assign(:current_path, "/admin/jobs")
@@ -17,6 +19,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
      |> assign(:workers, load_workers())
      |> assign(:image_audit, nil)
      |> assign(:thumbnail_audit, nil)
+     |> assign(:backups, Weakty.Workers.BackupDatabase.list_backups())
      |> load_jobs(),
      layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -47,7 +50,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
   end
 
   def handle_event("refresh", _params, socket) do
-    {:noreply, load_jobs(socket)}
+    {:noreply, reload(socket)}
   end
 
   def handle_event("run_image_audit", _params, socket) do
@@ -55,10 +58,25 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
     {:noreply, assign(socket, :image_audit, results)}
   end
 
+  def handle_event("backup_now", _params, socket) do
+    %{} |> Weakty.Workers.BackupDatabase.new() |> Oban.insert!()
+    {:noreply, socket |> put_flash(:info, "Backup job enqueued.") |> load_jobs()}
+  end
+
   def handle_event("backfill_thumbnails", _params, socket) do
     count = enqueue_missing_thumbnails()
     msg = if count == 0, do: "All thumbnails already exist.", else: "Enqueued #{count} thumbnail job(s). Check History for results."
     {:noreply, socket |> put_flash(:info, msg) |> load_jobs()}
+  end
+
+  @impl true
+  def handle_info({:job_finished, _job}, socket) do
+    Process.send_after(self(), :reload, 8_000)
+    {:noreply, socket}
+  end
+
+  def handle_info(:reload, socket) do
+    {:noreply, reload(socket)}
   end
 
   @impl true
@@ -184,6 +202,35 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
         <div class="flex flex-col gap-2">
 
         <div class="bg-base-200 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <span class="font-mono text-sm font-medium">BackupDatabase</span>
+              <span class="text-xs text-base-content/50 ml-3">daily at 2am · keeps last 7</span>
+            </div>
+            <button phx-click="backup_now" class="btn btn-sm btn-ghost">
+              <.icon name="hero-play" class="w-4 h-4" />
+              Run now
+            </button>
+          </div>
+          <%= if @backups == [] do %>
+            <p class="text-xs text-base-content/40">No backups yet.</p>
+          <% else %>
+            <div class="overflow-x-auto">
+              <table class="table table-xs font-mono">
+                <tbody>
+                  <%= for backup <- @backups do %>
+                    <tr>
+                      <td class="text-base-content/70"><%= backup.name %></td>
+                      <td class="text-base-content/40 text-right"><%= format_bytes(backup.size) %></td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="bg-base-200 rounded-lg px-4 py-3">
           <div class="flex items-center justify-between">
             <div>
               <span class="font-mono text-sm font-medium">GenerateThumbnails</span>
@@ -254,6 +301,12 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
       </div>
     </div>
     """
+  end
+
+  defp reload(socket) do
+    socket
+    |> load_jobs()
+    |> assign(:backups, Weakty.Workers.BackupDatabase.list_backups())
   end
 
   defp load_workers do
@@ -350,6 +403,14 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
   defp format_dt(nil), do: "—"
   defp format_dt(%DateTime{} = dt), do: Calendar.strftime(dt, "%d %b %Y %H:%M")
   defp format_dt(%NaiveDateTime{} = dt), do: Calendar.strftime(dt, "%d %b %Y %H:%M")
+
+  defp format_bytes(bytes) when bytes >= 1_048_576,
+    do: "#{Float.round(bytes / 1_048_576, 1)} MB"
+
+  defp format_bytes(bytes) when bytes >= 1024,
+    do: "#{Float.round(bytes / 1024, 1)} KB"
+
+  defp format_bytes(bytes), do: "#{bytes} B"
 
   defp state_color("completed"), do: "badge-success"
   defp state_color("executing"), do: "badge-warning"

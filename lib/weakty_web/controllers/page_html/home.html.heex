@@ -98,7 +98,8 @@
       <.view_all href={~p"/areas"} label="View all areas" />
     </div>
   </section>
-  <section class={section_class}>
+
+  <section :if={@update} class={section_class}>
     <div class="w-full">
     <.home_grid_header> Now </.home_grid_header>
       <a href={~p"/now/#{@update.slug}"} class="hover:opacity-50 transition-opacity text-sm block mb-3">

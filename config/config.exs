@@ -131,7 +131,8 @@ config :weakty, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
     {Oban.Plugins.Cron,
      crontab: [
-       {"0 3 * * *", Weakty.Workers.CleanupOrphanedUploads}
+       {"0 3 * * *", Weakty.Workers.CleanupOrphanedUploads},
+       {"0 2 * * *", Weakty.Workers.BackupDatabase}
      ]}
   ]
 

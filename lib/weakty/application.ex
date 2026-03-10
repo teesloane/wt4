@@ -27,7 +27,20 @@ defmodule Weakty.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Weakty.Supervisor]
-    Supervisor.start_link(children, opts)
+    result = Supervisor.start_link(children, opts)
+    attach_oban_telemetry()
+    result
+  end
+
+  defp attach_oban_telemetry do
+    :telemetry.attach_many(
+      "weakty-oban-jobs",
+      [[:oban, :job, :stop], [:oban, :job, :exception]],
+      fn _event, _measurements, meta, _config ->
+        Phoenix.PubSub.broadcast(Weakty.PubSub, "oban:jobs", {:job_finished, meta.job})
+      end,
+      nil
+    )
   end
 
   # Tell Phoenix to update the endpoint configuration
