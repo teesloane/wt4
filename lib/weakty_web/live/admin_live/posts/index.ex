@@ -55,10 +55,18 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
     ~H"""
     <.admin_header title="Posts" subtitle={"#{length(@posts)} post#{if length(@posts) != 1, do: "s"}"}>
       <:actions>
-        <.link navigate="/admin/posts/new" class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" />
-          New Post
-        </.link>
+        <div class="dropdown dropdown-end">
+          <div tabindex="0" role="button" class="btn btn-primary">
+            <.icon name="hero-plus" class="w-4 h-4" />
+            New…
+          </div>
+          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box border border-base-300 shadow-lg z-10 w-40 p-1 mt-1">
+            <li><.link navigate="/admin/posts/new?type=post">Post</.link></li>
+            <li><.link navigate="/admin/til/new">TIL</.link></li>
+            <li><.link navigate="/admin/quotes/new">Quote</.link></li>
+            <li><.link navigate="/admin/posts/new?type=update">Update</.link></li>
+          </ul>
+        </div>
       </:actions>
     </.admin_header>
 

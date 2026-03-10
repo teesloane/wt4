@@ -1,5 +1,25 @@
 # Weakty
 
+## Server dependencies
+
+### libvips (image thumbnails)
+
+Image uploads generate responsive WebP thumbnails via [libvips](https://www.libvips.org/).
+Install it before starting the server:
+
+```bash
+# Arch Linux
+pacman -S libvips
+
+# macOS
+brew install vips
+```
+
+Without libvips, the app still runs and uploads still work — thumbnail generation
+is skipped with a warning logged. Existing images just won't have srcset variants.
+
+---
+
 To start your Phoenix server:
 
 * Run `mix setup` to install and setup dependencies

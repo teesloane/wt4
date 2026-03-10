@@ -13,18 +13,24 @@ defmodule WeaktyWeb.PageHTML do
   # the truncating happening mid-tag
   def truncate_html(html, max) when is_binary(html) do
     text = html
+      |> String.replace(~r/<li[^>]*>/i, "\n• ")
+      |> String.replace(~r/<\/?(p|div|br|h[1-6]|ul|ol|blockquote)[^>]*>/i, "\n")
       |> then(&Regex.replace(~r/<[^>]+>/s, &1, ""))
       |> decode_html_entities()
+      |> String.replace(~r/\n{3,}/, "\n\n")
+      |> String.trim()
     if String.length(text) <= max do
       text
     else
-      text
-      |> String.slice(0, max)
-      |> String.split(~r/\s+/)
-      |> Enum.drop(-1)
-      |> Enum.join(" ")
-      # remove any trailing punctuation if necessary
+      truncated = String.slice(text, 0, max)
+      # Trim back to last word boundary without collapsing internal whitespace
+      trimmed = case Regex.run(~r/\s\S*$/, truncated) do
+        [tail] -> String.slice(truncated, 0, String.length(truncated) - String.length(tail))
+        nil -> truncated
+      end
+      trimmed
       |> String.replace(~r/\p{P}+$/u, "")
+      |> String.trim_trailing()
       |> Kernel.<>("…")
     end
   end

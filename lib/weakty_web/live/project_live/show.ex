@@ -54,8 +54,11 @@ defmodule WeaktyWeb.ProjectLive.Show do
         <% end %>
 
         <%= if @project.featured_image do %>
+          <% srcset = Weakty.ImageProcessor.srcset_for(@project.featured_image) %>
           <img
             src={@project.featured_image}
+            srcset={srcset}
+            sizes={srcset && "(max-width: 400px) 400px, (max-width: 800px) 800px, 1200px"}
             alt={@project.title}
             class="w-full rounded-lg shadow-lg mb-8"
           />
@@ -74,7 +77,14 @@ defmodule WeaktyWeb.ProjectLive.Show do
         <div class="divider my-8"></div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <%= for image <- @project.images do %>
-            <img src={image} alt="Project screenshot" class="w-full rounded-lg shadow" />
+            <% srcset = Weakty.ImageProcessor.srcset_for(image) %>
+            <img
+              src={image}
+              srcset={srcset}
+              sizes={srcset && "(max-width: 400px) 400px, (max-width: 800px) 800px, 1200px"}
+              alt="Project screenshot"
+              class="w-full rounded-lg shadow"
+            />
           <% end %>
         </div>
       <% end %>

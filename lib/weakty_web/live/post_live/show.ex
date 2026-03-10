@@ -47,8 +47,11 @@ defmodule WeaktyWeb.PostLive.Show do
     <article>
 
       <%= if @post.featured_image do %>
+        <% srcset = Weakty.ImageProcessor.srcset_for(@post.featured_image) %>
         <img
           src={@post.featured_image}
+          srcset={srcset}
+          sizes={srcset && "(max-width: 400px) 400px, (max-width: 800px) 800px, 1200px"}
           alt={@post.title}
           class="w-full mb-12 rounded"
         />

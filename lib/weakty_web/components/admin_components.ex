@@ -42,8 +42,6 @@ defmodule WeaktyWeb.AdminComponents do
           <.nav_item path="/admin/projects" label="Projects" icon="hero-briefcase" current_path={@current_path} />
           <.nav_item path="/admin/links" label="Links" icon="hero-link" current_path={@current_path} />
           <.nav_item path="/admin/media-logs" label="Media Logs" icon="hero-book-open" current_path={@current_path} />
-          <.nav_item path="/admin/til" label="TILs" icon="hero-light-bulb" current_path={@current_path} />
-          <.nav_item path="/admin/quotes" label="Quotes" icon="hero-chat-bubble-left" current_path={@current_path} />
           <.nav_item path="/admin/tags" label="Tags" icon="hero-tag" current_path={@current_path} />
           <.nav_item path="/admin/entities" label="Entities" icon="hero-square-3-stack-3d" current_path={@current_path} />
           <li class="divider my-1"></li>

@@ -18,6 +18,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     # Extract existing tag names if editing
     existing_tags = if post, do: Enum.map(post.tags || [], & &1.name), else: []
 
+    return_to = Map.get(params, "return_to", "/admin/posts")
+    initial_params = if post, do: %{}, else: %{"post_type" => Map.get(params, "type", "post")}
+
     form =
       if post do
         Form.for_update(post, :update, domain: Weakty.Posts, forms: [auto?: false])
@@ -32,10 +35,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
           end
         )
       end
-      |> Form.validate(%{})
+      |> Form.validate(initial_params)
       |> to_form()
-
-    return_to = Map.get(params, "return_to", "/admin/posts")
 
     socket =
       socket
@@ -483,20 +484,14 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   def handle_event("save", %{"form" => params}, socket) do
     featured_image_urls =
       consume_uploaded_entries(socket, :featured_image, fn %{path: path}, entry ->
-        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+        {:ok, do_save_upload(path, entry.uuid, ext(entry))}
       end)
 
     featured_image = List.first(featured_image_urls) || socket.assigns.uploaded_featured_image
 
     new_content_image_urls =
       consume_uploaded_entries(socket, :content_images, fn %{path: path}, entry ->
-        dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-        File.mkdir_p!(Path.dirname(dest))
-        File.cp!(path, dest)
-        {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+        {:ok, do_save_upload(path, entry.uuid, ext(entry))}
       end)
 
     content_images = socket.assigns.content_images ++ new_content_image_urls
@@ -534,11 +529,18 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
   defp save_upload(socket, entry) do
     consume_uploaded_entry(socket, entry, fn %{path: path} ->
-      dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{entry.uuid}.#{ext(entry)}"])
-      File.mkdir_p!(Path.dirname(dest))
-      File.cp!(path, dest)
-      {:ok, "/uploads/#{entry.uuid}.#{ext(entry)}"}
+      {:ok, do_save_upload(path, entry.uuid, ext(entry))}
     end)
+  end
+
+  defp do_save_upload(source_path, uuid, file_ext) do
+    dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{uuid}.#{file_ext}"])
+    File.mkdir_p!(Path.dirname(dest))
+    File.cp!(source_path, dest)
+    %{"source_path" => dest, "uuid" => uuid}
+    |> Weakty.Workers.GenerateThumbnails.new()
+    |> Oban.insert!()
+    "/uploads/#{uuid}.#{file_ext}"
   end
 
   defp maybe_auto_slug(params, current_auto_slug) do

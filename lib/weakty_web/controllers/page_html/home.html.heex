@@ -103,7 +103,7 @@
     <.home_grid_header> Now </.home_grid_header>
       <a href={~p"/now/#{@update.slug}"} class="hover:opacity-50 transition-opacity text-sm block mb-3">
         <div class="mb-3"> <%= @update.title %></div>
-      <div class="relative max-h-32 overflow-hidden text-sm" style="mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);">
+      <div class="flex flex-col relative max-h-32 overflow-hidden text-sm whitespace-pre-line" style="mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);">
         <%= truncate_html(@update.html, 500) %>
       </div>
       </a>

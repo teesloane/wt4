@@ -82,7 +82,8 @@ defmodule Weakty.MixProject do
       {:bandit, "~> 1.5"},
       {:mdex, "~> 0.2"},
       {:htmd, "~> 0.1"},
-      {:oban, "~> 2.19"}
+      {:oban, "~> 2.19"},
+      {:image, "~> 0.54"}
     ]
   end
 

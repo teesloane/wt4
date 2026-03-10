@@ -16,6 +16,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
      |> assign(:states, @states)
      |> assign(:workers, load_workers())
      |> assign(:image_audit, nil)
+     |> assign(:thumbnail_audit, nil)
      |> load_jobs(),
      layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -52,6 +53,12 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
   def handle_event("run_image_audit", _params, socket) do
     results = audit_images()
     {:noreply, assign(socket, :image_audit, results)}
+  end
+
+  def handle_event("backfill_thumbnails", _params, socket) do
+    count = enqueue_missing_thumbnails()
+    msg = if count == 0, do: "All thumbnails already exist.", else: "Enqueued #{count} thumbnail job(s). Check History for results."
+    {:noreply, socket |> put_flash(:info, msg) |> load_jobs()}
   end
 
   @impl true
@@ -174,6 +181,21 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
       <div>
         <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">Audits</h2>
 
+        <div class="flex flex-col gap-2">
+
+        <div class="bg-base-200 rounded-lg px-4 py-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="font-mono text-sm font-medium">GenerateThumbnails</span>
+              <span class="text-xs text-base-content/50 ml-3">enqueues thumbnail jobs for uploads missing variants</span>
+            </div>
+            <button phx-click="backfill_thumbnails" class="btn btn-sm btn-ghost">
+              <.icon name="hero-play" class="w-4 h-4" />
+              Backfill
+            </button>
+          </div>
+        </div>
+
         <div class="bg-base-200 rounded-lg px-4 py-3">
           <div class="flex items-center justify-between mb-3">
             <div>
@@ -227,6 +249,8 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
               <% end %>
           <% end %>
         </div>
+
+        </div><%!-- end flex flex-col gap-2 --%>
       </div>
     </div>
     """
@@ -290,6 +314,33 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
       markdown_images ++ featured_image
     end)
+  end
+
+  defp enqueue_missing_thumbnails do
+    uploads_dir = Path.join([:code.priv_dir(:weakty), "static", "uploads"])
+    thumbs_dir = Path.join(uploads_dir, "thumbnails")
+
+    if File.exists?(uploads_dir) do
+      uploads_dir
+      |> File.ls!()
+      |> Enum.reject(&File.dir?(Path.join(uploads_dir, &1)))
+      |> Enum.filter(fn filename ->
+        case Regex.run(~r/^([a-f0-9-]{36})\.\w+$/, filename) do
+          [_, uuid] -> not File.exists?(Path.join(thumbs_dir, "#{uuid}_400w.webp"))
+          _ -> false
+        end
+      end)
+      |> Enum.reduce(0, fn filename, count ->
+        [_, uuid] = Regex.run(~r/^([a-f0-9-]{36})/, filename)
+        source_path = Path.join(uploads_dir, filename)
+        %{"source_path" => source_path, "uuid" => uuid}
+        |> Weakty.Workers.GenerateThumbnails.new()
+        |> Oban.insert!()
+        count + 1
+      end)
+    else
+      0
+    end
   end
 
   defp external?(url), do: String.starts_with?(url, ["http://", "https://", "//"])

@@ -23,7 +23,7 @@ defmodule WeaktyWeb.AreaLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.page_container title="Areas of Interest">
+    <.page_container size="none" title="Areas of Interest">
 
       <%= if @areas == [] do %>
         <div class="card bg-base-200 shadow-sm">
@@ -34,7 +34,7 @@ defmodule WeaktyWeb.AreaLive.Index do
       <% else %>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           <%= for area <- @areas do %>
-            <.link navigate={~p"/areas/#{area.slug}"} class="card bg-base-100 border border-base-300 hover:shadow-sm rounded-none transition-shadow">
+            <.link navigate={~p"/areas/#{area.slug}"} class="card bg-base-100 border border-base-300 hover:shadow-sm rounded-none transition-shadow w-full">
               <%= if area.featured_image do %>
                 <figure class="aspect-video">
                   <img src={area.featured_image} alt={area.name} class="w-full h-full object-cover" />

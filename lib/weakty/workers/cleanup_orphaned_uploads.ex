@@ -30,7 +30,7 @@ defmodule Weakty.Workers.CleanupOrphanedUploads do
     uploads_dir = Application.app_dir(:weakty, @uploads_dir)
     media_dir = Path.join(uploads_dir, "media")
 
-    # Clean root uploads/ — skip subdirectories (e.g. the media/ folder)
+    # Clean root uploads/ — skip subdirectories (e.g. media/, thumbnails/)
     if File.exists?(uploads_dir) do
       uploads_dir
       |> File.ls!()
@@ -51,6 +51,36 @@ defmodule Weakty.Workers.CleanupOrphanedUploads do
         unless MapSet.member?(media_refs, file) do
           File.rm!(Path.join(media_dir, file))
           Logger.info("Deleted orphaned media upload: #{file}")
+        end
+      end)
+    end
+
+    # Clean uploads/thumbnails/ — delete thumbnails whose source UUID is not referenced
+    thumbs_dir = Path.join(uploads_dir, "thumbnails")
+
+    if File.exists?(thumbs_dir) do
+      post_uuids =
+        post_refs
+        |> Enum.flat_map(fn filename ->
+          case Regex.run(~r/^([a-f0-9-]{36})\.\w+$/, filename) do
+            [_, uuid] -> [uuid]
+            _ -> []
+          end
+        end)
+        |> MapSet.new()
+
+      thumbs_dir
+      |> File.ls!()
+      |> Enum.each(fn file ->
+        case Regex.run(~r/^([a-f0-9-]{36})_\d+w\.webp$/, file) do
+          [_, uuid] ->
+            unless MapSet.member?(post_uuids, uuid) do
+              File.rm!(Path.join(thumbs_dir, file))
+              Logger.info("Deleted orphaned thumbnail: #{file}")
+            end
+
+          _ ->
+            :ok
         end
       end)
     end
