@@ -115,87 +115,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
         </div>
       </div>
 
-      <div>
-        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">History</h2>
-
-        <div class="mb-4 flex gap-2 flex-wrap">
-          <%= for state <- @states do %>
-            <.link
-              patch={~p"/admin/jobs?state=#{state}"}
-              class={["btn btn-sm", if(@state_filter == state, do: "btn-active", else: "btn-ghost")]}
-            >
-              <%= String.capitalize(state) %>
-            </.link>
-          <% end %>
-        </div>
-
-        <%= if @jobs == [] do %>
-          <p class="text-sm text-base-content/50">No job runs yet.</p>
-        <% else %>
-          <div class="overflow-x-auto">
-            <table class="table table-sm font-sans">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Worker</th>
-                  <th>State</th>
-                  <th>Attempts</th>
-                  <th>Ran at</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <%= for job <- @jobs do %>
-                  <tr class="align-top">
-                    <td class="text-base-content/40 text-xs pt-3"><%= job.id %></td>
-                    <td class="pt-3">
-                      <span class="font-mono text-xs"><%= short_worker(job.worker) %></span>
-                    </td>
-                    <td class="pt-3">
-                      <span class={"badge badge-sm #{state_color(job.state)}"}>
-                        <%= job.state %>
-                      </span>
-                    </td>
-                    <td class="text-xs text-base-content/60 pt-3">
-                      <%= job.attempt %>/<%= job.max_attempts %>
-                    </td>
-                    <td class="text-xs text-base-content/60 pt-3">
-                      <%= format_dt(job.scheduled_at) %>
-                    </td>
-                    <td class="pt-2">
-                      <button
-                        phx-click="run_again"
-                        phx-value-id={job.id}
-                        class="btn btn-xs btn-ghost"
-                      >
-                        <.icon name="hero-arrow-path" class="w-3 h-3" />
-                        Run again
-                      </button>
-                      <%= if job.state in ["available", "scheduled", "retryable"] do %>
-                        <button
-                          phx-click="cancel"
-                          phx-value-id={job.id}
-                          class="btn btn-xs btn-ghost text-error"
-                        >
-                          Cancel
-                        </button>
-                      <% end %>
-                      <%= if job.errors != [] do %>
-                        <details class="mt-1">
-                          <summary class="text-xs text-error cursor-pointer select-none">
-                            <%= length(job.errors) %> error(s)
-                          </summary>
-                          <pre class="mt-1 text-xs bg-error/10 text-error rounded p-2 max-w-sm overflow-auto max-h-40 whitespace-pre-wrap"><%= List.last(job.errors)["error"] %></pre>
-                        </details>
-                      <% end %>
-                    </td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
-          </div>
-        <% end %>
-      </div>
+      
       <div>
         <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">Audits</h2>
 
@@ -299,6 +219,89 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
         </div><%!-- end flex flex-col gap-2 --%>
       </div>
+
+      
+<div>
+        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">History</h2>
+
+        <div class="mb-4 flex gap-2 flex-wrap">
+          <%= for state <- @states do %>
+            <.link
+              patch={~p"/admin/jobs?state=#{state}"}
+              class={["btn btn-sm", if(@state_filter == state, do: "btn-active", else: "btn-ghost")]}
+            >
+              <%= String.capitalize(state) %>
+            </.link>
+          <% end %>
+        </div>
+
+        <%= if @jobs == [] do %>
+          <p class="text-sm text-base-content/50">No job runs yet.</p>
+        <% else %>
+          <div class="overflow-x-auto">
+            <table class="table table-sm font-sans">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Worker</th>
+                  <th>State</th>
+                  <th>Attempts</th>
+                  <th>Ran at</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <%= for job <- @jobs do %>
+                  <tr class="align-top">
+                    <td class="text-base-content/40 text-xs pt-3"><%= job.id %></td>
+                    <td class="pt-3">
+                      <span class="font-mono text-xs"><%= short_worker(job.worker) %></span>
+                    </td>
+                    <td class="pt-3">
+                      <span class={"badge badge-sm #{state_color(job.state)}"}>
+                        <%= job.state %>
+                      </span>
+                    </td>
+                    <td class="text-xs text-base-content/60 pt-3">
+                      <%= job.attempt %>/<%= job.max_attempts %>
+                    </td>
+                    <td class="text-xs text-base-content/60 pt-3">
+                      <%= format_dt(job.scheduled_at) %>
+                    </td>
+                    <td class="pt-2">
+                      <button
+                        phx-click="run_again"
+                        phx-value-id={job.id}
+                        class="btn btn-xs btn-ghost"
+                      >
+                        <.icon name="hero-arrow-path" class="w-3 h-3" />
+                        Run again
+                      </button>
+                      <%= if job.state in ["available", "scheduled", "retryable"] do %>
+                        <button
+                          phx-click="cancel"
+                          phx-value-id={job.id}
+                          class="btn btn-xs btn-ghost text-error"
+                        >
+                          Cancel
+                        </button>
+                      <% end %>
+                      <%= if job.errors != [] do %>
+                        <details class="mt-1">
+                          <summary class="text-xs text-error cursor-pointer select-none">
+                            <%= length(job.errors) %> error(s)
+                          </summary>
+                          <pre class="mt-1 text-xs bg-error/10 text-error rounded p-2 max-w-sm overflow-auto max-h-40 whitespace-pre-wrap"><%= List.last(job.errors)["error"] %></pre>
+                        </details>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      </div>
     </div>
     """
   end
@@ -377,6 +380,10 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
       uploads_dir
       |> File.ls!()
       |> Enum.reject(&File.dir?(Path.join(uploads_dir, &1)))
+      |> Enum.filter(fn filename ->
+        ext = filename |> Path.extname() |> String.downcase()
+        ext in ~w(.jpg .jpeg .png .gif .webp)
+      end)
       |> Enum.filter(fn filename ->
         case Regex.run(~r/^([a-f0-9-]{36})\.\w+$/, filename) do
           [_, uuid] -> not File.exists?(Path.join(thumbs_dir, "#{uuid}_400w.webp"))

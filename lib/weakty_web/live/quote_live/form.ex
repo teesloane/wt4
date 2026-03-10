@@ -164,17 +164,17 @@ defmodule WeaktyWeb.QuoteLive.Form do
     end
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("delete", _params, socket) do
     case Ash.destroy(socket.assigns.quote) do
       :ok -> {:noreply, push_navigate(socket, to: ~p"/admin/quotes")}
       {:ok, _} -> {:noreply, push_navigate(socket, to: ~p"/admin/quotes")}
       {:error, _} -> {:noreply, put_flash(socket, :error, "Failed to delete")}
     end
+  end
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   defp maybe_inject_quote_title(params, nil) do

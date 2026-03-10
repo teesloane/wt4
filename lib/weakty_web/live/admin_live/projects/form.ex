@@ -404,11 +404,6 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
     {:noreply, assign(socket, preview: !socket.assigns.preview)}
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("update_link_name", %{"value" => value}, socket) do
     {:noreply, assign(socket, link_name: value)}
   end
@@ -500,6 +495,11 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   end
 
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
+  end
 
   defp save_upload(socket, entry) do
     consume_uploaded_entry(socket, entry, fn %{path: path} ->

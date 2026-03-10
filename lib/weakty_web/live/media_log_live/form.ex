@@ -353,11 +353,6 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     end
   end
 
-  @impl true
-  def handle_info({:tag_changed, tags}, socket) do
-    {:noreply, assign(socket, :tags, tags)}
-  end
-
   def handle_event("delete_media_log", _params, socket) do
     case Weakty.MediaLogs.MediaLog.delete_media_log(socket.assigns.media_log) do
       :ok ->
@@ -400,6 +395,11 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     else
       {:noreply, socket}
     end
+  end
+
+  @impl true
+  def handle_info({:tag_changed, tags}, socket) do
+    {:noreply, assign(socket, :tags, tags)}
   end
 
   defp maybe_download_thumbnail(params) do

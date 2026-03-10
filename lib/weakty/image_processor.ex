@@ -14,7 +14,19 @@ defmodule Weakty.ImageProcessor do
   Gracefully degrades if libvips is unavailable: logs a warning and returns
   `:error` so uploads still succeed without thumbnails.
   """
+  @supported_exts ~w(.jpg .jpeg .png .gif .webp)
+
   def generate_thumbnails(source_path, uuid) do
+    ext = source_path |> Path.extname() |> String.downcase()
+
+    unless ext in @supported_exts do
+      {:error, "Unsupported file type: #{ext}"}
+    else
+      do_generate_thumbnails(source_path, uuid)
+    end
+  end
+
+  defp do_generate_thumbnails(source_path, uuid) do
     thumbs_dir = Path.join([:code.priv_dir(:weakty), "static", "uploads", @thumbs_subdir])
     File.mkdir_p!(thumbs_dir)
 
