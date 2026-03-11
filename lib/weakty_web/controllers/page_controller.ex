@@ -42,6 +42,13 @@ defmodule WeaktyWeb.PageController do
       |> Ash.read!()
       |> List.first()
 
+    projects =
+      Weakty.Projects.Project
+      |> Ash.Query.filter(status == :published)
+      |> Ash.Query.sort(published_at: :desc)
+      |> Ash.Query.limit(5)
+      |> Ash.read!()
+
     top_areas =
       from(et in "entity_tags",
         join: t in "tags", on: t.id == et.tag_id,
@@ -55,6 +62,7 @@ defmodule WeaktyWeb.PageController do
 
     render(conn, :home,
       posts: posts,
+      projects: projects,
       currently_reading: currently_reading,
       update: update,
       recent_fiction: recent_fiction,

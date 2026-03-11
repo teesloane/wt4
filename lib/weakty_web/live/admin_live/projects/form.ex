@@ -40,11 +40,11 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
       |> assign(
         form: form,
         project: project,
-        preview: false,
         tags: existing_tags,
         links: existing_links,
         link_name: "",
-        link_url: ""
+        link_url: "",
+        auto_slug: ""
       )
       |> assign(:current_path, "/admin/projects")
       |> assign(:uploaded_featured_image, project && project.featured_image)
@@ -88,53 +88,43 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
             <%= if @project, do: "Editing", else: "New Project" %>
           </div>
           <div class="flex-1"></div>
-          <button phx-click="toggle_preview" type="button" class="btn btn-ghost btn-sm">
-            Preview
-          </button>
+          <%= if @project do %>
+            <.link navigate={"/projects/#{@project.slug}"} class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
+              View
+            </.link>
+          <% end %>
           <button type="submit" form="project-form" class="btn btn-primary btn-sm">
             <%= if @project, do: "Update", else: "Publish" %>
           </button>
         </div>
 
-        <%= if @preview do %>
-          <div class="prose max-w-none">
-            <h1><%= @form[:title].value %></h1>
-            <%= if @uploaded_featured_image do %>
-              <img src={@uploaded_featured_image} alt={@form[:title].value} class="w-full rounded-lg" />
-            <% end %>
-            <%= if @form[:excerpt].value do %>
-              <p class="lead"><%= @form[:excerpt].value %></p>
-            <% end %>
-            <div><%= raw(render_markdown(@form[:markdown].value || "")) %></div>
+        <div class="space-y-6">
+          <div class="form-control">
+            <input
+              type="text"
+              name={@form[:title].name}
+              value={@form[:title].value}
+              class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
+              placeholder="Project title"
+              required
+            />
           </div>
-        <% else %>
-          <div class="space-y-6">
-            <div class="form-control">
-              <input
-                type="text"
-                name={@form[:title].name}
-                value={@form[:title].value}
-                class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
-                placeholder="Project title"
-                required
-              />
-            </div>
-            <div class="form-control">
-              <textarea
-                name={@form[:markdown].name}
-                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
-                style="font-family: 'IBM Plex Serif', serif;"
-                placeholder="Describe your project..."
-                required
-              ><%= @form[:markdown].value %></textarea>
-            </div>
+          <div class="form-control">
+            <textarea
+              name={@form[:markdown].name}
+              class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
+              style="font-family: 'IBM Plex Serif', serif;"
+              placeholder="Describe your project..."
+              required
+            ><%= @form[:markdown].value %></textarea>
           </div>
-        <% end %>
+        </div>
       </div>
     </.form>
 
       <!-- Sidebar -->
-      <div class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
+      <div class="w-128 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
         <h2 class="text-xl font-bold mb-6">Project settings</h2>
 
         <div class="space-y-6">
@@ -319,11 +309,11 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
               </div>
             <% end %>
 
-            <div class="space-y-2">
-              <input type="text" value={@link_name} phx-keyup="update_link_name" name="link_name" placeholder="Link name (e.g., Demo, GitHub)" class="input input-bordered input-sm w-full text-sm" />
-              <input type="url" value={@link_url} phx-keyup="update_link_url" name="link_url" placeholder="https://..." class="input input-bordered input-sm w-full text-sm" />
-              <button type="button" phx-click="add_link" class="btn btn-sm btn-ghost w-full">Add Link</button>
-            </div>
+            <form phx-change="update_link_fields" phx-submit="add_link" class="space-y-2">
+              <input type="text" value={@link_name} name="link_name" placeholder="Link name (e.g., Demo, GitHub)" class="input input-bordered input-sm w-full text-sm" />
+              <input type="url" value={@link_url} name="link_url" placeholder="https://..." class="input input-bordered input-sm w-full text-sm" />
+              <button type="submit" class="btn btn-sm btn-ghost w-full">Add Link</button>
+            </form>
           </div>
 
           <div class="divider"></div>
@@ -396,25 +386,22 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
 
   @impl true
   def handle_event("validate", %{"form" => params}, socket) do
+    {params, auto_slug} =
+      if is_nil(socket.assigns.project),
+        do: maybe_auto_slug(params, socket.assigns.auto_slug),
+        else: {params, socket.assigns.auto_slug}
+
     form = Form.validate(socket.assigns.form, params, errors: true)
-    {:noreply, assign(socket, form: form)}
+    {:noreply, assign(socket, form: form, auto_slug: auto_slug)}
   end
 
-  def handle_event("toggle_preview", _params, socket) do
-    {:noreply, assign(socket, preview: !socket.assigns.preview)}
+  def handle_event("update_link_fields", %{"link_name" => name, "link_url" => url}, socket) do
+    {:noreply, assign(socket, link_name: name, link_url: url)}
   end
 
-  def handle_event("update_link_name", %{"value" => value}, socket) do
-    {:noreply, assign(socket, link_name: value)}
-  end
-
-  def handle_event("update_link_url", %{"value" => value}, socket) do
-    {:noreply, assign(socket, link_url: value)}
-  end
-
-  def handle_event("add_link", _params, socket) do
-    name = String.trim(socket.assigns.link_name)
-    url = String.trim(socket.assigns.link_url)
+  def handle_event("add_link", %{"link_name" => name, "link_url" => url}, socket) do
+    name = String.trim(name)
+    url = String.trim(url)
     if name != "" and url != "" do
       {:noreply, assign(socket, links: socket.assigns.links ++ [%{"name" => name, "link" => url}], link_name: "", link_url: "")}
     else
@@ -517,17 +504,31 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
     "/uploads/#{uuid}.#{file_ext}"
   end
 
-  defp handle_tag_update(project, tags) do
-    Weakty.Tags.TagManager.apply_tags(project, :project, tags, Weakty.Projects.ProjectTag, :project_id)
+  defp maybe_auto_slug(params, current_auto_slug) do
+    title = params["title"] || ""
+    slug = params["slug"] || ""
+    new_auto_slug = slugify(title)
+
+    if slug == current_auto_slug do
+      {Map.put(params, "slug", new_auto_slug), new_auto_slug}
+    else
+      {params, current_auto_slug}
+    end
   end
 
-  defp render_markdown(nil), do: ""
-  defp render_markdown(""), do: ""
-  defp render_markdown(markdown) do
-    case MDEx.to_html(markdown) do
-      {:ok, html} -> html
-      {:error, _} -> "<p>Error rendering markdown</p>"
-    end
+  defp slugify(""), do: ""
+
+  defp slugify(title) do
+    title
+    |> String.downcase()
+    |> String.replace(~r/[^a-z0-9\s-]/, "")
+    |> String.replace(~r/\s+/, "-")
+    |> String.replace(~r/-+/, "-")
+    |> String.trim("-")
+  end
+
+  defp handle_tag_update(project, tags) do
+    Weakty.Tags.TagManager.apply_tags(project, :project, tags, Weakty.Projects.ProjectTag, :project_id)
   end
 
   defp format_datetime_for_input(nil), do: ""

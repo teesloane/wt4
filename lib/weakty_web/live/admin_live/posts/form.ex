@@ -40,7 +40,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
     socket =
       socket
-      |> assign(form: form, post: post, preview: false, tags: existing_tags, auto_slug: "", return_to: return_to)
+      |> assign(form: form, post: post, tags: existing_tags, auto_slug: "", return_to: return_to)
       |> assign(:current_path, "/admin/posts")
       |> assign(:content_images, (post && post.content_images) || [])
       |> assign(:uploaded_featured_image, post && post.featured_image)
@@ -96,56 +96,35 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               View
             </.link>
           <% end %>
-          <button
-            phx-click="toggle_preview"
-            class="btn btn-ghost btn-sm"
-          >
-            Preview
-          </button>
           <button type="submit" form="post-form" class="btn btn-primary btn-sm">
             <%= if @post, do: "Update", else: "Publish" %>
           </button>
         </div>
 
-        <%= if @preview do %>
-          <div class="prose max-w-none">
-            <h1><%= @form[:title].value %></h1>
-            <%= if @uploaded_featured_image do %>
-              <img src={@uploaded_featured_image} alt={@form[:title].value} class="w-full rounded-lg" />
-            <% end %>
-            <%= if @form[:excerpt].value do %>
-              <p class="lead"><%= @form[:excerpt].value %></p>
-            <% end %>
-            <div>
-              <%= raw(render_markdown(@form[:markdown].value || "")) %>
-            </div>
+        <div class="space-y-6">
+          <!-- Title -->
+          <div class="form-control">
+            <input
+              type="text"
+              name={@form[:title].name}
+              value={@form[:title].value}
+              class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
+              placeholder="Post title"
+              required
+            />
           </div>
-        <% else %>
-          <div class="space-y-6">
-            <!-- Title -->
-            <div class="form-control">
-              <input
-                type="text"
-                name={@form[:title].name}
-                value={@form[:title].value}
-                class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
-                placeholder="Post title"
-                required
-              />
-            </div>
 
-            <!-- Content -->
-            <div class="form-control">
-              <textarea
-                name={@form[:markdown].name}
-                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
-                style="font-family: 'IBM Plex Serif', serif;"
-                placeholder="Begin writing your post..."
-                required
-              ><%= @form[:markdown].value %></textarea>
-            </div>
+          <!-- Content -->
+          <div class="form-control">
+            <textarea
+              name={@form[:markdown].name}
+              class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
+              style="font-family: 'IBM Plex Serif', serif;"
+              placeholder="Begin writing your post..."
+              required
+            ><%= @form[:markdown].value %></textarea>
           </div>
-        <% end %>
+        </div>
       </div>
       </.form>
 
@@ -446,10 +425,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     {:noreply, assign(socket, form: form, auto_slug: auto_slug)}
   end
 
-  def handle_event("toggle_preview", _params, socket) do
-    {:noreply, assign(socket, preview: !socket.assigns.preview)}
-  end
-
   def handle_event("remove_featured_image", _params, socket) do
     {:noreply, assign(socket, :uploaded_featured_image, nil)}
   end
@@ -568,16 +543,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
   defp handle_tag_update(post, tags) do
     Weakty.Tags.TagManager.apply_tags(post, :post, tags, Weakty.Posts.PostTag, :post_id)
-  end
-
-  defp render_markdown(nil), do: ""
-  defp render_markdown(""), do: ""
-
-  defp render_markdown(markdown) do
-    case MDEx.to_html(markdown) do
-      {:ok, html} -> html
-      {:error, _} -> "<p>Error rendering markdown</p>"
-    end
   end
 
   defp format_datetime_for_input(nil), do: ""
