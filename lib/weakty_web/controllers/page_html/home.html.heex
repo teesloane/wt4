@@ -62,40 +62,10 @@
     </div>
   </section>
 
-  <%!-- Quote section
-  <section class={section_class}>
-    <%= if @random_quote do %>
-      <span class="text-[50px]">“</span>
-      <blockquote class="space-y-4 -mt-8">
-        <span class="text-sm opacity-80"><%= @random_quote.markdown %></span>
-        <%= if @random_quote.attribution do %>
-          <footer class="text-xs opacity-40">
-            <%= if @random_quote.attribution_url do %>
-              <a href={@random_quote.attribution_url} class="hover:opacity-70 transition-opacity">— <%= @random_quote.attribution %></a>
-            <% else %>
-              — <%= @random_quote.attribution %>
-            <% end %>
-          </footer>
-        <% end %>
-      </blockquote>
-    <% end %>
-  </section>
-  --%>
-
   <section class={section_class}>
     <div class="w-full">
-      <.home_grid_header> Areas of interest </.home_grid_header>
-      <div class="space-y-3">
-        <%= for area <- @top_areas do %>
-          <div class="flex items-baseline gap-3">
-            <a href={~p"/areas/#{area.slug}"} class="flex-1 text-sm hover:opacity-50 transition-opacity">
-              <%= area.name %>
-            </a>
-            <span class="text-xs opacity-30 tabular-nums">[<%= area.count %>]</span>
-          </div>
-        <% end %>
-      </div>
-      <.view_all href={~p"/areas"} label="View all areas" />
+      <.home_grid_header> Work & Projects </.home_grid_header>
+      <.view_all href={~p"/projects"} label="View all projects" />
     </div>
   </section>
 
@@ -111,65 +81,20 @@
       <.view_all href={~p"/now"} label="View previous updates" />
     </div>
   </section>
-  <section class={[section_class, "hidden lg:flex xl:hidden"]}>Thank you.</section>
 </div>
 
-<%!--
-<.page_container class="max-w-xl mx-auto px-6 py-24 space-y-20">
-  <header>
-  </header>
 
-  <section>
-    <p class="text-xs uppercase tracking-widest opacity-50 mb-6">Writing</p>
-    <div class="space-y-3">
-      <%= for post <- @posts do %>
-        <div class="flex justify-between items-baseline gap-6">
-          <a href={~p"/posts/#{post.slug}"} class="hover:opacity-50 transition-opacity text-sm">
-            <%= post.title %>
-          </a>
-          <time class="text-xs opacity-50 tabular-nums flex-shrink-0">
-            <%= if post.published_at, do: Calendar.strftime(post.published_at, "%Y-%m-%d") %>
-          </time>
-        </div>
-      <% end %>
-    </div>
-    <div class="mt-5">
-      <a href={~p"/posts"} class="text-xs opacity-50 hover:opacity-60 transition-opacity">
-        all posts →
-      </a>
-    </div>
-  </section>
-
-  <%= if @currently_reading do %>
-    <section>
-      <p class="text-xs uppercase tracking-widest opacity-50 mb-6">Currently Reading</p>
-      <div class="flex items-start gap-4">
-        <%= if @currently_reading.thumbnail_url do %>
-          <img
-            src={@currently_reading.thumbnail_url}
-            alt={@currently_reading.title}
-            class="w-12 flex-shrink-0 rounded shadow-sm"
-          />
+<div class="min-h-[4vh] flex flex-col md:flex-row px-12 py-8 md:py-2 space-x-3 text-sm opacity-50 md:items-center items-start">
+    <.home_grid_header class="md:!mb-0"> Areas of interest:</.home_grid_header>
+        <%= for area <- @top_areas do %>
+          <div class="flex items-baseline gap-3">
+            <a href={~p"/areas/#{area.slug}"} class="flex-1 text-sm hover:opacity-50 transition-opacity">
+              <%= area.name %>
+            </a>
+            <span class="text-xs opacity-30 tabular-nums">[<%= area.count %>]</span>
+          </div>
         <% end %>
-        <div>
-          <p class="text-sm"><%= @currently_reading.title %></p>
-          <%= if @currently_reading.creator do %>
-            <p class="text-xs opacity-40 mt-1"><%= @currently_reading.creator %></p>
-          <% end %>
-        </div>
-      </div>
-    </section>
-  <% end %>
 
-  <section>
-    <p class="text-xs uppercase tracking-widest opacity-50 mb-6">Short Stories</p>
-    <div class="space-y-3">
-    </div>
-    <div class="mt-5">
-      <a href={~p"/til"} class="text-xs opacity-50 hover:opacity-60 transition-opacity">
-        all →
-      </a>
-    </div>
-  </section>
-</.page_container>
---%>
+      <.view_all class="md:!mt-0" href={~p"/areas"} label="View all areas" />
+        </div>
+

@@ -50,10 +50,11 @@ defmodule WeaktyWeb.PageHTML do
 
   attr :href, :string, required: true
   attr :label, :string, required: true
+  attr :class, :string, default: nil
 
   def view_all(assigns) do
     ~H"""
-    <div class="mt-5">
+    <div class={["mt-5", @class]}>
       <a href={@href} class="text-xs opacity-50 hover:opacity-70 transition-opacity">
         <%= @label %> →
       </a>
@@ -62,10 +63,11 @@ defmodule WeaktyWeb.PageHTML do
   end
 
   slot :inner_block, required: true
+  attr :class, :string, default: nil
 
   def home_grid_header(assigns) do
     ~H"""
-      <p class="text-xs uppercase tracking-widest opacity-50 mb-6">
+      <p class={["text-xs uppercase tracking-widest opacity-50 mb-6", @class]}>
       <%= render_slot(@inner_block) %>
       </p>
     """
