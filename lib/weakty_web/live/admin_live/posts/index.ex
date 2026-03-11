@@ -56,7 +56,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
     <.admin_header title="Posts" subtitle={"#{length(@posts)} post#{if length(@posts) != 1, do: "s"}"}>
       <:actions>
         <div class="dropdown dropdown-end">
-          <div tabindex="0" role="button" class="btn btn-primary">
+          <div tabindex="0" role="button" class="btn btn-sm btn-primary">
             <.icon name="hero-plus" class="w-4 h-4" /> New…
           </div>
           <ul

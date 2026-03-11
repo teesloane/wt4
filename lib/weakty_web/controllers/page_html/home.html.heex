@@ -3,9 +3,11 @@
 <% section_class =
   "w-full  mx-auto min-h-[45vh] p-8 px-12 flex flex-col justify-center border border-base-300" %>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-0 flex flex-col max-w-[2560px] mx-auto">
-  <section class={[section_class, "md:text-xl lg:text-2xl"]}>
+  <section class={[section_class]}>
+    <div class="md:text-xl lg:text-2xl">
     Hello, my name is Ty.
-    <div class="mt-8 text-content-200 opacity-50">
+    </div>
+    <div class="mt-8 text-content-200 opacity-50 md:text-base lg:text-lg">
       This is where I write and share my work.
     </div>
   </section>
@@ -102,14 +104,14 @@
   </section>
 </div>
 
-<div class="min-h-[4vh] flex flex-col md:flex-row px-12 py-8 md:py-2 space-x-3 text-sm opacity-50 md:items-center items-start">
+<div class="min-h-[4vh] flex flex-col md:flex-row px-12 py-8 md:py-2 space-x-3 text-sm  md:items-center items-start">
   <.home_grid_header class="md:!mb-0">Areas of interest:</.home_grid_header>
   <%= for area <- @top_areas do %>
-    <div class="flex items-baseline gap-3">
-      <a href={~p"/areas/#{area.slug}"} class="flex-1 text-sm hover:opacity-50 transition-opacity">
+    <div class="flex items-baseline gap-1 mr-4">
+      <a href={~p"/areas/#{area.slug}"} class="flex-1 text-sm hover:opacity-100 transition-opacity">
         {area.name}
       </a>
-      <span class="text-xs opacity-30 tabular-nums">[{area.count}]</span>
+      <span class="text-xs opacity-50 tabular-nums">[{area.count}]</span>
     </div>
   <% end %>
 

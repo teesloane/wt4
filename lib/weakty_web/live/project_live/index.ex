@@ -40,7 +40,7 @@ defmodule WeaktyWeb.ProjectLive.Index do
                   </figure>
                 <% end %>
                 <div class="border border-base-300 p-4">
-                  <h2 class="card-title text-xl mb-0">
+                  <h2 class="card-title text-base mb-0">
                     {project.title}
                   </h2>
                   <%= if project.excerpt do %>

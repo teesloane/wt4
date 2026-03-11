@@ -59,7 +59,7 @@ defmodule WeaktyWeb.PageHTML do
   def view_all(assigns) do
     ~H"""
     <div class={["mt-5", @class]}>
-      <a href={@href} class="text-xs opacity-50 hover:opacity-70 transition-opacity">
+      <a href={@href} class="text-xs opacity-70 hover:opacity-100 transition-opacity">
         {@label} →
       </a>
     </div>
@@ -71,7 +71,7 @@ defmodule WeaktyWeb.PageHTML do
 
   def home_grid_header(assigns) do
     ~H"""
-    <p class={["text-xs uppercase tracking-widest opacity-50 mb-6", @class]}>
+    <p class={["text-xs uppercase tracking-widest opacity-70 mb-6", @class]}>
       {render_slot(@inner_block)}
     </p>
     """

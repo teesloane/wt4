@@ -67,7 +67,7 @@ defmodule WeaktyWeb.AdminComponents do
             icon="hero-square-3-stack-3d"
             current_path={@current_path}
           />
-          <li class="divider my-1"></li>
+          <li class="my-1"></li>
           <.nav_item
             path="/admin/jobs"
             label="Jobs"

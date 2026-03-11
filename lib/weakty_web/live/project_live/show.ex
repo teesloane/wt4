@@ -105,9 +105,9 @@ defmodule WeaktyWeb.ProjectLive.Show do
                   class="group border border-base-300 overflow-hidden hover:border-base-content/30 transition-colors"
                 >
                   <%= if preview_image do %>
-                    <img src={preview_image} alt={link["name"]} class="w-full h-36 object-cover" />
+                    <img src={preview_image} alt={link["name"]} class="w-full h-40 object-cover" />
                   <% else %>
-                    <div class="w-full h-36 bg-base-200 flex items-center justify-center">
+                    <div class="w-full h-40 bg-base-200 flex items-center justify-center">
                       <.icon name="hero-link" class="w-6 h-6 text-base-content/20" />
                     </div>
                   <% end %>
