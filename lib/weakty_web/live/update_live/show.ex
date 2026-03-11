@@ -12,6 +12,7 @@ defmodule WeaktyWeb.UpdateLive.Show do
       |> Ash.read_one!()
 
     all_updates = Weakty.Posts.Post.list_published_updates!()
+
     {:ok,
      socket
      |> assign(:post, post)
@@ -32,7 +33,7 @@ defmodule WeaktyWeb.UpdateLive.Show do
           <div class="flex flex-col items-center gap-1">
             <dt class="uppercase opacity-30">Date</dt>
             <dd class="opacity-60 tabular-nums">
-              <%= if @post.published_at, do: format_date(@post.published_at), else: "Draft" %>
+              {if @post.published_at, do: format_date(@post.published_at), else: "Draft"}
             </dd>
           </div>
         </dl>
@@ -51,7 +52,7 @@ defmodule WeaktyWeb.UpdateLive.Show do
 
       <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto py-12">
         <div class="prose max-w-none">
-          <%= raw(@post.html) %>
+          {raw(@post.html)}
         </div>
       </article>
 

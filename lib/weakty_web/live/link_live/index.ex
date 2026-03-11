@@ -1,4 +1,3 @@
-
 defmodule WeaktyWeb.LinkLive.Index do
   use WeaktyWeb, :live_view
   require Ash.Query
@@ -7,11 +6,11 @@ defmodule WeaktyWeb.LinkLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-      links =
-        Weakty.Links.Link
-        |> Ash.read!()
+    links =
+      Weakty.Links.Link
+      |> Ash.read!()
 
-      {:ok, assign(socket, links: links)}
+    {:ok, assign(socket, links: links)}
   end
 
   @impl true
@@ -34,12 +33,17 @@ defmodule WeaktyWeb.LinkLive.Index do
         <%= for link <- @links do %>
           <article class="border-b border-base-300 pb-10 last:border-b-0">
             <h2 class="text-2xl font-normal mb-3 averia">
-              <a href={link.url} target="_blank" rel="noopener noreferrer" class="hover:opacity-70 transition-opacity">
-                <%= link.title %>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:opacity-70 transition-opacity"
+              >
+                {link.title}
               </a>
             </h2>
             <%= if link.commentary do %>
-              <p class="opacity-80 leading-relaxed mb-4"><%= link.commentary %></p>
+              <p class="opacity-80 leading-relaxed mb-4">{link.commentary}</p>
             <% end %>
             <div class="flex gap-3 text-sm opacity-60">
               <button
@@ -68,9 +72,11 @@ defmodule WeaktyWeb.LinkLive.Index do
 
   @impl true
   def handle_event("delete", %{"slug" => slug}, socket) do
-    link = Weakty.Links.Link
+    link =
+      Weakty.Links.Link
       |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
       |> Ash.read_one!()
+
     Ash.destroy!(link)
 
     links =

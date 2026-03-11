@@ -20,13 +20,14 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
      |> assign(:image_audit, nil)
      |> assign(:thumbnail_audit, nil)
      |> assign(:backups, Weakty.Workers.BackupDatabase.list_backups())
-     |> load_jobs(),
-     layout: {WeaktyWeb.Layouts, :admin}}
+     |> load_jobs(), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
-    state_filter = params |> Map.get("state", "all") |> then(&if(&1 in @states, do: &1, else: "all"))
+    state_filter =
+      params |> Map.get("state", "all") |> then(&if(&1 in @states, do: &1, else: "all"))
+
     {:noreply, socket |> assign(:state_filter, state_filter) |> load_jobs()}
   end
 
@@ -65,7 +66,12 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
   def handle_event("backfill_thumbnails", _params, socket) do
     count = enqueue_missing_thumbnails()
-    msg = if count == 0, do: "All thumbnails already exist.", else: "Enqueued #{count} thumbnail job(s). Check History for results."
+
+    msg =
+      if count == 0,
+        do: "All thumbnails already exist.",
+        else: "Enqueued #{count} thumbnail job(s). Check History for results."
+
     {:noreply, socket |> put_flash(:info, msg) |> load_jobs()}
   end
 
@@ -85,144 +91,148 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
     <.admin_header title="Jobs" subtitle={"#{length(@jobs)} in history"}>
       <:actions>
         <button phx-click="refresh" class="btn btn-ghost btn-sm">
-          <.icon name="hero-arrow-path" class="w-4 h-4" />
-          Refresh
+          <.icon name="hero-arrow-path" class="w-4 h-4" /> Refresh
         </button>
       </:actions>
     </.admin_header>
 
     <div class="p-8 space-y-8">
       <div>
-        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">Workers</h2>
+        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">
+          Workers
+        </h2>
         <div class="flex flex-col gap-2">
-
           <%= for {schedule, worker} <- @workers do %>
             <div class="flex items-center justify-between bg-base-200 rounded-lg px-4 py-3">
               <div>
-                <span class="font-mono text-sm font-medium"><%= short_worker(worker) %></span>
-                <span class="text-xs text-base-content/50 ml-3">cron: <%= schedule %></span>
+                <span class="font-mono text-sm font-medium">{short_worker(worker)}</span>
+                <span class="text-xs text-base-content/50 ml-3">cron: {schedule}</span>
               </div>
               <button
                 phx-click="run_worker"
                 phx-value-worker={worker}
                 class="btn btn-sm btn-ghost"
               >
-                <.icon name="hero-play" class="w-4 h-4" />
-                Run now
+                <.icon name="hero-play" class="w-4 h-4" /> Run now
               </button>
             </div>
           <% end %>
         </div>
       </div>
 
-      
       <div>
-        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">Audits</h2>
+        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">
+          Audits
+        </h2>
 
         <div class="flex flex-col gap-2">
-
-        <div class="bg-base-200 rounded-lg px-4 py-3">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <span class="font-mono text-sm font-medium">BackupDatabase</span>
-              <span class="text-xs text-base-content/50 ml-3">daily at 2am · keeps last 7</span>
+          <div class="bg-base-200 rounded-lg px-4 py-3">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <span class="font-mono text-sm font-medium">BackupDatabase</span>
+                <span class="text-xs text-base-content/50 ml-3">daily at 2am · keeps last 7</span>
+              </div>
+              <button phx-click="backup_now" class="btn btn-sm btn-ghost">
+                <.icon name="hero-play" class="w-4 h-4" /> Run now
+              </button>
             </div>
-            <button phx-click="backup_now" class="btn btn-sm btn-ghost">
-              <.icon name="hero-play" class="w-4 h-4" />
-              Run now
-            </button>
-          </div>
-          <%= if @backups == [] do %>
-            <p class="text-xs text-base-content/40">No backups yet.</p>
-          <% else %>
-            <div class="overflow-x-auto">
-              <table class="table table-xs font-mono">
-                <tbody>
-                  <%= for backup <- @backups do %>
-                    <tr>
-                      <td class="text-base-content/70"><%= backup.name %></td>
-                      <td class="text-base-content/40 text-right"><%= format_bytes(backup.size) %></td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          <% end %>
-        </div>
-
-        <div class="bg-base-200 rounded-lg px-4 py-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <span class="font-mono text-sm font-medium">GenerateThumbnails</span>
-              <span class="text-xs text-base-content/50 ml-3">enqueues thumbnail jobs for uploads missing variants</span>
-            </div>
-            <button phx-click="backfill_thumbnails" class="btn btn-sm btn-ghost">
-              <.icon name="hero-play" class="w-4 h-4" />
-              Backfill
-            </button>
-          </div>
-        </div>
-
-        <div class="bg-base-200 rounded-lg px-4 py-3">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <span class="font-mono text-sm font-medium">ImageAudit</span>
-              <span class="text-xs text-base-content/50 ml-3">checks posts for broken local image paths</span>
-            </div>
-            <button phx-click="run_image_audit" class="btn btn-sm btn-ghost">
-              <.icon name="hero-play" class="w-4 h-4" />
-              Run now
-            </button>
-          </div>
-
-          <%= cond do %>
-            <% @image_audit == nil -> %>
-              <%!-- not yet run --%>
-            <% @image_audit == [] -> %>
-              <p class="text-sm text-success flex items-center gap-2">
-                <.icon name="hero-check-circle" class="w-4 h-4" /> All local images found.
-              </p>
-            <% true -> %>
-              <% missing = Enum.filter(@image_audit, & !&1.exists) %>
-              <% ok = Enum.filter(@image_audit, & &1.exists) %>
-              <p class="text-xs text-base-content/50 mb-3">
-                <%= length(ok) %> ok · <span class="text-error"><%= length(missing) %> missing</span>
-              </p>
-              <%= if missing != [] do %>
-                <div class="overflow-x-auto">
-                  <table class="table table-sm font-sans">
-                    <thead>
+            <%= if @backups == [] do %>
+              <p class="text-xs text-base-content/40">No backups yet.</p>
+            <% else %>
+              <div class="overflow-x-auto">
+                <table class="table table-xs font-mono">
+                  <tbody>
+                    <%= for backup <- @backups do %>
                       <tr>
-                        <th>Post</th>
-                        <th>Kind</th>
-                        <th>Path</th>
+                        <td class="text-base-content/70">{backup.name}</td>
+                        <td class="text-base-content/40 text-right">{format_bytes(backup.size)}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      <%= for item <- missing do %>
-                        <tr>
-                          <td>
-                            <.link navigate={~p"/admin/posts/#{item.post_id}/edit"} class="hover:opacity-70">
-                              <%= item.post_title %>
-                            </.link>
-                          </td>
-                          <td class="text-base-content/40"><%= item.kind %></td>
-                          <td><code class="text-xs text-error font-mono"><%= item.path %></code></td>
-                        </tr>
-                      <% end %>
-                    </tbody>
-                  </table>
-                </div>
-              <% end %>
-          <% end %>
-        </div>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% end %>
+          </div>
 
-        </div><%!-- end flex flex-col gap-2 --%>
+          <div class="bg-base-200 rounded-lg px-4 py-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="font-mono text-sm font-medium">GenerateThumbnails</span>
+                <span class="text-xs text-base-content/50 ml-3">
+                  enqueues thumbnail jobs for uploads missing variants
+                </span>
+              </div>
+              <button phx-click="backfill_thumbnails" class="btn btn-sm btn-ghost">
+                <.icon name="hero-play" class="w-4 h-4" /> Backfill
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-base-200 rounded-lg px-4 py-3">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <span class="font-mono text-sm font-medium">ImageAudit</span>
+                <span class="text-xs text-base-content/50 ml-3">
+                  checks posts for broken local image paths
+                </span>
+              </div>
+              <button phx-click="run_image_audit" class="btn btn-sm btn-ghost">
+                <.icon name="hero-play" class="w-4 h-4" /> Run now
+              </button>
+            </div>
+
+            <%= cond do %>
+              <% @image_audit == nil -> %>
+                <%!-- not yet run --%>
+              <% @image_audit == [] -> %>
+                <p class="text-sm text-success flex items-center gap-2">
+                  <.icon name="hero-check-circle" class="w-4 h-4" /> All local images found.
+                </p>
+              <% true -> %>
+                <% missing = Enum.filter(@image_audit, &(!&1.exists)) %>
+                <% ok = Enum.filter(@image_audit, & &1.exists) %>
+                <p class="text-xs text-base-content/50 mb-3">
+                  {length(ok)} ok · <span class="text-error">{length(missing)} missing</span>
+                </p>
+                <%= if missing != [] do %>
+                  <div class="overflow-x-auto">
+                    <table class="table table-sm font-sans">
+                      <thead>
+                        <tr>
+                          <th>Post</th>
+                          <th>Kind</th>
+                          <th>Path</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <%= for item <- missing do %>
+                          <tr>
+                            <td>
+                              <.link
+                                navigate={~p"/admin/posts/#{item.post_id}/edit"}
+                                class="hover:opacity-70"
+                              >
+                                {item.post_title}
+                              </.link>
+                            </td>
+                            <td class="text-base-content/40">{item.kind}</td>
+                            <td><code class="text-xs text-error font-mono">{item.path}</code></td>
+                          </tr>
+                        <% end %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% end %>
+            <% end %>
+          </div>
+        </div>
+        <%!-- end flex flex-col gap-2 --%>
       </div>
 
-      
-<div>
-        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">History</h2>
+      <div>
+        <h2 class="text-sm font-semibold text-base-content/50 uppercase tracking-wide mb-3">
+          History
+        </h2>
 
         <div class="mb-4 flex gap-2 flex-wrap">
           <%= for state <- @states do %>
@@ -230,7 +240,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
               patch={~p"/admin/jobs?state=#{state}"}
               class={["btn btn-sm", if(@state_filter == state, do: "btn-active", else: "btn-ghost")]}
             >
-              <%= String.capitalize(state) %>
+              {String.capitalize(state)}
             </.link>
           <% end %>
         </div>
@@ -253,20 +263,20 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
               <tbody>
                 <%= for job <- @jobs do %>
                   <tr class="align-top">
-                    <td class="text-base-content/40 text-xs pt-3"><%= job.id %></td>
+                    <td class="text-base-content/40 text-xs pt-3">{job.id}</td>
                     <td class="pt-3">
-                      <span class="font-mono text-xs"><%= short_worker(job.worker) %></span>
+                      <span class="font-mono text-xs">{short_worker(job.worker)}</span>
                     </td>
                     <td class="pt-3">
                       <span class={"badge badge-sm #{state_color(job.state)}"}>
-                        <%= job.state %>
+                        {job.state}
                       </span>
                     </td>
                     <td class="text-xs text-base-content/60 pt-3">
-                      <%= job.attempt %>/<%= job.max_attempts %>
+                      {job.attempt}/{job.max_attempts}
                     </td>
                     <td class="text-xs text-base-content/60 pt-3">
-                      <%= format_dt(job.scheduled_at) %>
+                      {format_dt(job.scheduled_at)}
                     </td>
                     <td class="pt-2">
                       <button
@@ -274,8 +284,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
                         phx-value-id={job.id}
                         class="btn btn-xs btn-ghost"
                       >
-                        <.icon name="hero-arrow-path" class="w-3 h-3" />
-                        Run again
+                        <.icon name="hero-arrow-path" class="w-3 h-3" /> Run again
                       </button>
                       <%= if job.state in ["available", "scheduled", "retryable"] do %>
                         <button
@@ -289,7 +298,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
                       <%= if job.errors != [] do %>
                         <details class="mt-1">
                           <summary class="text-xs text-error cursor-pointer select-none">
-                            <%= length(job.errors) %> error(s)
+                            {length(job.errors)} error(s)
                           </summary>
                           <pre class="mt-1 text-xs bg-error/10 text-error rounded p-2 max-w-sm overflow-auto max-h-40 whitespace-pre-wrap"><%= List.last(job.errors)["error"] %></pre>
                         </details>
@@ -357,13 +366,30 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
         |> Enum.reject(&external?/1)
         |> Enum.map(fn path ->
           clean_path = path |> String.split("?") |> hd() |> String.split("#") |> hd()
-          %{post_title: post.title, post_id: post.id, path: path, kind: :inline, exists: File.exists?(Path.join(static_dir, clean_path))}
+
+          %{
+            post_title: post.title,
+            post_id: post.id,
+            path: path,
+            kind: :inline,
+            exists: File.exists?(Path.join(static_dir, clean_path))
+          }
         end)
 
       featured_image =
         if post.featured_image && !external?(post.featured_image) do
-          clean_path = post.featured_image |> String.split("?") |> hd() |> String.split("#") |> hd()
-          [%{post_title: post.title, post_id: post.id, path: post.featured_image, kind: :featured, exists: File.exists?(Path.join(static_dir, clean_path))}]
+          clean_path =
+            post.featured_image |> String.split("?") |> hd() |> String.split("#") |> hd()
+
+          [
+            %{
+              post_title: post.title,
+              post_id: post.id,
+              path: post.featured_image,
+              kind: :featured,
+              exists: File.exists?(Path.join(static_dir, clean_path))
+            }
+          ]
         else
           []
         end
@@ -393,9 +419,11 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
       |> Enum.reduce(0, fn filename, count ->
         [_, uuid] = Regex.run(~r/^([a-f0-9-]{36})/, filename)
         source_path = Path.join(uploads_dir, filename)
+
         %{"source_path" => source_path, "uuid" => uuid}
         |> Weakty.Workers.GenerateThumbnails.new()
         |> Oban.insert!()
+
         count + 1
       end)
     else

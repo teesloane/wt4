@@ -64,13 +64,13 @@ config :weakty,
   ecto_repos: [Weakty.Repo],
   generators: [timestamp_type: :utc_datetime],
   ash_domains: [
-  Weakty.Accounts,
-  Weakty.Links,
-  Weakty.Content,
-  Weakty.Tags,
-  Weakty.Posts,
-  Weakty.Projects,
-  Weakty.MediaLogs,
+    Weakty.Accounts,
+    Weakty.Links,
+    Weakty.Content,
+    Weakty.Tags,
+    Weakty.Posts,
+    Weakty.Projects,
+    Weakty.MediaLogs
   ],
   ash_authentication: [return_error_on_invalid_magic_link_token?: true]
 

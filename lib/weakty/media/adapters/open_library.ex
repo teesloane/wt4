@@ -12,7 +12,8 @@ defmodule Weakty.Media.Adapters.OpenLibrary do
 
   @impl true
   def search(query) do
-    url = "#{@search_url}?q=#{URI.encode(query)}&fields=key,title,author_name,first_publish_year,cover_i,isbn"
+    url =
+      "#{@search_url}?q=#{URI.encode(query)}&fields=key,title,author_name,first_publish_year,cover_i,isbn"
 
     case Req.get(url) do
       {:ok, %{status: 200, body: body}} ->
@@ -37,7 +38,9 @@ defmodule Weakty.Media.Adapters.OpenLibrary do
   @impl true
   def fetch(key) do
     # key may be "OL45804W" or "/works/OL45804W"
-    normalized_key = key |> String.replace_leading("/works/", "") |> String.replace_leading("/", "")
+    normalized_key =
+      key |> String.replace_leading("/works/", "") |> String.replace_leading("/", "")
+
     url = "#{@works_url}/#{normalized_key}.json"
 
     case Req.get(url) do

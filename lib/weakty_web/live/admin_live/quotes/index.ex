@@ -40,11 +40,13 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.admin_header title="Quotes" subtitle={"#{length(@quotes)} quote#{if length(@quotes) != 1, do: "s"}"}>
+    <.admin_header
+      title="Quotes"
+      subtitle={"#{length(@quotes)} quote#{if length(@quotes) != 1, do: "s"}"}
+    >
       <:actions>
         <.link navigate="/admin/quotes/new" class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" />
-          New Quote
+          <.icon name="hero-plus" class="w-4 h-4" /> New Quote
         </.link>
       </:actions>
     </.admin_header>
@@ -57,8 +59,7 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
             <h2 class="card-title">No quotes yet</h2>
             <p class="text-base-content/70">Add your first quote to get started</p>
             <.link navigate="/admin/quotes/new" class="btn btn-primary mt-4">
-              <.icon name="hero-plus" class="w-4 h-4" />
-              Add Quote
+              <.icon name="hero-plus" class="w-4 h-4" /> Add Quote
             </.link>
           </div>
         </div>
@@ -76,24 +77,34 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
             </thead>
             <tbody>
               <%= for q <- @quotes do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/quotes/#{q.id}/edit")}>
+                <tr
+                  class="hover cursor-pointer"
+                  phx-click={JS.navigate(~p"/admin/quotes/#{q.id}/edit")}
+                >
                   <td class="max-w-sm">
-                    <div class="text-sm truncate italic">"<%= q.markdown %>"</div>
+                    <div class="text-sm truncate italic">"{q.markdown}"</div>
                   </td>
                   <td class="text-sm text-base-content/70">
-                    <%= q.attribution || "-" %>
+                    {q.attribution || "-"}
                   </td>
                   <td>
-                    <span class={["badge badge-sm", if(q.public, do: "badge-success", else: "badge-ghost")]}>
-                      <%= if q.public, do: "public", else: "draft" %>
+                    <span class={[
+                      "badge badge-sm",
+                      if(q.public, do: "badge-success", else: "badge-ghost")
+                    ]}>
+                      {if q.public, do: "public", else: "draft"}
                     </span>
                   </td>
                   <td class="text-sm text-base-content/70">
-                    <%= Calendar.strftime(q.inserted_at, "%b %d, %Y") %>
+                    {Calendar.strftime(q.inserted_at, "%b %d, %Y")}
                   </td>
                   <td onclick="event.stopPropagation()">
                     <div class="flex gap-2">
-                      <.link navigate={~p"/admin/quotes/#{q.id}/edit"} class="btn btn-ghost btn-xs" title="Edit">
+                      <.link
+                        navigate={~p"/admin/quotes/#{q.id}/edit"}
+                        class="btn btn-ghost btn-xs"
+                        title="Edit"
+                      >
                         <.icon name="hero-pencil" class="w-4 h-4" />
                       </.link>
                       <button
@@ -123,6 +134,7 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
       |> Ash.Query.filter(post_type == :quote)
       |> Ash.Query.sort(inserted_at: :desc)
       |> Ash.read!(load: [:tags])
+
     assign(socket, :quotes, quotes)
   end
 end

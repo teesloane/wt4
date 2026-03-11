@@ -9,7 +9,9 @@ defmodule WeaktyWeb.QuoteLive.Form do
   def mount(params, _session, socket) do
     quote_record =
       case params["id"] do
-        nil -> nil
+        nil ->
+          nil
+
         id ->
           Weakty.Posts.Post
           |> Ash.get!(id)
@@ -40,8 +42,7 @@ defmodule WeaktyWeb.QuoteLive.Form do
     {:ok,
      socket
      |> assign(form: form, quote: quote_record, tags: existing_tags)
-     |> assign(:current_path, "/admin/quotes"),
-     layout: {WeaktyWeb.Layouts, :admin}}
+     |> assign(:current_path, "/admin/quotes"), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
@@ -51,15 +52,14 @@ defmodule WeaktyWeb.QuoteLive.Form do
       <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
         <div class="flex items-center gap-4 mb-8">
           <.link navigate={~p"/admin/quotes"} class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left" class="w-4 h-4" />
-            Quotes
+            <.icon name="hero-arrow-left" class="w-4 h-4" /> Quotes
           </.link>
           <div class="text-sm text-base-content/70">
-            <%= if @quote, do: "Editing", else: "New quote" %>
+            {if @quote, do: "Editing", else: "New quote"}
           </div>
           <div class="flex-1" />
           <button type="submit" form="quote-form" class="btn btn-primary btn-sm">
-            <%= if @quote, do: "Update", else: "Create" %>
+            {if @quote, do: "Update", else: "Create"}
           </button>
         </div>
 
@@ -150,6 +150,7 @@ defmodule WeaktyWeb.QuoteLive.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
         handle_tag_update(post, socket.assigns.tags)
+
         {:noreply,
          socket
          |> put_flash(:info, "Saved successfully.")
@@ -157,6 +158,7 @@ defmodule WeaktyWeb.QuoteLive.Form do
 
       {:error, form} ->
         Logger.error("Quote save failed: #{inspect(form.source.errors)}")
+
         {:noreply,
          socket
          |> put_flash(:error, "Could not save.")
@@ -182,10 +184,10 @@ defmodule WeaktyWeb.QuoteLive.Form do
     markdown = params["markdown"] || ""
     Map.put_new(params, "title", String.slice(markdown, 0, 60))
   end
+
   defp maybe_inject_quote_title(params, _existing), do: params
 
   defp handle_tag_update(post, tags) do
     Weakty.Tags.TagManager.apply_tags(post, :post, tags, Weakty.Posts.PostTag, :post_id)
   end
-
 end

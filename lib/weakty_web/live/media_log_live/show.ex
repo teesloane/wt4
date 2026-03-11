@@ -33,7 +33,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
             />
           <% else %>
             <div class="bg-base-300 rounded-lg aspect-[2/3] flex items-center justify-center text-8xl">
-              <%= media_type_emoji(@media_log.media_type) %>
+              {media_type_emoji(@media_log.media_type)}
             </div>
           <% end %>
 
@@ -43,41 +43,44 @@ defmodule WeaktyWeb.MediaLogLive.Show do
             </div>
           <% end %>
         </div>
-
-        <!-- Info Column -->
+        
+    <!-- Info Column -->
         <div class="md:col-span-2">
           <div class="flex flex-wrap gap-2 mb-4">
             <span class={["badge", media_type_color(@media_log.media_type)]}>
-              <%= format_media_type(@media_log.media_type) %>
+              {format_media_type(@media_log.media_type)}
             </span>
             <span class={["badge", status_color(@media_log.status)]}>
-              <%= format_status(@media_log.status) %>
+              {format_status(@media_log.status)}
             </span>
           </div>
 
-          <h1 class="text-4xl font-bold mb-2"><%= @media_log.title %></h1>
+          <h1 class="text-4xl font-bold mb-2">{@media_log.title}</h1>
 
           <%= if @media_log.creator do %>
             <p class="text-xl text-base-content/70 mb-4">
-              by <%= @media_log.creator %>
+              by {@media_log.creator}
             </p>
           <% end %>
 
           <%= if @media_log.rating do %>
             <div class="flex items-center gap-2 mb-4">
               <div class="text-warning text-2xl">
-                <%= String.duplicate("★", @media_log.rating) %><%= String.duplicate("☆", 5 - @media_log.rating) %>
+                {String.duplicate("★", @media_log.rating)}{String.duplicate(
+                  "☆",
+                  5 - @media_log.rating
+                )}
               </div>
-              <span class="text-base-content/60"><%= @media_log.rating %>/5</span>
+              <span class="text-base-content/60">{@media_log.rating}/5</span>
             </div>
           <% end %>
-
-          <!-- Metadata Grid -->
+          
+    <!-- Metadata Grid -->
           <div class="grid grid-cols-2 gap-4 mb-6">
             <%= if @media_log.date_published do %>
               <div>
                 <div class="text-sm text-base-content/60">Published</div>
-                <div class="font-medium"><%= format_date(@media_log.date_published) %></div>
+                <div class="font-medium">{format_date(@media_log.date_published)}</div>
               </div>
             <% end %>
 
@@ -85,17 +88,19 @@ defmodule WeaktyWeb.MediaLogLive.Show do
               <% @media_log.date_finished -> %>
                 <div>
                   <div class="text-sm text-base-content/60">Finished</div>
-                  <div class="font-medium"><%= format_date(@media_log.date_finished) %></div>
+                  <div class="font-medium">{format_date(@media_log.date_finished)}</div>
                 </div>
               <% @media_log.date_consumed -> %>
                 <div>
-                  <div class="text-sm text-base-content/60"><%= date_consumed_label(@media_log.media_type) %></div>
-                  <div class="font-medium"><%= format_date(@media_log.date_consumed) %></div>
+                  <div class="text-sm text-base-content/60">
+                    {date_consumed_label(@media_log.media_type)}
+                  </div>
+                  <div class="font-medium">{format_date(@media_log.date_consumed)}</div>
                 </div>
               <% @media_log.date_started -> %>
                 <div>
                   <div class="text-sm text-base-content/60">Started</div>
-                  <div class="font-medium"><%= format_date(@media_log.date_started) %></div>
+                  <div class="font-medium">{format_date(@media_log.date_started)}</div>
                 </div>
               <% true -> %>
             <% end %>
@@ -109,8 +114,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
                 rel="noopener noreferrer"
                 class="btn btn-outline btn-sm"
               >
-                <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-                View External Link
+                <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> View External Link
               </a>
             </div>
           <% end %>
@@ -118,7 +122,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
           <%= if @media_log.tags && @media_log.tags != [] do %>
             <div class="flex flex-wrap gap-2 mb-4">
               <%= for tag <- @media_log.tags do %>
-                <span class="badge badge-outline"><%= tag.name %></span>
+                <span class="badge badge-outline">{tag.name}</span>
               <% end %>
             </div>
           <% end %>
@@ -129,14 +133,14 @@ defmodule WeaktyWeb.MediaLogLive.Show do
         <div class="divider"></div>
         <div class="prose max-w-none">
           <h2>Notes</h2>
-          <p class="whitespace-pre-wrap"><%= @media_log.notes %></p>
+          <p class="whitespace-pre-wrap">{@media_log.notes}</p>
         </div>
       <% end %>
 
       <div class="divider"></div>
 
       <div class="text-sm text-base-content/60">
-        Logged on <%= format_datetime(@media_log.inserted_at) %>
+        Logged on {format_datetime(@media_log.inserted_at)}
       </div>
 
       <%= if @current_user && @current_user.id == @media_log.user_id do %>

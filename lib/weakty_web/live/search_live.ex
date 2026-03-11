@@ -129,7 +129,7 @@ defmodule WeaktyWeb.SearchLive do
               <%= if @query != "" do %>
                 <%= if Enum.empty?(@results) do %>
                   <div class="px-4 py-8 text-center text-base-content/50 text-sm">
-                    No results for "<%= @query %>"
+                    No results for "{@query}"
                   </div>
                 <% else %>
                   <%= for {result, index} <- Enum.with_index(@results) do %>
@@ -153,7 +153,7 @@ defmodule WeaktyWeb.SearchLive do
                           />
                         <% else %>
                           <span class="text-[9px] font-bold uppercase tracking-wider opacity-40">
-                            <%= entity_type_abbr(result.entity_type) %>
+                            {entity_type_abbr(result.entity_type)}
                           </span>
                         <% end %>
                       </div>
@@ -161,10 +161,10 @@ defmodule WeaktyWeb.SearchLive do
                       <%!-- Title and type --%>
                       <div class="flex-1 min-w-0">
                         <div class="text-sm truncate">
-                          <%= result.title %>
+                          {result.title}
                         </div>
                         <div class="text-xs text-base-content/50 uppercase tracking-wider mt-0.5">
-                          <%= entity_type_label(result.entity_type) %>
+                          {entity_type_label(result.entity_type)}
                         </div>
                       </div>
 

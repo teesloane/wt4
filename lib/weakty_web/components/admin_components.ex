@@ -14,12 +14,12 @@ defmodule WeaktyWeb.AdminComponents do
       <.link
         navigate={@path}
         class={[
-        "text-[0.9rem] text-base-content/70 font-sans font-medium my-0",
+          "text-[0.9rem] text-base-content/70 font-sans font-medium my-0",
           if(String.starts_with?(@current_path, @path), do: "active", else: "")
         ]}
       >
         <.icon name={@icon} class="w-5 h-5" />
-        <%= @label %>
+        {@label}
       </.link>
     </li>
     """
@@ -30,7 +30,10 @@ defmodule WeaktyWeb.AdminComponents do
 
   def admin_sidebar(assigns) do
     ~H"""
-    <aside class={["w-64 bg-base-200 border-r border-base-300 flex flex-col h-screen", @class]} style="font-family: 'IBM Plex Sans', sans-serif;">
+    <aside
+      class={["w-64 bg-base-200 border-r border-base-300 flex flex-col h-screen", @class]}
+      style="font-family: 'IBM Plex Sans', sans-serif;"
+    >
       <div class="p-6 border-b border-base-300">
         <.link navigate="/" class="text-xl font-bold">Weakty</.link>
       </div>
@@ -38,14 +41,39 @@ defmodule WeaktyWeb.AdminComponents do
       <nav class="flex-1 overflow-y-auto p-4">
         <ul class="menu menu-sm gap-1 flex w-full text-[40px]">
           <.nav_item path="/admin" label="Dashboard" icon="hero-home" current_path={@current_path} />
-          <.nav_item path="/admin/posts" label="Posts" icon="hero-document-text" current_path={@current_path} />
-          <.nav_item path="/admin/projects" label="Projects" icon="hero-briefcase" current_path={@current_path} />
+          <.nav_item
+            path="/admin/posts"
+            label="Posts"
+            icon="hero-document-text"
+            current_path={@current_path}
+          />
+          <.nav_item
+            path="/admin/projects"
+            label="Projects"
+            icon="hero-briefcase"
+            current_path={@current_path}
+          />
           <.nav_item path="/admin/links" label="Links" icon="hero-link" current_path={@current_path} />
-          <.nav_item path="/admin/media-logs" label="Media Logs" icon="hero-book-open" current_path={@current_path} />
+          <.nav_item
+            path="/admin/media-logs"
+            label="Media Logs"
+            icon="hero-book-open"
+            current_path={@current_path}
+          />
           <.nav_item path="/admin/tags" label="Tags" icon="hero-tag" current_path={@current_path} />
-          <.nav_item path="/admin/entities" label="Entities" icon="hero-square-3-stack-3d" current_path={@current_path} />
+          <.nav_item
+            path="/admin/entities"
+            label="Entities"
+            icon="hero-square-3-stack-3d"
+            current_path={@current_path}
+          />
           <li class="divider my-1"></li>
-          <.nav_item path="/admin/jobs" label="Jobs" icon="hero-queue-list" current_path={@current_path} />
+          <.nav_item
+            path="/admin/jobs"
+            label="Jobs"
+            icon="hero-queue-list"
+            current_path={@current_path}
+          />
         </ul>
       </nav>
 
@@ -75,11 +103,11 @@ defmodule WeaktyWeb.AdminComponents do
     <header class="bg-base-100 border-b border-base-300 px-8 py-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold"><%= @title %></h1>
-          <p :if={@subtitle} class="text-base-content/70 mt-1"><%= @subtitle %></p>
+          <h1 class="text-3xl font-bold">{@title}</h1>
+          <p :if={@subtitle} class="text-base-content/70 mt-1">{@subtitle}</p>
         </div>
         <div :if={@actions != []}>
-          <%= render_slot(@actions) %>
+          {render_slot(@actions)}
         </div>
       </div>
     </header>
@@ -94,8 +122,8 @@ defmodule WeaktyWeb.AdminComponents do
     ~H"""
     <div class={["stats shadow", @class]}>
       <div class="stat">
-        <div class="stat-title"><%= @label %></div>
-        <div class="stat-value"><%= @value %></div>
+        <div class="stat-title">{@label}</div>
+        <div class="stat-value">{@value}</div>
       </div>
     </div>
     """
@@ -113,7 +141,7 @@ defmodule WeaktyWeb.AdminComponents do
         _ -> "badge-ghost"
       end
     ]}>
-      <%= @status |> to_string() |> String.capitalize() %>
+      {@status |> to_string() |> String.capitalize()}
     </span>
     """
   end

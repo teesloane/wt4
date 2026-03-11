@@ -28,6 +28,7 @@ defmodule Weakty.Media do
   """
   def search(media_type, query) when is_binary(query) do
     dbg()
+
     case String.trim(query) do
       "" ->
         {:ok, []}

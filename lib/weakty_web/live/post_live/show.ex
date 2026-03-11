@@ -5,7 +5,8 @@ defmodule WeaktyWeb.PostLive.Show do
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
-    post = Weakty.Posts.Post
+    post =
+      Weakty.Posts.Post
       |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
       |> Ash.read_one!()
       |> Ash.load!([:user, :tags])
@@ -29,102 +30,99 @@ defmodule WeaktyWeb.PostLive.Show do
         <dl class="flex justify-center gap-8 mb-8 text-xs tracking-widest">
           <div class="flex flex-col items-center gap-1">
             <dt class="uppercase opacity-30">Type</dt>
-            <dd class="capitalize opacity-60"><%= @post.post_type || "—" %></dd>
+            <dd class="capitalize opacity-60">{@post.post_type || "—"}</dd>
           </div>
           <div class="flex flex-col items-center gap-1">
             <dt class="uppercase opacity-30">Date</dt>
             <dd class="opacity-60 tabular-nums">
-              <%= if @post.published_at, do: format_date(@post.published_at), else: "Draft" %>
+              {if @post.published_at, do: format_date(@post.published_at), else: "Draft"}
             </dd>
           </div>
           <div class="flex flex-col items-center gap-1">
             <dt class="uppercase opacity-30">Read</dt>
-            <dd class="opacity-60"><%= estimate_read_time(@post.html) %> min</dd>
+            <dd class="opacity-60">{estimate_read_time(@post.html)} min</dd>
           </div>
         </dl>
       </:header>
 
-    <article>
+      <article>
+        <%= if @post.featured_image do %>
+          <% srcset = Weakty.ImageProcessor.srcset_for(@post.featured_image) %>
+          <img
+            src={@post.featured_image}
+            srcset={srcset}
+            sizes={srcset && "(max-width: 400px) 400px, (max-width: 800px) 800px, 1200px"}
+            alt={@post.title}
+            class="w-full mb-12 rounded"
+          />
+        <% end %>
 
-      <%= if @post.featured_image do %>
-        <% srcset = Weakty.ImageProcessor.srcset_for(@post.featured_image) %>
-        <img
-          src={@post.featured_image}
-          srcset={srcset}
-          sizes={srcset && "(max-width: 400px) 400px, (max-width: 800px) 800px, 1200px"}
-          alt={@post.title}
-          class="w-full mb-12 rounded"
-        />
-      <% end %>
-
-      <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto pb-12">
-
-        <%= raw(@post.html) %>
-      </div>
-
-      <%= if @current_user && @current_user.id == @post.user_id do %>
-        <div class="border-t border-base-300 mt-16 pt-8 text-center">
-          <div class="flex gap-3 justify-center">
-            <.link navigate={~p"/admin/posts/#{@post.id}/edit"} class="btn btn-primary btn-sm">
-              Edit Post
-            </.link>
-            <%= if @post.status == :draft do %>
-              <button
-                phx-click="publish"
-                class="btn btn-success btn-sm"
-              >
-                Publish
-              </button>
-            <% else %>
-              <button
-                phx-click="unpublish"
-                class="btn btn-warning btn-sm"
-              >
-                Unpublish
-              </button>
-            <% end %>
-            <button
-              phx-click="delete"
-              data-confirm="Are you sure you want to delete this post?"
-              class="btn btn-error btn-sm"
-            >
-              Delete
-            </button>
-          </div>
+        <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto pb-12">
+          {raw(@post.html)}
         </div>
-      <% end %>
-    </article>
 
-    <%= if @related != [] do %>
-      <aside class="text-sm border-base-300 mt-4 pt-4 border border-base-300 p-4  mx-auto">
-        <h3 class="uppercase tracking-widest opacity-40 mb-8">Maybe Related?</h3>
-        <div class="space-y-2">
-          <%= for entity <- @related do %>
-            <div class="flex items-baseline opacity-50 hover:opacity-70 ">
-              <div class="flex items-baseline gap-3 w-full min-w-0">
-              <%= if entity.published_at do %>
-                <span class="flex-shrink-0"><%= format_date(entity.published_at) %></span>
-              <% end %>
-
-                <.link
-                  href={"#{entity.source_path}/#{entity.slug}"}
-                  class="hover:opacity-60 transition-opacity truncate w-full flex-1"
+        <%= if @current_user && @current_user.id == @post.user_id do %>
+          <div class="border-t border-base-300 mt-16 pt-8 text-center">
+            <div class="flex gap-3 justify-center">
+              <.link navigate={~p"/admin/posts/#{@post.id}/edit"} class="btn btn-primary btn-sm">
+                Edit Post
+              </.link>
+              <%= if @post.status == :draft do %>
+                <button
+                  phx-click="publish"
+                  class="btn btn-success btn-sm"
                 >
-                  <%= entity.title %>
-                </.link>
-
-                
-                <span class="capitalize flex-shrink-0">(<%= entity.entity_type %>:</span>
-                <%= for tag <- Enum.filter(entity.tags, fn t -> MapSet.member?(@post_tag_ids, t.id) end) do %>
-                #<%= tag.name %>
-                <% end %>
-                )
-              </div>
+                  Publish
+                </button>
+              <% else %>
+                <button
+                  phx-click="unpublish"
+                  class="btn btn-warning btn-sm"
+                >
+                  Unpublish
+                </button>
+              <% end %>
+              <button
+                phx-click="delete"
+                data-confirm="Are you sure you want to delete this post?"
+                class="btn btn-error btn-sm"
+              >
+                Delete
+              </button>
             </div>
-          <% end %>
-        </div>
-      </aside>
-    <% end %>
+          </div>
+        <% end %>
+      </article>
+
+      <%= if @related != [] do %>
+        <aside class="text-sm border-base-300 mt-4 pt-4 border border-base-300 p-4  mx-auto">
+          <h3 class="uppercase tracking-widest opacity-40 mb-8">Maybe Related?</h3>
+          <div class="space-y-2">
+            <%= for entity <- @related do %>
+              <div class="flex items-baseline opacity-50 hover:opacity-70 ">
+                <div class="flex items-baseline gap-3 w-full min-w-0">
+                  <%= if entity.published_at do %>
+                    <span class="flex-shrink-0">{format_date(entity.published_at)}</span>
+                  <% end %>
+
+                  <.link
+                    href={"#{entity.source_path}/#{entity.slug}"}
+                    class="hover:opacity-60 transition-opacity truncate w-full flex-1"
+                  >
+                    {entity.title}
+                  </.link>
+
+                  <span class="capitalize flex-shrink-0">({entity.entity_type}:</span>
+                  <%= for tag <- Enum.filter(entity.tags, fn t -> MapSet.member?(@post_tag_ids, t.id) end) do %>
+                    #{tag.name}
+                  <% end %>
+                  )
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </aside>
+      <% end %>
     </.page_container>
     """
   end
@@ -132,19 +130,25 @@ defmodule WeaktyWeb.PostLive.Show do
   @impl true
   def handle_event("publish", _params, socket) do
     Weakty.Posts.Post.publish_post(socket.assigns.post)
-    post = Weakty.Posts.Post
+
+    post =
+      Weakty.Posts.Post
       |> Ash.Query.for_read(:get_by_slug, %{slug: socket.assigns.post.slug})
       |> Ash.read_one!()
       |> Ash.load!(:user)
+
     {:noreply, assign(socket, post: post)}
   end
 
   def handle_event("unpublish", _params, socket) do
     Weakty.Posts.Post.unpublish_post(socket.assigns.post)
-    post = Weakty.Posts.Post
+
+    post =
+      Weakty.Posts.Post
       |> Ash.Query.for_read(:get_by_slug, %{slug: socket.assigns.post.slug})
       |> Ash.read_one!()
       |> Ash.load!(:user)
+
     {:noreply, assign(socket, post: post)}
   end
 
@@ -186,14 +190,16 @@ defmodule WeaktyWeb.PostLive.Show do
 
   defp estimate_read_time(html) when is_binary(html) do
     # Remove HTML tags and count words
-    text = html
-    |> String.replace(~r/<[^>]*>/, " ")
-    |> String.replace(~r/\s+/, " ")
-    |> String.trim()
+    text =
+      html
+      |> String.replace(~r/<[^>]*>/, " ")
+      |> String.replace(~r/\s+/, " ")
+      |> String.trim()
 
-    word_count = text
-    |> String.split(" ")
-    |> length()
+    word_count =
+      text
+      |> String.split(" ")
+      |> length()
 
     # Average reading speed: 200 words per minute
     max(1, round(word_count / 250))

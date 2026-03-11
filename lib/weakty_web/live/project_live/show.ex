@@ -5,13 +5,15 @@ defmodule WeaktyWeb.ProjectLive.Show do
 
   @impl true
   def mount(%{"slug" => slug}, _session, socket) do
-    project = Weakty.Projects.Project
+    project =
+      Weakty.Projects.Project
       |> Ash.Query.for_read(:get_by_slug, %{slug: slug})
       |> Ash.read_one!()
       |> Ash.load!([:user, :tags])
 
     if connected?(socket) do
       lv = self()
+
       for %{"link" => url} <- project.links || [] do
         Task.start(fn ->
           image = fetch_og_image(url)
@@ -35,13 +37,17 @@ defmodule WeaktyWeb.ProjectLive.Show do
         <dl class="flex flex-wrap justify-center gap-8 mb-8 text-xs tracking-widest">
           <div class="flex flex-col items-center gap-1">
             <dt class="uppercase opacity-30">Status</dt>
-            <dd class="capitalize opacity-60"><%= @project.project_status |> to_string() |> String.replace("_", " ") %></dd>
+            <dd class="capitalize opacity-60">
+              {@project.project_status |> to_string() |> String.replace("_", " ")}
+            </dd>
           </div>
           <%= if @project.start_date do %>
             <div class="flex flex-col items-center gap-1">
               <dt class="uppercase opacity-30">Timeline</dt>
               <dd class="opacity-60">
-                <%= format_date(@project.start_date) %><%= if @project.end_date, do: " – #{format_date(@project.end_date)}", else: " – Present" %>
+                {format_date(@project.start_date)}{if @project.end_date,
+                  do: " – #{format_date(@project.end_date)}",
+                  else: " – Present"}
               </dd>
             </div>
           <% end %>
@@ -62,11 +68,11 @@ defmodule WeaktyWeb.ProjectLive.Show do
           <% end %>
 
           <%= if @project.excerpt do %>
-            <p class="text-xl text-base-content/80 mb-8 italic"><%= @project.excerpt %></p>
+            <p class="text-xl text-base-content/80 mb-8 italic">{@project.excerpt}</p>
           <% end %>
 
           <div class="prose prose-p:mb-0 prose-p:mt-0 mx-auto prose-p:indent-6 pb-12">
-            <%= raw(@project.html) %>
+            {raw(@project.html)}
           </div>
 
           <%= if @project.images && length(@project.images) > 0 do %>
@@ -84,9 +90,9 @@ defmodule WeaktyWeb.ProjectLive.Show do
             </div>
           <% end %>
 
-          <div class="border-t border-base-200 mb-12"/>
+          <div class="border-t border-base-200 mb-12" />
 
-          <h3 class="uppercase averia text-center">Project Links </h3>
+          <h3 class="uppercase averia text-center">Project Links</h3>
           <!-- Links grid -->
           <%= if @project.links && length(@project.links) > 0 do %>
             <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -106,8 +112,11 @@ defmodule WeaktyWeb.ProjectLive.Show do
                     </div>
                   <% end %>
                   <div class="px-3 py-2 flex items-center justify-between text-[12px]">
-                    <span class="font-medium"><%= link["name"] %></span>
-                    <.icon name="hero-arrow-top-right-on-square" class="w-3.5 h-3.5 text-base-content/40 group-hover:text-base-content/70 transition-colors" />
+                    <span class="font-medium">{link["name"]}</span>
+                    <.icon
+                      name="hero-arrow-top-right-on-square"
+                      class="w-3.5 h-3.5 text-base-content/40 group-hover:text-base-content/70 transition-colors"
+                    />
                   </div>
                 </a>
               <% end %>
@@ -117,7 +126,10 @@ defmodule WeaktyWeb.ProjectLive.Show do
           <%= if @current_user && @current_user.id == @project.user_id do %>
             <div class="border-t border-base-300 mt-16 pt-8">
               <div class="flex-col flex md:flex-row gap-3">
-                <.link navigate={~p"/admin/projects/#{@project.id}/edit"} class="btn btn-primary btn-sm">
+                <.link
+                  navigate={~p"/admin/projects/#{@project.id}/edit"}
+                  class="btn btn-primary btn-sm"
+                >
                   Edit Project
                 </.link>
                 <%= if @project.status == :draft do %>
@@ -125,7 +137,11 @@ defmodule WeaktyWeb.ProjectLive.Show do
                 <% else %>
                   <button phx-click="unpublish" class="btn btn-warning btn-sm">Unpublish</button>
                 <% end %>
-                <button phx-click="delete" data-confirm="Are you sure you want to delete this project?" class="btn btn-error btn-sm">
+                <button
+                  phx-click="delete"
+                  data-confirm="Are you sure you want to delete this project?"
+                  class="btn btn-error btn-sm"
+                >
                   Delete
                 </button>
               </div>
@@ -146,19 +162,25 @@ defmodule WeaktyWeb.ProjectLive.Show do
   @impl true
   def handle_event("publish", _params, socket) do
     Weakty.Projects.Project.publish_project(socket.assigns.project)
-    project = Weakty.Projects.Project
+
+    project =
+      Weakty.Projects.Project
       |> Ash.Query.for_read(:get_by_slug, %{slug: socket.assigns.project.slug})
       |> Ash.read_one!()
       |> Ash.load!([:user, :tags])
+
     {:noreply, assign(socket, project: project)}
   end
 
   def handle_event("unpublish", _params, socket) do
     Weakty.Projects.Project.unpublish_project(socket.assigns.project)
-    project = Weakty.Projects.Project
+
+    project =
+      Weakty.Projects.Project
       |> Ash.Query.for_read(:get_by_slug, %{slug: socket.assigns.project.slug})
       |> Ash.read_one!()
       |> Ash.load!([:user, :tags])
+
     {:noreply, assign(socket, project: project)}
   end
 

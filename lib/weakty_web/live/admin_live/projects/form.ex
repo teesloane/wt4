@@ -8,7 +8,9 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   def mount(params, _session, socket) do
     project =
       case params["id"] do
-        nil -> nil
+        nil ->
+          nil
+
         id ->
           Weakty.Projects.Project
           |> Ash.get!(id)
@@ -69,62 +71,66 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
 
   defp error_to_string(:too_large), do: "File too large (max 5MB)"
   defp error_to_string(:too_many_files), do: "Too many files selected"
-  defp error_to_string(:not_accepted), do: "Invalid file type (only .jpg, .jpeg, .png, .gif, .webp)"
+
+  defp error_to_string(:not_accepted),
+    do: "Invalid file type (only .jpg, .jpeg, .png, .gif, .webp)"
+
   defp error_to_string(error), do: "Upload error: #{inspect(error)}"
 
   @impl true
   def render(assigns) do
     ~H"""
     <div class="flex min-h-screen">
-    <.form id="project-form" for={@form} phx-submit="save" phx-change="validate" class="w-full">
-      <!-- Main Content Area -->
-      <div class="flex-1 max-w-4xl w-full mx-auto px-8 py-8">
-        <div class="flex items-center gap-4 mb-8">
-          <.link navigate={~p"/admin/projects"} class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left" class="w-4 h-4" />
-            Projects
-          </.link>
-          <div class="text-sm text-base-content/70">
-            <%= if @project, do: "Editing", else: "New Project" %>
-          </div>
-          <div class="flex-1"></div>
-          <%= if @project do %>
-            <.link navigate={"/projects/#{@project.slug}"} class="btn btn-ghost btn-sm">
-              <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-              View
+      <.form id="project-form" for={@form} phx-submit="save" phx-change="validate" class="w-full">
+        <!-- Main Content Area -->
+        <div class="flex-1 max-w-4xl w-full mx-auto px-8 py-8">
+          <div class="flex items-center gap-4 mb-8">
+            <.link navigate={~p"/admin/projects"} class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-left" class="w-4 h-4" /> Projects
             </.link>
-          <% end %>
-          <button type="submit" form="project-form" class="btn btn-primary btn-sm">
-            <%= if @project, do: "Update", else: "Publish" %>
-          </button>
-        </div>
-
-        <div class="space-y-6">
-          <div class="form-control">
-            <input
-              type="text"
-              name={@form[:title].name}
-              value={@form[:title].value}
-              class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
-              placeholder="Project title"
-              required
-            />
+            <div class="text-sm text-base-content/70">
+              {if @project, do: "Editing", else: "New Project"}
+            </div>
+            <div class="flex-1"></div>
+            <%= if @project do %>
+              <.link navigate={"/projects/#{@project.slug}"} class="btn btn-ghost btn-sm">
+                <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> View
+              </.link>
+            <% end %>
+            <button type="submit" form="project-form" class="btn btn-primary btn-sm">
+              {if @project, do: "Update", else: "Publish"}
+            </button>
           </div>
-          <div class="form-control">
-            <textarea
-              name={@form[:markdown].name}
-              class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
-              style="font-family: 'IBM Plex Serif', serif;"
-              placeholder="Describe your project..."
-              required
-            ><%= @form[:markdown].value %></textarea>
+
+          <div class="space-y-6">
+            <div class="form-control">
+              <input
+                type="text"
+                name={@form[:title].name}
+                value={@form[:title].value}
+                class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
+                placeholder="Project title"
+                required
+              />
+            </div>
+            <div class="form-control">
+              <textarea
+                name={@form[:markdown].name}
+                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
+                style="font-family: 'IBM Plex Serif', serif;"
+                placeholder="Describe your project..."
+                required
+              ><%= @form[:markdown].value %></textarea>
+            </div>
           </div>
         </div>
-      </div>
-    </.form>
-
-      <!-- Sidebar -->
-      <div class="w-128 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
+      </.form>
+      
+    <!-- Sidebar -->
+      <div
+        class="w-128 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4"
+        style="font-family: 'IBM Plex Sans', sans-serif;"
+      >
         <h2 class="text-xl font-bold mb-6">Project settings</h2>
 
         <div class="space-y-6">
@@ -145,8 +151,8 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
               />
             </div>
           </div>
-
-          <!-- Publish Date -->
+          
+    <!-- Publish Date -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Publish date</span>
@@ -159,26 +165,38 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
               class="input input-bordered input-sm w-full text-sm"
             />
           </div>
-
-          <!-- Project Dates -->
+          
+    <!-- Project Dates -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="form-control">
               <label class="label mb-2">
                 <span class="label-text text-sm font-semibold">Start Date</span>
               </label>
-              <input type="date" form="project-form" name={@form[:start_date].name} value={@form[:start_date].value} class="input input-bordered input-sm w-full text-sm" />
+              <input
+                type="date"
+                form="project-form"
+                name={@form[:start_date].name}
+                value={@form[:start_date].value}
+                class="input input-bordered input-sm w-full text-sm"
+              />
             </div>
             <div class="form-control">
               <label class="label mb-2">
                 <span class="label-text text-sm font-semibold">End Date</span>
               </label>
-              <input type="date" form="project-form" name={@form[:end_date].name} value={@form[:end_date].value} class="input input-bordered input-sm w-full text-sm" />
+              <input
+                type="date"
+                form="project-form"
+                name={@form[:end_date].name}
+                value={@form[:end_date].value}
+                class="input input-bordered input-sm w-full text-sm"
+              />
             </div>
           </div>
 
           <div class="divider"></div>
-
-          <!-- Featured Image -->
+          
+    <!-- Featured Image -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Featured Image</span>
@@ -205,10 +223,16 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
               <%= for entry <- @uploads.featured_image.entries do %>
                 <article class="mb-3">
                   <.live_img_preview entry={entry} class="w-full rounded-lg mb-2" />
-                  <progress value={entry.progress} max="100" class="progress progress-primary w-full"></progress>
+                  <progress value={entry.progress} max="100" class="progress progress-primary w-full">
+                  </progress>
                   <div class="flex justify-between text-xs text-base-content/60 mt-1">
-                    <span><%= entry.client_name %></span>
-                    <button type="button" phx-click="cancel-upload" phx-value-ref={entry.ref} class="text-error hover:underline">
+                    <span>{entry.client_name}</span>
+                    <button
+                      type="button"
+                      phx-click="cancel-upload"
+                      phx-value-ref={entry.ref}
+                      class="text-error hover:underline"
+                    >
                       Cancel
                     </button>
                   </div>
@@ -219,18 +243,20 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
                 <label for={@uploads.featured_image.ref} class="cursor-pointer block">
                   <.icon name="hero-photo" class="w-8 h-8 mx-auto text-base-content/30 mb-1" />
                   <span class="text-sm text-base-content/60">
-                    <%= if @uploaded_featured_image, do: "Drop or click to replace", else: "Drop image here or click to upload" %>
+                    {if @uploaded_featured_image,
+                      do: "Drop or click to replace",
+                      else: "Drop image here or click to upload"}
                   </span>
                 </label>
               <% end %>
 
               <%= for err <- upload_errors(@uploads.featured_image) do %>
-                <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+                <p class="text-error text-xs mt-1">{error_to_string(err)}</p>
               <% end %>
             </section>
           </div>
-
-          <!-- Content Images -->
+          
+    <!-- Content Images -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Project Images</span>
@@ -242,10 +268,21 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
                   <div class="relative group">
                     <img src={image_url} alt="Content" class="w-full h-24 object-cover rounded-lg" />
                     <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
-                      <button type="button" phx-click="copy_image_markdown" phx-value-url={image_url} class="btn btn-xs btn-ghost" title="Copy markdown">
+                      <button
+                        type="button"
+                        phx-click="copy_image_markdown"
+                        phx-value-url={image_url}
+                        class="btn btn-xs btn-ghost"
+                        title="Copy markdown"
+                      >
                         <.icon name="hero-clipboard" class="w-4 h-4" />
                       </button>
-                      <button type="button" phx-click="remove_content_image" phx-value-index={index} class="btn btn-xs btn-error">
+                      <button
+                        type="button"
+                        phx-click="remove_content_image"
+                        phx-value-index={index}
+                        class="btn btn-xs btn-error"
+                      >
                         <.icon name="hero-trash" class="w-4 h-4" />
                       </button>
                     </div>
@@ -263,10 +300,16 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
               <%= for entry <- @uploads.content_images.entries do %>
                 <article class="mb-2 text-left">
                   <.live_img_preview entry={entry} class="w-full h-24 object-cover rounded-lg mb-1" />
-                  <progress value={entry.progress} max="100" class="progress progress-primary w-full"></progress>
+                  <progress value={entry.progress} max="100" class="progress progress-primary w-full">
+                  </progress>
                   <div class="flex justify-between text-xs text-base-content/60 mt-1">
-                    <span><%= entry.client_name %></span>
-                    <button type="button" phx-click="cancel-content-upload" phx-value-ref={entry.ref} class="text-error hover:underline">
+                    <span>{entry.client_name}</span>
+                    <button
+                      type="button"
+                      phx-click="cancel-content-upload"
+                      phx-value-ref={entry.ref}
+                      class="text-error hover:underline"
+                    >
                       Cancel
                     </button>
                   </div>
@@ -276,20 +319,24 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
               <%= if Enum.empty?(@uploads.content_images.entries) do %>
                 <label for={@uploads.content_images.ref} class="cursor-pointer block">
                   <.icon name="hero-photo" class="w-8 h-8 mx-auto text-base-content/30 mb-1" />
-                  <span class="text-sm text-base-content/60">Drop images here or click to upload</span>
+                  <span class="text-sm text-base-content/60">
+                    Drop images here or click to upload
+                  </span>
                 </label>
               <% end %>
 
               <%= for err <- upload_errors(@uploads.content_images) do %>
-                <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+                <p class="text-error text-xs mt-1">{error_to_string(err)}</p>
               <% end %>
             </section>
-            <div class="text-xs text-base-content/60 mt-1">Click thumbnails to copy markdown syntax</div>
+            <div class="text-xs text-base-content/60 mt-1">
+              Click thumbnails to copy markdown syntax
+            </div>
           </div>
 
           <div class="divider"></div>
-
-          <!-- Links -->
+          
+    <!-- Links -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Project Links</span>
@@ -300,61 +347,109 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
                 <%= for {link, idx} <- Enum.with_index(@links) do %>
                   <div class="flex items-center gap-2 p-2 bg-base-200 rounded">
                     <div class="flex-1">
-                      <div class="text-sm font-medium"><%= link["name"] %></div>
-                      <div class="text-xs text-base-content/70 truncate"><%= link["link"] %></div>
+                      <div class="text-sm font-medium">{link["name"]}</div>
+                      <div class="text-xs text-base-content/70 truncate">{link["link"]}</div>
                     </div>
-                    <button type="button" phx-click="remove_link" phx-value-index={idx} class="btn btn-xs btn-circle btn-ghost">✕</button>
+                    <button
+                      type="button"
+                      phx-click="remove_link"
+                      phx-value-index={idx}
+                      class="btn btn-xs btn-circle btn-ghost"
+                    >
+                      ✕
+                    </button>
                   </div>
                 <% end %>
               </div>
             <% end %>
 
             <form phx-change="update_link_fields" phx-submit="add_link" class="space-y-2">
-              <input type="text" value={@link_name} name="link_name" placeholder="Link name (e.g., Demo, GitHub)" class="input input-bordered input-sm w-full text-sm" />
-              <input type="url" value={@link_url} name="link_url" placeholder="https://..." class="input input-bordered input-sm w-full text-sm" />
+              <input
+                type="text"
+                value={@link_name}
+                name="link_name"
+                placeholder="Link name (e.g., Demo, GitHub)"
+                class="input input-bordered input-sm w-full text-sm"
+              />
+              <input
+                type="url"
+                value={@link_url}
+                name="link_url"
+                placeholder="https://..."
+                class="input input-bordered input-sm w-full text-sm"
+              />
               <button type="submit" class="btn btn-sm btn-ghost w-full">Add Link</button>
             </form>
           </div>
 
           <div class="divider"></div>
-
-          <!-- Tags -->
+          
+    <!-- Tags -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Tags</span>
             </label>
             <.live_component module={WeaktyWeb.TagAdder} id="tag-adder" tags={@tags} />
           </div>
-
-          <!-- Excerpt -->
+          
+    <!-- Excerpt -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Excerpt</span>
             </label>
-            <textarea form="project-form" name={@form[:excerpt].name} class="textarea textarea-bordered textarea-sm w-full h-20 text-sm" placeholder="Short summary..."><%= @form[:excerpt].value %></textarea>
+            <textarea
+              form="project-form"
+              name={@form[:excerpt].name}
+              class="textarea textarea-bordered textarea-sm w-full h-20 text-sm"
+              placeholder="Short summary..."
+            ><%= @form[:excerpt].value %></textarea>
           </div>
 
           <div class="divider"></div>
-
-          <!-- Status -->
+          
+    <!-- Status -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="form-control">
               <label class="label mb-2">
                 <span class="label-text text-sm font-semibold">Page Status</span>
               </label>
-              <select form="project-form" name={@form[:status].name} class="select select-bordered select-sm w-full text-sm">
-                <option value="draft" selected={@form[:status].value in [:draft, "draft"]}>Draft</option>
-                <option value="published" selected={@form[:status].value in [:published, "published"]}>Published</option>
+              <select
+                form="project-form"
+                name={@form[:status].name}
+                class="select select-bordered select-sm w-full text-sm"
+              >
+                <option value="draft" selected={@form[:status].value in [:draft, "draft"]}>
+                  Draft
+                </option>
+                <option value="published" selected={@form[:status].value in [:published, "published"]}>
+                  Published
+                </option>
               </select>
             </div>
             <div class="form-control">
               <label class="label mb-2">
                 <span class="label-text text-sm font-semibold">Project Status</span>
               </label>
-              <select form="project-form" name={@form[:project_status].name} class="select select-bordered select-sm w-full text-sm">
-                <option value="ongoing" selected={@form[:project_status].value in [:ongoing, "ongoing"]}>Ongoing</option>
-                <option value="hiatus" selected={@form[:project_status].value in [:hiatus, "hiatus"]}>Hiatus</option>
-                <option value="completed" selected={@form[:project_status].value in [:completed, "completed"]}>Completed</option>
+              <select
+                form="project-form"
+                name={@form[:project_status].name}
+                class="select select-bordered select-sm w-full text-sm"
+              >
+                <option
+                  value="ongoing"
+                  selected={@form[:project_status].value in [:ongoing, "ongoing"]}
+                >
+                  Ongoing
+                </option>
+                <option value="hiatus" selected={@form[:project_status].value in [:hiatus, "hiatus"]}>
+                  Hiatus
+                </option>
+                <option
+                  value="completed"
+                  selected={@form[:project_status].value in [:completed, "completed"]}
+                >
+                  Completed
+                </option>
               </select>
             </div>
           </div>
@@ -362,19 +457,40 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
           <div class="grid grid-cols-2 gap-3 mb-4">
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input type="hidden" form="project-form" name={@form[:public].name} value="false" />
-              <input type="checkbox" form="project-form" name={@form[:public].name} value="true" checked={@form[:public].value} class="toggle toggle-sm" />
-              <span class="label-text text-sm"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
+              <input
+                type="checkbox"
+                form="project-form"
+                name={@form[:public].name}
+                value="true"
+                checked={@form[:public].value}
+                class="toggle toggle-sm"
+              />
+              <span class="label-text text-sm">
+                {if @form[:public].value, do: "Public", else: "Private"}
+              </span>
             </label>
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input type="hidden" form="project-form" name={@form[:featured].name} value="false" />
-              <input type="checkbox" form="project-form" name={@form[:featured].name} value="true" checked={@form[:featured].value} class="toggle toggle-sm" />
+              <input
+                type="checkbox"
+                form="project-form"
+                name={@form[:featured].name}
+                value="true"
+                checked={@form[:featured].value}
+                class="toggle toggle-sm"
+              />
               <span class="label-text text-sm">Featured</span>
             </label>
           </div>
 
           <%= if @project do %>
             <div class="divider"></div>
-            <button type="button" phx-click="delete_project" data-confirm="Delete this project?" class="btn btn-error btn-sm w-full">
+            <button
+              type="button"
+              phx-click="delete_project"
+              data-confirm="Delete this project?"
+              class="btn btn-error btn-sm w-full"
+            >
               Delete project
             </button>
           <% end %>
@@ -402,15 +518,22 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   def handle_event("add_link", %{"link_name" => name, "link_url" => url}, socket) do
     name = String.trim(name)
     url = String.trim(url)
+
     if name != "" and url != "" do
-      {:noreply, assign(socket, links: socket.assigns.links ++ [%{"name" => name, "link" => url}], link_name: "", link_url: "")}
+      {:noreply,
+       assign(socket,
+         links: socket.assigns.links ++ [%{"name" => name, "link" => url}],
+         link_name: "",
+         link_url: ""
+       )}
     else
       {:noreply, socket}
     end
   end
 
   def handle_event("remove_link", %{"index" => index}, socket) do
-    {:noreply, assign(socket, links: List.delete_at(socket.assigns.links, String.to_integer(index)))}
+    {:noreply,
+     assign(socket, links: List.delete_at(socket.assigns.links, String.to_integer(index)))}
   end
 
   def handle_event("remove_featured_image", _params, socket) do
@@ -427,7 +550,9 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
 
   def handle_event("remove_content_image", %{"index" => index_str}, socket) do
     index = String.to_integer(index_str)
-    {:noreply, assign(socket, content_images: List.delete_at(socket.assigns.content_images, index))}
+
+    {:noreply,
+     assign(socket, content_images: List.delete_at(socket.assigns.content_images, index))}
   end
 
   def handle_event("copy_image_markdown", %{"url" => url}, socket) do
@@ -478,7 +603,12 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   end
 
   def handle_progress(:content_images, entry, socket) when entry.done? do
-    {:noreply, assign(socket, :content_images, socket.assigns.content_images ++ [save_upload(socket, entry)])}
+    {:noreply,
+     assign(
+       socket,
+       :content_images,
+       socket.assigns.content_images ++ [save_upload(socket, entry)]
+     )}
   end
 
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
@@ -498,9 +628,11 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
     dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{uuid}.#{file_ext}"])
     File.mkdir_p!(Path.dirname(dest))
     File.cp!(source_path, dest)
+
     %{"source_path" => dest, "uuid" => uuid}
     |> Weakty.Workers.GenerateThumbnails.new()
     |> Oban.insert!()
+
     "/uploads/#{uuid}.#{file_ext}"
   end
 
@@ -528,13 +660,21 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
   end
 
   defp handle_tag_update(project, tags) do
-    Weakty.Tags.TagManager.apply_tags(project, :project, tags, Weakty.Projects.ProjectTag, :project_id)
+    Weakty.Tags.TagManager.apply_tags(
+      project,
+      :project,
+      tags,
+      Weakty.Projects.ProjectTag,
+      :project_id
+    )
   end
 
   defp format_datetime_for_input(nil), do: ""
+
   defp format_datetime_for_input(%DateTime{} = datetime) do
     datetime |> DateTime.shift_zone!("Etc/UTC") |> Calendar.strftime("%Y-%m-%dT%H:%M")
   end
+
   defp format_datetime_for_input(_), do: ""
 
   defp ext(entry) do

@@ -9,7 +9,9 @@ defmodule WeaktyWeb.TilLive.Form do
   def mount(params, _session, socket) do
     til =
       case params["id"] do
-        nil -> nil
+        nil ->
+          nil
+
         id ->
           Weakty.Posts.Post
           |> Ash.get!(id)
@@ -40,8 +42,7 @@ defmodule WeaktyWeb.TilLive.Form do
     {:ok,
      socket
      |> assign(form: form, til: til, tags: existing_tags)
-     |> assign(:current_path, "/admin/til"),
-     layout: {WeaktyWeb.Layouts, :admin}}
+     |> assign(:current_path, "/admin/til"), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
@@ -51,15 +52,14 @@ defmodule WeaktyWeb.TilLive.Form do
       <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
         <div class="flex items-center gap-4 mb-8">
           <.link navigate={~p"/admin/til"} class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left" class="w-4 h-4" />
-            TILs
+            <.icon name="hero-arrow-left" class="w-4 h-4" /> TILs
           </.link>
           <div class="text-sm text-base-content/70">
-            <%= if @til, do: "Editing", else: "New TIL" %>
+            {if @til, do: "Editing", else: "New TIL"}
           </div>
           <div class="flex-1" />
           <button type="submit" form="til-form" class="btn btn-primary btn-sm">
-            <%= if @til, do: "Update", else: "Create" %>
+            {if @til, do: "Update", else: "Create"}
           </button>
         </div>
 
@@ -134,6 +134,7 @@ defmodule WeaktyWeb.TilLive.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
         handle_tag_update(post, socket.assigns.tags)
+
         {:noreply,
          socket
          |> put_flash(:info, "Saved successfully.")
@@ -141,6 +142,7 @@ defmodule WeaktyWeb.TilLive.Form do
 
       {:error, form} ->
         Logger.error("TIL save failed: #{inspect(form.source.errors)}")
+
         {:noreply,
          socket
          |> put_flash(:error, "Could not save.")

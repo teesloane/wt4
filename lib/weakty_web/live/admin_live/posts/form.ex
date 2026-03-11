@@ -8,7 +8,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   def mount(params, _session, socket) do
     post =
       case params["id"] do
-        nil -> nil
+        nil ->
+          nil
+
         id ->
           Weakty.Posts.Post
           |> Ash.get!(id)
@@ -50,7 +52,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
         max_file_size: 5_000_000,
         auto_upload: true,
         progress: &handle_progress/3
-        
       )
       |> allow_upload(:content_images,
         accept: ~w(.jpg .jpeg .png .gif .webp),
@@ -65,71 +66,75 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
   defp error_to_string(:too_large), do: "File too large (max 5MB)"
   defp error_to_string(:too_many_files), do: "Too many files selected"
-  defp error_to_string(:not_accepted), do: "Invalid file type (only .jpg, .jpeg, .png, .gif, .webp)"
+
+  defp error_to_string(:not_accepted),
+    do: "Invalid file type (only .jpg, .jpeg, .png, .gif, .webp)"
+
   defp error_to_string(error), do: "Upload error: #{inspect(error)}"
 
   @impl true
   def render(assigns) do
     ~H"""
     <div class="flex min-h-screen">
-    <.form
-      id="post-form"
-      for={@form}
-      phx-submit="save"
-      phx-change="validate"
-      class="w-full"
-    >
-      <!-- Main Content Area -->
-      <div class="flex-1 max-w-4xl w-full mx-auto px-8 py-8">
-        <div class="flex items-center gap-4 mb-8">
-          <.link navigate={@return_to} class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left" class="w-4 h-4" />
-            Posts
-          </.link>
-          <div class="text-sm text-base-content/70">
-            <%= if @post, do: "Draft - Saved (not implemented)", else: "New Post" %>
-          </div>
-          <div class="flex-1"></div>
-          <%= if @post do %>
-            <.link navigate={permalink_for_post(@post)} class="btn btn-ghost btn-sm">
-              <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" />
-              View
+      <.form
+        id="post-form"
+        for={@form}
+        phx-submit="save"
+        phx-change="validate"
+        class="w-full"
+      >
+        <!-- Main Content Area -->
+        <div class="flex-1 max-w-4xl w-full mx-auto px-8 py-8">
+          <div class="flex items-center gap-4 mb-8">
+            <.link navigate={@return_to} class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-left" class="w-4 h-4" /> Posts
             </.link>
-          <% end %>
-          <button type="submit" form="post-form" class="btn btn-primary btn-sm">
-            <%= if @post, do: "Update", else: "Publish" %>
-          </button>
-        </div>
-
-        <div class="space-y-6">
-          <!-- Title -->
-          <div class="form-control">
-            <input
-              type="text"
-              name={@form[:title].name}
-              value={@form[:title].value}
-              class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
-              placeholder="Post title"
-              required
-            />
+            <div class="text-sm text-base-content/70">
+              {if @post, do: "Draft - Saved (not implemented)", else: "New Post"}
+            </div>
+            <div class="flex-1"></div>
+            <%= if @post do %>
+              <.link navigate={permalink_for_post(@post)} class="btn btn-ghost btn-sm">
+                <.icon name="hero-arrow-top-right-on-square" class="w-4 h-4" /> View
+              </.link>
+            <% end %>
+            <button type="submit" form="post-form" class="btn btn-primary btn-sm">
+              {if @post, do: "Update", else: "Publish"}
+            </button>
           </div>
 
-          <!-- Content -->
-          <div class="form-control">
-            <textarea
-              name={@form[:markdown].name}
-              class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
-              style="font-family: 'IBM Plex Serif', serif;"
-              placeholder="Begin writing your post..."
-              required
-            ><%= @form[:markdown].value %></textarea>
+          <div class="space-y-6">
+            <!-- Title -->
+            <div class="form-control">
+              <input
+                type="text"
+                name={@form[:title].name}
+                value={@form[:title].value}
+                class="input input-ghost w-full text-2xl py-4 font-bold px-0 focus:outline-none"
+                placeholder="Post title"
+                required
+              />
+            </div>
+            
+    <!-- Content -->
+            <div class="form-control">
+              <textarea
+                name={@form[:markdown].name}
+                class="textarea textarea-ghost w-full min-h-[600px] text-lg leading-relaxed px-0 focus:outline-none"
+                style="font-family: 'IBM Plex Serif', serif;"
+                placeholder="Begin writing your post..."
+                required
+              ><%= @form[:markdown].value %></textarea>
+            </div>
           </div>
         </div>
-      </div>
       </.form>
-
-      <!-- Sidebar -->
-      <div class="w-128 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4" style="font-family: 'IBM Plex Sans', sans-serif;">
+      
+    <!-- Sidebar -->
+      <div
+        class="w-128 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-[calc(100vh-2rem)] sticky top-4"
+        style="font-family: 'IBM Plex Sans', sans-serif;"
+      >
         <h2 class="text-xl font-bold mb-6">Post settings</h2>
 
         <div class="space-y-6">
@@ -150,11 +155,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               />
             </div>
             <div class="text-xs text-base-content/60 mt-1">
-              weakty.com/<%= @form[:slug].value || "post-slug" %>/
+              weakty.com/{@form[:slug].value || "post-slug"}/
             </div>
           </div>
-
-          <!-- Published At -->
+          
+    <!-- Published At -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Publish date</span>
@@ -170,8 +175,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               Leave empty to auto-set when publishing
             </div>
           </div>
-
-          <!-- Tags -->
+          
+    <!-- Tags -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Tags</span>
@@ -180,8 +185,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
           </div>
 
           <div class="divider"></div>
-
-          <!-- Featured Image -->
+          
+    <!-- Featured Image -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Featured Image</span>
@@ -209,9 +214,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               <%= for entry <- @uploads.featured_image.entries do %>
                 <article class="mb-3">
                   <.live_img_preview entry={entry} class="w-full rounded-lg mb-2" />
-                  <progress value={entry.progress} max="100" class="progress progress-primary w-full"></progress>
+                  <progress value={entry.progress} max="100" class="progress progress-primary w-full">
+                  </progress>
                   <div class="flex justify-between text-xs text-base-content/60 mt-1">
-                    <span><%= entry.client_name %></span>
+                    <span>{entry.client_name}</span>
                     <button
                       type="button"
                       phx-click="cancel-upload"
@@ -228,18 +234,20 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 <label for={@uploads.featured_image.ref} class="cursor-pointer block">
                   <.icon name="hero-photo" class="w-8 h-8 mx-auto text-base-content/30 mb-1" />
                   <span class="text-sm text-base-content/60">
-                    <%= if @uploaded_featured_image, do: "Drop or click to replace", else: "Drop image here or click to upload" %>
+                    {if @uploaded_featured_image,
+                      do: "Drop or click to replace",
+                      else: "Drop image here or click to upload"}
                   </span>
                 </label>
               <% end %>
 
               <%= for err <- upload_errors(@uploads.featured_image) do %>
-                <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+                <p class="text-error text-xs mt-1">{error_to_string(err)}</p>
               <% end %>
             </section>
           </div>
-
-          <!-- Content Images -->
+          
+    <!-- Content Images -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Content Images</span>
@@ -283,9 +291,10 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               <%= for entry <- @uploads.content_images.entries do %>
                 <article class="mb-2 text-left">
                   <.live_img_preview entry={entry} class="w-full h-24 object-cover rounded-lg mb-1" />
-                  <progress value={entry.progress} max="100" class="progress progress-primary w-full"></progress>
+                  <progress value={entry.progress} max="100" class="progress progress-primary w-full">
+                  </progress>
                   <div class="flex justify-between text-xs text-base-content/60 mt-1">
-                    <span><%= entry.client_name %></span>
+                    <span>{entry.client_name}</span>
                     <button
                       type="button"
                       phx-click="cancel-content-upload"
@@ -301,12 +310,14 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               <%= if Enum.empty?(@uploads.content_images.entries) do %>
                 <label for={@uploads.content_images.ref} class="cursor-pointer block">
                   <.icon name="hero-photo" class="w-8 h-8 mx-auto text-base-content/30 mb-1" />
-                  <span class="text-sm text-base-content/60">Drop images here or click to upload</span>
+                  <span class="text-sm text-base-content/60">
+                    Drop images here or click to upload
+                  </span>
                 </label>
               <% end %>
 
               <%= for err <- upload_errors(@uploads.content_images) do %>
-                <p class="text-error text-xs mt-1"><%= error_to_string(err) %></p>
+                <p class="text-error text-xs mt-1">{error_to_string(err)}</p>
               <% end %>
             </section>
 
@@ -314,8 +325,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
               Click saved image thumbnails to copy markdown syntax
             </div>
           </div>
-
-          <!-- Excerpt -->
+          
+    <!-- Excerpt -->
           <div class="form-control mb-4">
             <label class="label mb-2">
               <span class="label-text text-sm font-semibold">Excerpt</span>
@@ -329,8 +340,8 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
           </div>
 
           <div class="divider"></div>
-
-          <!-- Post Type + Status -->
+          
+    <!-- Post Type + Status -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="form-control">
               <label class="label mb-2">
@@ -342,8 +353,13 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 class="select select-bordered select-sm w-full text-sm"
               >
                 <%= for type <- Weakty.Posts.PostType.values(), type not in [:til, :quote] do %>
-                  <option value={type} selected={@form[:post_type].value == type || @form[:post_type].value == to_string(type)}>
-                    <%= type |> to_string() |> String.capitalize() %>
+                  <option
+                    value={type}
+                    selected={
+                      @form[:post_type].value == type || @form[:post_type].value == to_string(type)
+                    }
+                  >
+                    {type |> to_string() |> String.capitalize()}
                   </option>
                 <% end %>
               </select>
@@ -358,17 +374,23 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 name={@form[:status].name}
                 class="select select-bordered select-sm w-full text-sm"
               >
-                <option value="draft" selected={@form[:status].value == :draft || @form[:status].value == "draft"}>
+                <option
+                  value="draft"
+                  selected={@form[:status].value == :draft || @form[:status].value == "draft"}
+                >
                   Draft
                 </option>
-                <option value="published" selected={@form[:status].value == :published || @form[:status].value == "published"}>
+                <option
+                  value="published"
+                  selected={@form[:status].value == :published || @form[:status].value == "published"}
+                >
                   Published
                 </option>
               </select>
             </div>
           </div>
-
-          <!-- Access and Featured -->
+          
+    <!-- Access and Featured -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
               <input type="hidden" form="post-form" name={@form[:public].name} value="false" />
@@ -380,7 +402,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
                 checked={@form[:public].value}
                 class="toggle toggle-sm"
               />
-              <span class="label-text text-sm"><%= if @form[:public].value, do: "Public", else: "Private" %></span>
+              <span class="label-text text-sm">
+                {if @form[:public].value, do: "Public", else: "Private"}
+              </span>
             </label>
 
             <label class="label cursor-pointer justify-start gap-2 border border-base-300 rounded-lg px-3 py-2">
@@ -439,7 +463,9 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
 
   def handle_event("delete_post", _params, socket) do
     case Weakty.Posts.Post.delete_post(socket.assigns.post) do
-      :ok -> {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
+      :ok ->
+        {:noreply, push_navigate(socket, to: ~p"/admin/posts")}
+
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to delete post")}
     end
@@ -479,8 +505,14 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, post} ->
         handle_tag_update(post, socket.assigns.tags)
-        message = if socket.assigns.post, do: "Post updated successfully.", else: "Post created successfully."
-        {:noreply, socket |> put_flash(:info, message) |> push_navigate(to: socket.assigns.return_to)}
+
+        message =
+          if socket.assigns.post,
+            do: "Post updated successfully.",
+            else: "Post created successfully."
+
+        {:noreply,
+         socket |> put_flash(:info, message) |> push_navigate(to: socket.assigns.return_to)}
 
       {:error, form} ->
         {:noreply, assign(socket, form: to_form(form))}
@@ -492,7 +524,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
   end
 
   def handle_progress(:content_images, entry, socket) when entry.done? do
-    {:noreply, assign(socket, :content_images, socket.assigns.content_images ++ [save_upload(socket, entry)])}
+    {:noreply,
+     assign(
+       socket,
+       :content_images,
+       socket.assigns.content_images ++ [save_upload(socket, entry)]
+     )}
   end
 
   def handle_progress(_name, _entry, socket), do: {:noreply, socket}
@@ -512,9 +549,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
     dest = Path.join([:code.priv_dir(:weakty), "static", "uploads", "#{uuid}.#{file_ext}"])
     File.mkdir_p!(Path.dirname(dest))
     File.cp!(source_path, dest)
+
     %{"source_path" => dest, "uuid" => uuid}
     |> Weakty.Workers.GenerateThumbnails.new()
     |> Oban.insert!()
+
     "/uploads/#{uuid}.#{file_ext}"
   end
 

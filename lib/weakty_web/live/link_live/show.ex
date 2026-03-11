@@ -29,23 +29,28 @@ defmodule WeaktyWeb.LinkLive.Show do
         <header class="mb-8">
           <div class="text-sm lowercase tracking-wider mb-4 opacity-70">link</div>
           <h1 class="text-2xl font-normal averia mb-4">
-            <a href={@link.url} target="_blank" rel="noopener noreferrer" class="hover:opacity-70 transition-opacity">
-              <%= @link.title %> →
+            <a
+              href={@link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:opacity-70 transition-opacity"
+            >
+              {@link.title} →
             </a>
           </h1>
           <div class="text-sm opacity-60">
-            <%= Calendar.strftime(@link.inserted_at, "%d %b %Y") %>
+            {Calendar.strftime(@link.inserted_at, "%d %b %Y")}
           </div>
         </header>
 
         <%= if @link.commentary do %>
-          <p class="opacity-80 leading-relaxed mb-6"><%= @link.commentary %></p>
+          <p class="opacity-80 leading-relaxed mb-6">{@link.commentary}</p>
         <% end %>
 
         <%= if @link.tags && length(@link.tags) > 0 do %>
           <div class="flex flex-wrap gap-3 text-sm opacity-60">
             <%= for tag <- @link.tags do %>
-              <span>#<%= tag.name %></span>
+              <span>#{tag.name}</span>
             <% end %>
           </div>
         <% end %>

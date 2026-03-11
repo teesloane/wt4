@@ -9,12 +9,14 @@ defmodule Weakty.Projects.Changes.ConvertMarkdownToHtml do
     # Only convert if we have markdown and either:
     # 1. No HTML is set (for creates)
     # 2. Markdown is being changed (for updates)
-    should_convert? = markdown && (!html || Ash.Changeset.changing_attribute?(changeset, :markdown))
+    should_convert? =
+      markdown && (!html || Ash.Changeset.changing_attribute?(changeset, :markdown))
 
     if should_convert? do
       case MDEx.to_html(markdown) do
         {:ok, html_output} ->
           Ash.Changeset.force_change_attribute(changeset, :html, html_output)
+
         {:error, _} ->
           changeset
       end

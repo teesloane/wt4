@@ -57,6 +57,7 @@ defmodule WeaktyWeb.RssController do
   end
 
   defp build_item(nil), do: ""
+
   defp build_item(post) do
     """
     <item>
@@ -78,9 +79,11 @@ defmodule WeaktyWeb.RssController do
       "<category><![CDATA[#{escape_cdata(tag.name)}]]></category>"
     end)
   end
+
   defp build_categories(_), do: ""
 
   defp build_media(nil), do: ""
+
   defp build_media(url) do
     """
     <media:content url="#{escape_xml(url)}" medium="image" />
@@ -89,18 +92,21 @@ defmodule WeaktyWeb.RssController do
 
   # Format datetime as RFC 822 (RSS requirement)
   defp format_rfc822(nil), do: format_rfc822(DateTime.utc_now())
+
   defp format_rfc822(datetime) do
     Calendar.strftime(datetime, "%a, %d %b %Y %H:%M:%S GMT")
   end
 
   # Escape CDATA content (handle ]]> sequence)
   defp escape_cdata(nil), do: ""
+
   defp escape_cdata(str) do
     String.replace(str, "]]>", "]]]]><![CDATA[>")
   end
 
   # Escape XML entities
   defp escape_xml(nil), do: ""
+
   defp escape_xml(str) do
     str
     |> String.replace("&", "&amp;")

@@ -44,11 +44,13 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <.admin_header title="Projects" subtitle={"#{length(@projects)} project#{if length(@projects) != 1, do: "s"}"}>
+    <.admin_header
+      title="Projects"
+      subtitle={"#{length(@projects)} project#{if length(@projects) != 1, do: "s"}"}
+    >
       <:actions>
         <.link navigate="/admin/projects/new" class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" />
-          New Project
+          <.icon name="hero-plus" class="w-4 h-4" /> New Project
         </.link>
       </:actions>
     </.admin_header>
@@ -94,8 +96,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
             <h2 class="card-title">No projects yet</h2>
             <p class="text-base-content/70">Create your first project to get started</p>
             <.link navigate="/admin/projects/new" class="btn btn-primary mt-4">
-              <.icon name="hero-plus" class="w-4 h-4" />
-              Create Project
+              <.icon name="hero-plus" class="w-4 h-4" /> Create Project
             </.link>
           </div>
         </div>
@@ -114,7 +115,10 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
             </thead>
             <tbody>
               <%= for project <- @projects do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/projects/#{project.id}/edit")}>
+                <tr
+                  class="hover cursor-pointer"
+                  phx-click={JS.navigate(~p"/admin/projects/#{project.id}/edit")}
+                >
                   <td>
                     <div class="flex items-center gap-3">
                       <%= if project.featured_image do %>
@@ -125,11 +129,11 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
                         </div>
                       <% end %>
                       <div>
-                        <div class="font-bold"><%= project.title %></div>
+                        <div class="font-bold">{project.title}</div>
                         <%= if project.tags && project.tags != [] do %>
                           <div class="text-sm opacity-50 flex gap-1 mt-1">
                             <%= for tag <- Enum.take(project.tags, 3) do %>
-                              <span class="badge badge-xs"><%= tag.name %></span>
+                              <span class="badge badge-xs">{tag.name}</span>
                             <% end %>
                           </div>
                         <% end %>
@@ -138,7 +142,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
                   </td>
                   <td>
                     <div class="text-sm text-base-content/70 max-w-md truncate">
-                      <%= project.excerpt %>
+                      {project.excerpt}
                     </div>
                   </td>
                   <td>
@@ -150,7 +154,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
                   <td>
                     <%= if project.published_at do %>
                       <div class="text-sm">
-                        <%= Calendar.strftime(project.published_at, "%b %d, %Y") %>
+                        {Calendar.strftime(project.published_at, "%b %d, %Y")}
                       </div>
                     <% else %>
                       <span class="text-base-content/50">-</span>
@@ -210,18 +214,19 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
   end
 
   defp project_status_badge(assigns) do
-    color = case assigns.status do
-      :ongoing -> "badge-info"
-      :hiatus -> "badge-warning"
-      :completed -> "badge-success"
-      _ -> "badge-ghost"
-    end
+    color =
+      case assigns.status do
+        :ongoing -> "badge-info"
+        :hiatus -> "badge-warning"
+        :completed -> "badge-success"
+        _ -> "badge-ghost"
+      end
 
     assigns = assign(assigns, :color, color)
 
     ~H"""
     <span class={"badge #{@color} badge-sm"}>
-      <%= String.capitalize(to_string(@status)) %>
+      {String.capitalize(to_string(@status))}
     </span>
     """
   end

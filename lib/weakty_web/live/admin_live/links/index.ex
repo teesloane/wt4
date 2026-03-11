@@ -36,8 +36,7 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
     <.admin_header title="Links" subtitle={"#{length(@links)} link#{if length(@links) != 1, do: "s"}"}>
       <:actions>
         <.link navigate="/admin/links/new" class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" />
-          New Link
+          <.icon name="hero-plus" class="w-4 h-4" /> New Link
         </.link>
       </:actions>
     </.admin_header>
@@ -50,8 +49,7 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
             <h2 class="card-title">No links yet</h2>
             <p class="text-base-content/70">Create your first link to get started</p>
             <.link navigate="/admin/links/new" class="btn btn-primary mt-4">
-              <.icon name="hero-plus" class="w-4 h-4" />
-              Create Link
+              <.icon name="hero-plus" class="w-4 h-4" /> Create Link
             </.link>
           </div>
         </div>
@@ -69,12 +67,15 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
             </thead>
             <tbody>
               <%= for link <- @links do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/links/#{link.id}/edit")}>
+                <tr
+                  class="hover cursor-pointer"
+                  phx-click={JS.navigate(~p"/admin/links/#{link.id}/edit")}
+                >
                   <td>
-                    <div class="font-bold"><%= link.title %></div>
+                    <div class="font-bold">{link.title}</div>
                     <%= if link.commentary do %>
                       <div class="text-sm text-base-content/70 max-w-md truncate">
-                        <%= link.commentary %>
+                        {link.commentary}
                       </div>
                     <% end %>
                   </td>
@@ -86,10 +87,12 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
                       class="link link-primary text-sm"
                       onclick="event.stopPropagation()"
                     >
-                      <%= link.url |> String.replace(~r/^https?:\/\//, "") |> String.slice(0..40) %><%= if String.length(
-                                                                                                            link.url
-                                                                                                          ) > 40,
-                                                                                                          do: "..." %>
+                      {link.url |> String.replace(~r/^https?:\/\//, "") |> String.slice(0..40)}{if String.length(
+                                                                                                     link.url
+                                                                                                   ) >
+                                                                                                     40,
+                                                                                                   do:
+                                                                                                     "..."}
                       <.icon name="hero-arrow-top-right-on-square" class="w-3 h-3 inline" />
                     </a>
                   </td>
@@ -97,10 +100,10 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
                     <%= if link.tags && link.tags != [] do %>
                       <div class="flex gap-1 flex-wrap">
                         <%= for tag <- Enum.take(link.tags, 3) do %>
-                          <span class="badge badge-sm"><%= tag.name %></span>
+                          <span class="badge badge-sm">{tag.name}</span>
                         <% end %>
                         <%= if length(link.tags) > 3 do %>
-                          <span class="badge badge-sm badge-ghost">+<%= length(link.tags) - 3 %></span>
+                          <span class="badge badge-sm badge-ghost">+{length(link.tags) - 3}</span>
                         <% end %>
                       </div>
                     <% else %>
@@ -110,7 +113,7 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
                   <td>
                     <%= if link.inserted_at do %>
                       <div class="text-sm">
-                        <%= Calendar.strftime(link.inserted_at, "%b %d, %Y") %>
+                        {Calendar.strftime(link.inserted_at, "%b %d, %Y")}
                       </div>
                     <% else %>
                       <span class="text-base-content/50">-</span>

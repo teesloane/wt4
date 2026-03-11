@@ -22,10 +22,12 @@ defmodule WeaktyWeb.PageController do
 
     currently_reading =
       Weakty.MediaLogs.MediaLog
-      |> Ash.Query.filter(media_type == :book and not is_nil(date_started) and is_nil(date_finished) and public == true)
+      |> Ash.Query.filter(
+        media_type == :book and not is_nil(date_started) and is_nil(date_finished) and
+          public == true
+      )
       |> Ash.Query.sort(date_started: :desc)
       |> Ash.read!()
-
 
     quotes =
       Weakty.Posts.Post
@@ -51,7 +53,8 @@ defmodule WeaktyWeb.PageController do
 
     top_areas =
       from(et in "entity_tags",
-        join: t in "tags", on: t.id == et.tag_id,
+        join: t in "tags",
+        on: t.id == et.tag_id,
         where: t.public == true,
         group_by: [t.id, t.name, t.slug],
         select: %{name: t.name, slug: t.slug, count: count(et.id)},

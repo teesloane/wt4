@@ -9,7 +9,9 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   def mount(params, _session, socket) do
     media_log =
       case params["id"] do
-        nil -> nil
+        nil ->
+          nil
+
         id ->
           Weakty.MediaLogs.MediaLog
           |> Ash.get!(id)
@@ -47,8 +49,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
        search_query: "",
        search_results: []
      )
-     |> assign(:current_path, "/admin/media-logs"),
-     layout: {WeaktyWeb.Layouts, :admin}}
+     |> assign(:current_path, "/admin/media-logs"), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
@@ -59,15 +60,14 @@ defmodule WeaktyWeb.MediaLogLive.Form do
       <div class="flex-1 max-w-4xl mx-auto px-8 py-8">
         <div class="flex items-center gap-4 mb-8">
           <.link navigate={~p"/admin/media-logs"} class="btn btn-ghost btn-sm">
-            <.icon name="hero-arrow-left" class="w-4 h-4" />
-            Media Logs
+            <.icon name="hero-arrow-left" class="w-4 h-4" /> Media Logs
           </.link>
           <div class="text-sm text-base-content/70">
-            <%= if @media_log, do: "Editing", else: "New entry" %>
+            {if @media_log, do: "Editing", else: "New entry"}
           </div>
           <div class="flex-1" />
           <button type="submit" form="media-log-form" class="btn btn-primary btn-sm">
-            <%= if @media_log, do: "Update", else: "Create" %>
+            {if @media_log, do: "Update", else: "Create"}
           </button>
         </div>
 
@@ -93,8 +93,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
           ><%= @form[:notes].value %></textarea>
         </.form>
       </div>
-
-      <!-- Sidebar -->
+      
+    <!-- Sidebar -->
       <div
         class="w-96 border-l border-base-300 bg-base-100 p-6 overflow-y-auto max-h-screen sticky top-0"
         style="font-family: 'IBM Plex Sans', sans-serif;"
@@ -125,13 +125,19 @@ defmodule WeaktyWeb.MediaLogLive.Form do
                   <%= for result <- @search_results do %>
                     <div class="flex items-center gap-3 p-2 rounded hover:bg-base-300">
                       <%= if result.cover_url do %>
-                        <img src={result.cover_url} alt={result.title} class="w-8 h-12 object-cover rounded flex-shrink-0" />
+                        <img
+                          src={result.cover_url}
+                          alt={result.title}
+                          class="w-8 h-12 object-cover rounded flex-shrink-0"
+                        />
                       <% else %>
                         <div class="w-8 h-12 bg-base-300 rounded flex-shrink-0" />
                       <% end %>
                       <div class="flex-1 min-w-0">
-                        <div class="font-medium text-xs truncate"><%= result.title %></div>
-                        <div class="text-xs text-base-content/60 truncate"><%= Enum.join(result.creators, ", ") %></div>
+                        <div class="font-medium text-xs truncate">{result.title}</div>
+                        <div class="text-xs text-base-content/60 truncate">
+                          {Enum.join(result.creators, ", ")}
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -148,8 +154,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
             </div>
             <div class="divider"></div>
           <% end %>
-
-          <!-- Slug -->
+          
+    <!-- Slug -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Slug</span>
@@ -163,8 +169,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
               placeholder="url-friendly-slug"
             />
           </div>
-
-          <!-- Media Type -->
+          
+    <!-- Media Type -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Media Type</span>
@@ -178,14 +184,16 @@ defmodule WeaktyWeb.MediaLogLive.Form do
               <option value="comic" selected={@media_type in [:comic, "comic"]}>Comic</option>
               <option value="movie" selected={@media_type in [:movie, "movie"]}>Movie</option>
               <option value="music" selected={@media_type in [:music, "music"]}>Music</option>
-              <option value="video_game" selected={@media_type in [:video_game, "video_game"]}>Video Game</option>
+              <option value="video_game" selected={@media_type in [:video_game, "video_game"]}>
+                Video Game
+              </option>
             </select>
           </div>
-
-          <!-- Creator -->
+          
+    <!-- Creator -->
           <div class="form-control mb-4">
             <label class="label mb-1">
-              <span class="label-text text-sm font-semibold"><%= creator_label(@media_type) %></span>
+              <span class="label-text text-sm font-semibold">{creator_label(@media_type)}</span>
             </label>
             <input
               type="text"
@@ -196,8 +204,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
               placeholder={creator_placeholder(@media_type)}
             />
           </div>
-
-          <!-- Status -->
+          
+    <!-- Status -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Status</span>
@@ -207,42 +215,69 @@ defmodule WeaktyWeb.MediaLogLive.Form do
               name={@form[:status].name}
               class="select select-bordered select-sm w-full text-sm"
             >
-              <option value="want_to_consume" selected={@form[:status].value in [:want_to_consume, "want_to_consume"]}>
-                Want to <%= consume_verb(@media_type) %>
+              <option
+                value="want_to_consume"
+                selected={@form[:status].value in [:want_to_consume, "want_to_consume"]}
+              >
+                Want to {consume_verb(@media_type)}
               </option>
               <option value="consuming" selected={@form[:status].value in [:consuming, "consuming"]}>
-                Currently <%= consume_verb(@media_type, :ing) %>
+                Currently {consume_verb(@media_type, :ing)}
               </option>
               <option value="consumed" selected={@form[:status].value in [:consumed, "consumed"]}>
-                <%= consume_verb(@media_type, :past) %>
+                {consume_verb(@media_type, :past)}
               </option>
-              <option value="on_hold" selected={@form[:status].value in [:on_hold, "on_hold"]}>On Hold</option>
-              <option value="abandoned" selected={@form[:status].value in [:abandoned, "abandoned"]}>Abandoned</option>
+              <option value="on_hold" selected={@form[:status].value in [:on_hold, "on_hold"]}>
+                On Hold
+              </option>
+              <option value="abandoned" selected={@form[:status].value in [:abandoned, "abandoned"]}>
+                Abandoned
+              </option>
             </select>
           </div>
-
-          <!-- Date fields -->
+          
+    <!-- Date fields -->
           <%= if @media_type in [:book, :comic, "book", "comic"] do %>
             <div class="grid grid-cols-2 gap-3 mb-4">
               <div class="form-control">
                 <label class="label mb-1">
                   <span class="label-text text-sm font-semibold">Started</span>
                 </label>
-                <input type="date" form="media-log-form" name={@form[:date_started].name} value={@form[:date_started].value} class="input input-bordered input-sm w-full text-sm" />
+                <input
+                  type="date"
+                  form="media-log-form"
+                  name={@form[:date_started].name}
+                  value={@form[:date_started].value}
+                  class="input input-bordered input-sm w-full text-sm"
+                />
               </div>
               <div class="form-control">
                 <label class="label mb-1">
                   <span class="label-text text-sm font-semibold">Finished</span>
                 </label>
-                <input type="date" form="media-log-form" name={@form[:date_finished].name} value={@form[:date_finished].value} class="input input-bordered input-sm w-full text-sm" />
+                <input
+                  type="date"
+                  form="media-log-form"
+                  name={@form[:date_finished].name}
+                  value={@form[:date_finished].value}
+                  class="input input-bordered input-sm w-full text-sm"
+                />
               </div>
             </div>
           <% else %>
             <div class="form-control mb-4">
               <label class="label mb-1">
-                <span class="label-text text-sm font-semibold"><%= date_consumed_label(@media_type) %></span>
+                <span class="label-text text-sm font-semibold">
+                  {date_consumed_label(@media_type)}
+                </span>
               </label>
-              <input type="date" form="media-log-form" name={@form[:date_consumed].name} value={@form[:date_consumed].value} class="input input-bordered input-sm w-full text-sm" />
+              <input
+                type="date"
+                form="media-log-form"
+                name={@form[:date_consumed].name}
+                value={@form[:date_consumed].value}
+                class="input input-bordered input-sm w-full text-sm"
+              />
             </div>
           <% end %>
 
@@ -250,15 +285,25 @@ defmodule WeaktyWeb.MediaLogLive.Form do
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Date Published</span>
             </label>
-            <input type="date" form="media-log-form" name={@form[:date_published].name} value={@form[:date_published].value} class="input input-bordered input-sm w-full text-sm" />
+            <input
+              type="date"
+              form="media-log-form"
+              name={@form[:date_published].name}
+              value={@form[:date_published].value}
+              class="input input-bordered input-sm w-full text-sm"
+            />
           </div>
-
-          <!-- Rating -->
+          
+    <!-- Rating -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Rating</span>
             </label>
-            <select form="media-log-form" name={@form[:rating].name} class="select select-bordered select-sm w-full text-sm">
+            <select
+              form="media-log-form"
+              name={@form[:rating].name}
+              class="select select-bordered select-sm w-full text-sm"
+            >
               <option value="">No rating</option>
               <option value="1" selected={@form[:rating].value == 1}>★</option>
               <option value="2" selected={@form[:rating].value == 2}>★★</option>
@@ -267,27 +312,40 @@ defmodule WeaktyWeb.MediaLogLive.Form do
               <option value="5" selected={@form[:rating].value == 5}>★★★★★</option>
             </select>
           </div>
-
-          <!-- Thumbnail -->
+          
+    <!-- Thumbnail -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Thumbnail URL</span>
             </label>
-            <input form="media-log-form" name={@form[:thumbnail_url].name} value={@form[:thumbnail_url].value} class="input input-bordered input-sm w-full text-sm" placeholder="https://..." />
+            <input
+              form="media-log-form"
+              name={@form[:thumbnail_url].name}
+              value={@form[:thumbnail_url].value}
+              class="input input-bordered input-sm w-full text-sm"
+              placeholder="https://..."
+            />
             <%= if @form[:thumbnail_url].value do %>
               <img src={@form[:thumbnail_url].value} alt="Preview" class="mt-2 w-20 h-auto rounded" />
             <% end %>
           </div>
-
-          <!-- External URL -->
+          
+    <!-- External URL -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">External URL</span>
             </label>
-            <input type="url" form="media-log-form" name={@form[:external_url].name} value={@form[:external_url].value} class="input input-bordered input-sm w-full text-sm" placeholder="https://www.goodreads.com/..." />
+            <input
+              type="url"
+              form="media-log-form"
+              name={@form[:external_url].name}
+              value={@form[:external_url].value}
+              class="input input-bordered input-sm w-full text-sm"
+              placeholder="https://www.goodreads.com/..."
+            />
           </div>
-
-          <!-- Tags -->
+          
+    <!-- Tags -->
           <div class="form-control mb-4">
             <label class="label mb-1">
               <span class="label-text text-sm font-semibold">Tags</span>
@@ -296,8 +354,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
           </div>
 
           <div class="divider"></div>
-
-          <!-- Favourite + Public -->
+          
+    <!-- Favourite + Public -->
           <div class="grid grid-cols-2 gap-3 mb-4">
             <.input field={@form[:favourite]} type="checkbox" label="Favourite" form="media-log-form" />
             <.input field={@form[:public]} type="checkbox" label="Public" form="media-log-form" />
@@ -339,6 +397,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, media_log} ->
         handle_tag_update(media_log, socket.assigns.tags)
+
         {:noreply,
          socket
          |> put_flash(:info, "Saved successfully.")
@@ -346,6 +405,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
       {:error, form} ->
         Logger.error("MediaLog save failed: #{inspect(form.source.errors)}")
+
         {:noreply,
          socket
          |> put_flash(:error, "Could not save. Please check the fields below.")
@@ -413,7 +473,13 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   defp handle_tag_update(media_log, tags) do
-    Weakty.Tags.TagManager.apply_tags(media_log, :media_log, tags, Weakty.MediaLogs.MediaLogTag, :media_log_id)
+    Weakty.Tags.TagManager.apply_tags(
+      media_log,
+      :media_log,
+      tags,
+      Weakty.MediaLogs.MediaLogTag,
+      :media_log_id
+    )
   end
 
   defp creator_label(media_type) do

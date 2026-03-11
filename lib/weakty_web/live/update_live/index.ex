@@ -27,16 +27,15 @@ defmodule WeaktyWeb.UpdateLive.Index do
       <%= if @featured_update do %>
         <!-- Featured Update (Most Recent) -->
         <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto">
-
           <div class="prose max-w-none">
-            <%= raw(@featured_update.html) %>
+            {raw(@featured_update.html)}
           </div>
         </article>
-
-        <!-- Divider -->
+        
+    <!-- Divider -->
         <div class="border-t border-base-300 my-12"></div>
-
-        <!-- Previous Updates List -->
+        
+    <!-- Previous Updates List -->
         <%= if !Enum.empty?(@updates) do %>
           <h2 class="text-lg font-normal tracking-wide averia opacity-60 mb-8">Previous Updates</h2>
           <div class="space-y-3">
@@ -54,6 +53,4 @@ defmodule WeaktyWeb.UpdateLive.Index do
     </.page_container>
     """
   end
-
-
 end

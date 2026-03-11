@@ -35,7 +35,8 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
         {col, "asc"}
       end
 
-    {:noreply, socket |> assign(:sort_by, sort_by) |> assign(:sort_dir, sort_dir) |> load_entities()}
+    {:noreply,
+     socket |> assign(:sort_by, sort_by) |> assign(:sort_dir, sort_dir) |> load_entities()}
   end
 
   @impl true
@@ -53,7 +54,7 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
               phx-value-type={type}
               class={"btn btn-sm join-item #{if @filter_type == type, do: "btn-active", else: "btn-ghost"}"}
             >
-              <%= label %>
+              {label}
             </button>
           <% end %>
         </div>
@@ -79,7 +80,9 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
           <div class="card-body items-center text-center">
             <.icon name="hero-square-3-stack-3d" class="w-16 h-16 text-base-content/30" />
             <h2 class="card-title">No results</h2>
-            <p class="text-base-content/70">Entities are created automatically when you publish content</p>
+            <p class="text-base-content/70">
+              Entities are created automatically when you publish content
+            </p>
           </div>
         </div>
       <% else %>
@@ -91,7 +94,12 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                 <.sort_th col="title" label="Title" sort_by={@sort_by} sort_dir={@sort_dir} />
                 <th>Tags</th>
                 <.sort_th col="public" label="Public" sort_by={@sort_by} sort_dir={@sort_dir} />
-                <.sort_th col="published_at" label="Published" sort_by={@sort_by} sort_dir={@sort_dir} />
+                <.sort_th
+                  col="published_at"
+                  label="Published"
+                  sort_by={@sort_by}
+                  sort_dir={@sort_dir}
+                />
                 <th>Actions</th>
               </tr>
             </thead>
@@ -99,8 +107,8 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
               <%= for entity <- @entities do %>
                 <tr class="hover">
                   <td>
-                    <span class={"badge badge-sm"}>
-                      <%= entity.subtype || entity.entity_type %>
+                    <span class="badge badge-sm">
+                      {entity.subtype || entity.entity_type}
                     </span>
                   </td>
                   <td>
@@ -110,12 +118,12 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                         class="hover:underline"
                         target="_blank"
                       >
-                        <%= entity.title || entity.slug %>
+                        {entity.title || entity.slug}
                       </a>
                     </div>
                     <%= if entity.content do %>
                       <div class="text-sm text-base-content/60 max-w-sm truncate">
-                        <%= entity.content %>
+                        {entity.content}
                       </div>
                     <% end %>
                   </td>
@@ -123,10 +131,10 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                     <%= if entity.tags && entity.tags != [] do %>
                       <div class="flex gap-1 flex-wrap">
                         <%= for tag <- Enum.take(entity.tags, 3) do %>
-                          <span class="badge badge-sm"><%= tag.name %></span>
+                          <span class="badge badge-sm">{tag.name}</span>
                         <% end %>
                         <%= if length(entity.tags) > 3 do %>
-                          <span class="badge badge-sm badge-ghost">+<%= length(entity.tags) - 3 %></span>
+                          <span class="badge badge-sm badge-ghost">+{length(entity.tags) - 3}</span>
                         <% end %>
                       </div>
                     <% else %>
@@ -142,15 +150,14 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
                   </td>
                   <td>
                     <%= if entity.published_at do %>
-                      <div class="text-sm"><%= Calendar.strftime(entity.published_at, "%b %d, %Y") %></div>
+                      <div class="text-sm">{Calendar.strftime(entity.published_at, "%b %d, %Y")}</div>
                     <% else %>
                       <span class="text-base-content/40">—</span>
                     <% end %>
                   </td>
                   <td>
                     <.link navigate={edit_path_for_entity(entity)} class="btn btn-ghost btn-xs">
-                      <.icon name="hero-pencil" class="w-4 h-4" />
-                      Edit
+                      <.icon name="hero-pencil" class="w-4 h-4" /> Edit
                     </.link>
                   </td>
                 </tr>
@@ -170,9 +177,9 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
       phx-click="sort"
       phx-value-col={@col}
     >
-      <%= @label %>
+      {@label}
       <%= if @sort_by == @col do %>
-        <span class="text-primary ml-1"><%= if @sort_dir == "asc", do: "↑", else: "↓" %></span>
+        <span class="text-primary ml-1">{if @sort_dir == "asc", do: "↑", else: "↓"}</span>
       <% end %>
     </th>
     """
@@ -204,8 +211,10 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
   end
 
   defp filter_by_search(list, ""), do: list
+
   defp filter_by_search(list, q) do
     q = String.downcase(q)
+
     Enum.filter(list, fn e ->
       String.contains?(String.downcase(e.title || e.slug || ""), q)
     end)
@@ -215,17 +224,22 @@ defmodule WeaktyWeb.AdminLive.Entities.Index do
     sorted =
       Enum.sort_by(list, fn e ->
         case sort_by do
-          "entity_type"  -> to_string(e.entity_type)
-          "title"        -> String.downcase(e.title || e.slug || "")
-          "public"       -> if(e.public, do: 1, else: 0)
-          _              ->
+          "entity_type" ->
+            to_string(e.entity_type)
+
+          "title" ->
+            String.downcase(e.title || e.slug || "")
+
+          "public" ->
+            if(e.public, do: 1, else: 0)
+
+          _ ->
             if e.published_at, do: DateTime.to_unix(e.published_at, :microsecond), else: 0
         end
       end)
 
     if sort_dir == "desc", do: Enum.reverse(sorted), else: sorted
   end
-
 
   defp edit_path_for_entity(entity) do
     case {entity.entity_type, entity.subtype} do

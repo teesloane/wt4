@@ -35,6 +35,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     case Weakty.MediaLogs.MediaLog.delete_media_log(media_log) do
       :ok ->
         {:noreply, socket |> put_flash(:info, "Deleted.") |> load_media_logs()}
+
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Failed to delete media log")}
     end
@@ -66,7 +67,8 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
         {col, "asc"}
       end
 
-    {:noreply, socket |> assign(:sort_by, sort_by) |> assign(:sort_dir, sort_dir) |> load_media_logs()}
+    {:noreply,
+     socket |> assign(:sort_by, sort_by) |> assign(:sort_dir, sort_dir) |> load_media_logs()}
   end
 
   @impl true
@@ -78,8 +80,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     >
       <:actions>
         <.link navigate="/admin/media-logs/new" class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" />
-          New Media Log
+          <.icon name="hero-plus" class="w-4 h-4" /> New Media Log
         </.link>
       </:actions>
     </.admin_header>
@@ -98,7 +99,11 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
         </form>
 
         <form class="flex gap-3">
-          <select phx-change="filter_media_type" name="media_type" class="select select-bordered select-sm w-44">
+          <select
+            phx-change="filter_media_type"
+            name="media_type"
+            class="select select-bordered select-sm w-44"
+          >
             <option value="all" selected={@media_type_filter == "all"}>All Types</option>
             <option value="book" selected={@media_type_filter == "book"}>Books</option>
             <option value="comic" selected={@media_type_filter == "comic"}>Comics</option>
@@ -107,11 +112,17 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
             <option value="video_game" selected={@media_type_filter == "video_game"}>Games</option>
           </select>
 
-          <select phx-change="filter_status" name="status" class="select select-bordered select-sm w-44">
+          <select
+            phx-change="filter_status"
+            name="status"
+            class="select select-bordered select-sm w-44"
+          >
             <option value="all" selected={@status_filter == "all"}>All Status</option>
             <option value="consuming" selected={@status_filter == "consuming"}>In Progress</option>
             <option value="consumed" selected={@status_filter == "consumed"}>Done</option>
-            <option value="want_to_consume" selected={@status_filter == "want_to_consume"}>Want to</option>
+            <option value="want_to_consume" selected={@status_filter == "want_to_consume"}>
+              Want to
+            </option>
             <option value="on_hold" selected={@status_filter == "on_hold"}>On Hold</option>
             <option value="abandoned" selected={@status_filter == "abandoned"}>Abandoned</option>
           </select>
@@ -154,14 +165,14 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                         </div>
                       <% end %>
                       <div>
-                        <div class="font-bold"><%= media_log.title %></div>
+                        <div class="font-bold">{media_log.title}</div>
                         <%= if media_log.favourite do %>
                           <span class="text-warning">★</span>
                         <% end %>
                         <%= if media_log.tags && media_log.tags != [] do %>
                           <div class="text-sm opacity-50 flex gap-1 mt-1">
                             <%= for tag <- Enum.take(media_log.tags, 3) do %>
-                              <span class="badge badge-xs"><%= tag.name %></span>
+                              <span class="badge badge-xs">{tag.name}</span>
                             <% end %>
                           </div>
                         <% end %>
@@ -169,11 +180,11 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                     </div>
                   </td>
                   <td>
-                    <%= media_log.creator || raw("<span class='text-base-content/50'>—</span>") %>
+                    {media_log.creator || raw("<span class='text-base-content/50'>—</span>")}
                   </td>
                   <td>
                     <%= if media_log.rating do %>
-                      <div class="text-warning"><%= String.duplicate("★", media_log.rating) %></div>
+                      <div class="text-warning">{String.duplicate("★", media_log.rating)}</div>
                     <% else %>
                       <span class="text-base-content/50">—</span>
                     <% end %>
@@ -182,11 +193,11 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                     <div class="text-sm">
                       <%= cond do %>
                         <% media_log.date_finished -> %>
-                          <%= Calendar.strftime(media_log.date_finished, "%b %d, %Y") %>
+                          {Calendar.strftime(media_log.date_finished, "%b %d, %Y")}
                         <% media_log.date_consumed -> %>
-                          <%= Calendar.strftime(media_log.date_consumed, "%b %d, %Y") %>
+                          {Calendar.strftime(media_log.date_consumed, "%b %d, %Y")}
                         <% media_log.date_started -> %>
-                          Started <%= Calendar.strftime(media_log.date_started, "%b %d") %>
+                          Started {Calendar.strftime(media_log.date_started, "%b %d")}
                         <% true -> %>
                           <span class="text-base-content/50">—</span>
                       <% end %>
@@ -229,9 +240,9 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
       phx-click="sort"
       phx-value-col={@col}
     >
-      <%= @label %>
+      {@label}
       <%= if @sort_by == @col do %>
-        <span class="text-primary ml-1"><%= if @sort_dir == "asc", do: "↑", else: "↓" %></span>
+        <span class="text-primary ml-1">{if @sort_dir == "asc", do: "↑", else: "↓"}</span>
       <% end %>
     </th>
     """
@@ -248,10 +259,13 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
       case {media_type_filter, status_filter} do
         {"all", "all"} ->
           Weakty.MediaLogs.MediaLog.list_media_logs!()
+
         {"all", status} ->
           Weakty.MediaLogs.MediaLog.list_by_status!(String.to_existing_atom(status))
+
         {media_type, "all"} ->
           Weakty.MediaLogs.MediaLog.list_by_media_type!(String.to_existing_atom(media_type))
+
         {media_type, status} ->
           Weakty.MediaLogs.MediaLog.list_media_logs!()
           |> Enum.filter(fn ml ->
@@ -267,8 +281,10 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
   end
 
   defp filter_by_search(list, ""), do: list
+
   defp filter_by_search(list, q) do
     q = String.downcase(q)
+
     Enum.filter(list, fn ml ->
       String.contains?(String.downcase(ml.title || ""), q) ||
         String.contains?(String.downcase(ml.creator || ""), q)
@@ -279,14 +295,25 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     sorted =
       Enum.sort_by(list, fn ml ->
         case sort_by do
-          "title"      -> String.downcase(ml.title || "")
-          "creator"    -> String.downcase(ml.creator || "")
-          "media_type" -> to_string(ml.media_type)
-          "status"     -> to_string(ml.status)
-          "rating"     -> ml.rating || 0
-          "date"       ->
+          "title" ->
+            String.downcase(ml.title || "")
+
+          "creator" ->
+            String.downcase(ml.creator || "")
+
+          "media_type" ->
+            to_string(ml.media_type)
+
+          "status" ->
+            to_string(ml.status)
+
+          "rating" ->
+            ml.rating || 0
+
+          "date" ->
             date = ml.date_finished || ml.date_consumed || ml.date_started
             if date, do: Date.to_gregorian_days(date), else: 0
+
           _ ->
             if ml.updated_at, do: DateTime.to_unix(ml.updated_at, :microsecond), else: 0
         end
@@ -294,5 +321,4 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
 
     if sort_dir == "desc", do: Enum.reverse(sorted), else: sorted
   end
-
 end

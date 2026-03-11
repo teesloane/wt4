@@ -28,18 +28,18 @@ defmodule WeaktyWeb.TilLive.Index do
           <article class="py-8">
             <div class="flex items-baseline gap-4 mb-3">
               <time class="text-xs opacity-40 tabular-nums flex-shrink-0">
-                <%= if til.published_at, do: Calendar.strftime(til.published_at, "%Y-%m-%d") %>
+                {if til.published_at, do: Calendar.strftime(til.published_at, "%Y-%m-%d")}
               </time>
               <h2 class="text-lg font-normal averia">
                 <.link navigate={~p"/til/#{til.slug}"} class="hover:opacity-70 transition-opacity">
-                  <%= til.title %>
+                  {til.title}
                 </.link>
               </h2>
             </div>
             <%= if til.tags && length(til.tags) > 0 do %>
               <div class="flex gap-2 flex-wrap ml-[calc(theme(spacing.4)+1rem)] text-xs opacity-50">
                 <%= for tag <- til.tags do %>
-                  <span>#<%= tag.name %></span>
+                  <span>#{tag.name}</span>
                 <% end %>
               </div>
             <% end %>

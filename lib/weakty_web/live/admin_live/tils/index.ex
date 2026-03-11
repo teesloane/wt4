@@ -43,8 +43,7 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
     <.admin_header title="TILs" subtitle={"#{length(@tils)} TIL#{if length(@tils) != 1, do: "s"}"}>
       <:actions>
         <.link navigate="/admin/til/new" class="btn btn-primary">
-          <.icon name="hero-plus" class="w-4 h-4" />
-          New TIL
+          <.icon name="hero-plus" class="w-4 h-4" /> New TIL
         </.link>
       </:actions>
     </.admin_header>
@@ -57,8 +56,7 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
             <h2 class="card-title">No TILs yet</h2>
             <p class="text-base-content/70">Start logging things you've learned</p>
             <.link navigate="/admin/til/new" class="btn btn-primary mt-4">
-              <.icon name="hero-plus" class="w-4 h-4" />
-              Add TIL
+              <.icon name="hero-plus" class="w-4 h-4" /> Add TIL
             </.link>
           </div>
         </div>
@@ -76,16 +74,19 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
             </thead>
             <tbody>
               <%= for til <- @tils do %>
-                <tr class="hover cursor-pointer" phx-click={JS.navigate(~p"/admin/til/#{til.id}/edit")}>
-                  <td class="font-medium"><%= til.title %></td>
+                <tr
+                  class="hover cursor-pointer"
+                  phx-click={JS.navigate(~p"/admin/til/#{til.id}/edit")}
+                >
+                  <td class="font-medium">{til.title}</td>
                   <td>
                     <%= if til.tags && til.tags != [] do %>
                       <div class="flex gap-1 flex-wrap">
                         <%= for tag <- Enum.take(til.tags, 3) do %>
-                          <span class="badge badge-sm"><%= tag.name %></span>
+                          <span class="badge badge-sm">{tag.name}</span>
                         <% end %>
                         <%= if length(til.tags) > 3 do %>
-                          <span class="badge badge-sm badge-ghost">+<%= length(til.tags) - 3 %></span>
+                          <span class="badge badge-sm badge-ghost">+{length(til.tags) - 3}</span>
                         <% end %>
                       </div>
                     <% else %>
@@ -93,16 +94,25 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
                     <% end %>
                   </td>
                   <td>
-                    <span class={["badge badge-sm", if(til.public, do: "badge-success", else: "badge-ghost")]}>
-                      <%= if til.public, do: "public", else: "draft" %>
+                    <span class={[
+                      "badge badge-sm",
+                      if(til.public, do: "badge-success", else: "badge-ghost")
+                    ]}>
+                      {if til.public, do: "public", else: "draft"}
                     </span>
                   </td>
                   <td class="text-sm text-base-content/70">
-                    <%= if til.published_at, do: Calendar.strftime(til.published_at, "%b %d, %Y"), else: "-" %>
+                    {if til.published_at,
+                      do: Calendar.strftime(til.published_at, "%b %d, %Y"),
+                      else: "-"}
                   </td>
                   <td onclick="event.stopPropagation()">
                     <div class="flex gap-2">
-                      <.link navigate={~p"/admin/til/#{til.id}/edit"} class="btn btn-ghost btn-xs" title="Edit">
+                      <.link
+                        navigate={~p"/admin/til/#{til.id}/edit"}
+                        class="btn btn-ghost btn-xs"
+                        title="Edit"
+                      >
                         <.icon name="hero-pencil" class="w-4 h-4" />
                       </.link>
                       <button
@@ -132,6 +142,7 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
       |> Ash.Query.filter(post_type == :til)
       |> Ash.Query.sort(published_at: :desc)
       |> Ash.read!(load: [:tags])
+
     assign(socket, :tils, tils)
   end
 end

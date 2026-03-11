@@ -27,16 +27,21 @@ defmodule WeaktyWeb.QuoteLive.Index do
         <%= for quote <- @quotes do %>
           <blockquote class="border-l-2 border-base-content/20 pl-6">
             <p class="text-xl font-normal leading-relaxed averia mb-4">
-              "<%= quote.markdown %>"
+              "{quote.markdown}"
             </p>
             <%= if quote.attribution do %>
               <footer class="text-sm opacity-60">
                 <%= if quote.attribution_url do %>
-                  <a href={quote.attribution_url} target="_blank" rel="noopener noreferrer" class="hover:opacity-100">
-                    — <%= quote.attribution %>
+                  <a
+                    href={quote.attribution_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:opacity-100"
+                  >
+                    — {quote.attribution}
                   </a>
                 <% else %>
-                  — <%= quote.attribution %>
+                  — {quote.attribution}
                 <% end %>
               </footer>
             <% end %>

@@ -5,22 +5,26 @@ alias Weakty.Posts.Post
 alias Weakty.Accounts.User
 
 # Get or create a test user
-user = case Ash.read(User, limit: 1) do
-  {:ok, [user | _]} -> user
-  _ ->
-    IO.puts("No users found. Please create a user first.")
-    System.halt(1)
-end
+user =
+  case Ash.read(User, limit: 1) do
+    {:ok, [user | _]} ->
+      user
+
+    _ ->
+      IO.puts("No users found. Please create a user first.")
+      System.halt(1)
+  end
 
 # Create a test post
-{:ok, post} = Post.create_post(%{
-  title: "My First Post",
-  markdown: "# Hello World\n\nThis is my first post written in **markdown**!",
-  excerpt: "An introduction to my first post",
-  featured_image: "https://example.com/image.jpg",
-  status: :draft,
-  user_id: user.id
-})
+{:ok, post} =
+  Post.create_post(%{
+    title: "My First Post",
+    markdown: "# Hello World\n\nThis is my first post written in **markdown**!",
+    excerpt: "An introduction to my first post",
+    featured_image: "https://example.com/image.jpg",
+    status: :draft,
+    user_id: user.id
+  })
 
 IO.puts("✅ Created draft post: #{post.title}")
 IO.puts("   Slug: #{post.slug}")

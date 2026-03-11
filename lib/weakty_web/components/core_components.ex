@@ -94,21 +94,23 @@ defmodule WeaktyWeb.CoreComponents do
   attr :class, :string, default: "mx-auto px-6 py-16"
   attr :size, :string, default: "2xl", values: ~w(sm base lg xl 2xl 3xl 4xl 5xl 6xl none)
 
-
   def page_container(assigns) do
     ~H"""
     <div class={[@class, "max-w-#{@size}"]}>
-      <h1 :if={@title} class="text-xl mx-auto font-normal my-8 text-center uppercase prose tracking-wide averia">
-        <%= @title %>
+      <h1
+        :if={@title}
+        class="text-xl mx-auto font-normal my-8 text-center uppercase prose tracking-wide averia"
+      >
+        {@title}
       </h1>
 
       <%= if @header != [] do %>
-      <div class="mb-16 lg:mb-24">
-        <%= render_slot(@header) %>
+        <div class="mb-16 lg:mb-24">
+          {render_slot(@header)}
         </div>
       <% end %>
 
-      <%= render_slot(@inner_block) %>
+      {render_slot(@inner_block)}
     </div>
     """
   end
@@ -147,7 +149,10 @@ defmodule WeaktyWeb.CoreComponents do
     <meta property="og:site_name" content={@site_name} />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content={if @og_data.image, do: "summary_large_image", else: "summary"} />
+    <meta
+      property="twitter:card"
+      content={if @og_data.image, do: "summary_large_image", else: "summary"}
+    />
     <meta property="twitter:url" content={@og_data.url} />
     <meta property="twitter:title" content={@og_data.title} />
     <meta property="twitter:description" content={@og_data.description} />
@@ -179,14 +184,17 @@ defmodule WeaktyWeb.CoreComponents do
 
   # Pattern match on MediaLog struct
   defp extract_og_data(%Weakty.MediaLogs.MediaLog{} = media_log, base_url) do
-    description = cond do
-      media_log.notes && String.length(media_log.notes) > 0 ->
-        String.slice(media_log.notes, 0, 200)
-      media_log.creator ->
-        "#{format_media_type(media_log.media_type)} by #{media_log.creator}"
-      true ->
-        format_media_type(media_log.media_type)
-    end
+    description =
+      cond do
+        media_log.notes && String.length(media_log.notes) > 0 ->
+          String.slice(media_log.notes, 0, 200)
+
+        media_log.creator ->
+          "#{format_media_type(media_log.media_type)} by #{media_log.creator}"
+
+        true ->
+          format_media_type(media_log.media_type)
+      end
 
     %{
       type: "article",
@@ -203,7 +211,8 @@ defmodule WeaktyWeb.CoreComponents do
       type: "website",
       url: base_url,
       title: Map.get(content, :title, "Weakty"),
-      description: Map.get(content, :description, "A quiet place for writing, links, and reflections."),
+      description:
+        Map.get(content, :description, "A quiet place for writing, links, and reflections."),
       image: Map.get(content, :image, nil)
     }
   end
@@ -589,17 +598,20 @@ defmodule WeaktyWeb.CoreComponents do
     ~H"""
     <div class="flex items-baseline gap-6">
       <span :if={@label} class="text-xs opacity-90 tabular-nums flex-shrink-0 min-w-24 capitalize">
-        <%= @label %>
+        {@label}
       </span>
       <%= if @href do %>
-        <a href={@href} class={"flex-1 no-underline opacity-full hover:underline transition-all text-#{@size} truncate #{if @current, do: "font-bold", else: ""}"}>
-          <%= @title %>
+        <a
+          href={@href}
+          class={"flex-1 no-underline opacity-full hover:underline transition-all text-#{@size} truncate #{if @current, do: "font-bold", else: ""}"}
+        >
+          {@title}
         </a>
       <% else %>
-        <span class={"flex-1 text-#{@size} opacity-50 truncate"}><%= @title %></span>
+        <span class={"flex-1 text-#{@size} opacity-50 truncate"}>{@title}</span>
       <% end %>
       <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
-        <%= if @date, do: Calendar.strftime(@date, "%Y-%m-%d") %>
+        {if @date, do: Calendar.strftime(@date, "%Y-%m-%d")}
       </time>
     </div>
     """

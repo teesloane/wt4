@@ -46,7 +46,7 @@ defmodule WeaktyWeb.AreaLive.Show do
     <.page_container title={@tag.name}>
       <%= if @tag.description_html do %>
         <div class="prose mx-auto mb-10 opacity-70">
-          <%= Phoenix.HTML.raw(@tag.description_html) %>
+          {Phoenix.HTML.raw(@tag.description_html)}
         </div>
       <% end %>
 

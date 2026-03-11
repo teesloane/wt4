@@ -57,10 +57,12 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
       <:actions>
         <div class="dropdown dropdown-end">
           <div tabindex="0" role="button" class="btn btn-primary">
-            <.icon name="hero-plus" class="w-4 h-4" />
-            New…
+            <.icon name="hero-plus" class="w-4 h-4" /> New…
           </div>
-          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box border border-base-300 shadow-lg z-10 w-40 p-1 mt-1">
+          <ul
+            tabindex="0"
+            class="dropdown-content menu bg-base-100 rounded-box border border-base-300 shadow-lg z-10 w-40 p-1 mt-1"
+          >
             <li><.link navigate="/admin/posts/new?type=post">Post</.link></li>
             <li><.link navigate="/admin/til/new">TIL</.link></li>
             <li><.link navigate="/admin/quotes/new">Quote</.link></li>
@@ -72,30 +74,65 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
 
     <div class="p-8">
       <div class="mb-4 flex gap-2 flex-wrap items-center">
-        <.link patch={~p"/admin/posts?filter=all&type=#{@type}"} class={["btn btn-sm", if(@filter == "all", do: "btn-active", else: "btn-ghost")]}>All [<%= @counts.all %>]</.link>
-        <.link patch={~p"/admin/posts?filter=published&type=#{@type}"} class={["btn btn-sm", if(@filter == "published", do: "btn-active", else: "btn-ghost")]}>Published [<%= @counts.published %>]</.link>
-        <.link patch={~p"/admin/posts?filter=drafts&type=#{@type}"} class={["btn btn-sm", if(@filter == "drafts", do: "btn-active", else: "btn-ghost")]}>Drafts [<%= @counts.drafts %>]</.link>
-        <.link patch={~p"/admin/posts?filter=untagged&type=#{@type}"} class={["btn btn-sm", if(@filter == "untagged", do: "btn-active", else: "btn-ghost")]}>Untagged [<%= @counts.untagged %>]</.link>
+        <.link
+          patch={~p"/admin/posts?filter=all&type=#{@type}"}
+          class={["btn btn-sm", if(@filter == "all", do: "btn-active", else: "btn-ghost")]}
+        >
+          All [{@counts.all}]
+        </.link>
+        <.link
+          patch={~p"/admin/posts?filter=published&type=#{@type}"}
+          class={["btn btn-sm", if(@filter == "published", do: "btn-active", else: "btn-ghost")]}
+        >
+          Published [{@counts.published}]
+        </.link>
+        <.link
+          patch={~p"/admin/posts?filter=drafts&type=#{@type}"}
+          class={["btn btn-sm", if(@filter == "drafts", do: "btn-active", else: "btn-ghost")]}
+        >
+          Drafts [{@counts.drafts}]
+        </.link>
+        <.link
+          patch={~p"/admin/posts?filter=untagged&type=#{@type}"}
+          class={["btn btn-sm", if(@filter == "untagged", do: "btn-active", else: "btn-ghost")]}
+        >
+          Untagged [{@counts.untagged}]
+        </.link>
 
         <div class="w-px h-5 bg-base-300 mx-1"></div>
 
         <div class="dropdown">
-          <div tabindex="0" role="button" class={["btn btn-sm", if(@type != "all", do: "btn-active", else: "btn-ghost")]}>
-            <%= if @type == "all", do: "Type", else: String.capitalize(@type) %>
-            [<%= Map.get(@counts.by_type, @type, if(@type == "all", do: @counts.all, else: 0)) %>]
-            <.icon name="hero-chevron-down" class="w-3 h-3" />
+          <div
+            tabindex="0"
+            role="button"
+            class={["btn btn-sm", if(@type != "all", do: "btn-active", else: "btn-ghost")]}
+          >
+            {if @type == "all", do: "Type", else: String.capitalize(@type)} [{Map.get(
+              @counts.by_type,
+              @type,
+              if(@type == "all", do: @counts.all, else: 0)
+            )}] <.icon name="hero-chevron-down" class="w-3 h-3" />
           </div>
-          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow border border-base-300 mt-1">
+          <ul
+            tabindex="0"
+            class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow border border-base-300 mt-1"
+          >
             <li>
-              <.link patch={~p"/admin/posts?filter=#{@filter}&type=all"} class={if(@type == "all", do: "active", else: "")}>
+              <.link
+                patch={~p"/admin/posts?filter=#{@filter}&type=all"}
+                class={if(@type == "all", do: "active", else: "")}
+              >
                 All Types
               </.link>
             </li>
             <%= for type <- Weakty.Posts.PostType.values() do %>
               <% count = Map.get(@counts.by_type, to_string(type), 0) %>
               <li>
-                <.link patch={~p"/admin/posts?filter=#{@filter}&type=#{type}"} class={if(@type == to_string(type), do: "active", else: "")}>
-                  <%= type |> to_string() |> String.capitalize() %> [<%= count %>]
+                <.link
+                  patch={~p"/admin/posts?filter=#{@filter}&type=#{type}"}
+                  class={if(@type == to_string(type), do: "active", else: "")}
+                >
+                  {type |> to_string() |> String.capitalize()} [{count}]
                 </.link>
               </li>
             <% end %>
@@ -110,8 +147,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
             <h2 class="card-title">No posts yet</h2>
             <p class="text-base-content/70">Create your first post to get started</p>
             <.link navigate="/admin/posts/new" class="btn btn-primary mt-4">
-              <.icon name="hero-plus" class="w-4 h-4" />
-              Create Post
+              <.icon name="hero-plus" class="w-4 h-4" /> Create Post
             </.link>
           </div>
         </div>
@@ -120,7 +156,11 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
           <%= for post <- @posts do %>
             <div
               class="flex gap-4 p-2 bg-base-100 rounded-lg hover:bg-base-200/50 cursor-pointer transition-colors "
-              phx-click={JS.navigate("/admin/posts/#{post.id}/edit?return_to=#{URI.encode_www_form("/admin/posts?filter=#{@filter}&type=#{@type}")}")}
+              phx-click={
+                JS.navigate(
+                  "/admin/posts/#{post.id}/edit?return_to=#{URI.encode_www_form("/admin/posts?filter=#{@filter}&type=#{@type}")}"
+                )
+              }
             >
               <!-- Featured Image Thumbnail -->
               <div class="flex-shrink-0 relative">
@@ -141,20 +181,21 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
                   </div>
                 <% end %>
               </div>
-
-              <!-- Post Details -->
+              
+    <!-- Post Details -->
               <div class="flex-1 min-w-0">
                 <h3 class="font-bold text-sm text-base-content mb-0">
-                  <%= post.title %>
+                  {post.title}
                 </h3>
 
                 <p class="text-base-content/60 text-sm mb-2">
-                  By <%= if post.user, do: post.user.email |> to_string() |> String.split("@") |> hd(), else: "Unknown" %>
-                  in <%= post.post_type || "post" %>
-                  - <%= if post.status == :published && post.published_at do %>
-                    <%= Calendar.strftime(post.published_at, "%d %b %Y") %>
+                  By {if post.user,
+                    do: post.user.email |> to_string() |> String.split("@") |> hd(),
+                    else: "Unknown"} in {post.post_type || "post"} -
+                  <%= if post.status == :published && post.published_at do %>
+                    {Calendar.strftime(post.published_at, "%d %b %Y")}
                   <% else %>
-                    <%= Calendar.strftime(post.updated_at, "%d %b %Y") %>
+                    {Calendar.strftime(post.updated_at, "%d %b %Y")}
                   <% end %>
                 </p>
 
@@ -168,7 +209,6 @@ defmodule WeaktyWeb.AdminLive.Posts.Index do
             <hr class="text-base-300" />
           <% end %>
         </div>
-
       <% end %>
     </div>
     """

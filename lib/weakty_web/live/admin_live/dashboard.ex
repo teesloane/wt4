@@ -21,16 +21,13 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
       <:actions>
         <div class="flex gap-2">
           <.link navigate="/admin/posts/new" class="btn btn-primary btn-sm">
-            <.icon name="hero-plus" class="w-4 h-4" />
-            New Post
+            <.icon name="hero-plus" class="w-4 h-4" /> New Post
           </.link>
           <.link navigate="/admin/til/new" class="btn btn-sm">
-            <.icon name="hero-plus" class="w-4 h-4" />
-            New TIL
+            <.icon name="hero-plus" class="w-4 h-4" /> New TIL
           </.link>
           <.link navigate="/admin/quotes/new" class="btn btn-sm">
-            <.icon name="hero-plus" class="w-4 h-4" />
-            New Quote
+            <.icon name="hero-plus" class="w-4 h-4" /> New Quote
           </.link>
         </div>
       </:actions>
@@ -52,28 +49,22 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
             <h2 class="card-title">Quick Actions</h2>
             <div class="flex flex-col gap-2">
               <.link navigate="/admin/posts" class="btn btn-ghost justify-start">
-                <.icon name="hero-document-text" class="w-5 h-5" />
-                Manage Posts
+                <.icon name="hero-document-text" class="w-5 h-5" /> Manage Posts
               </.link>
               <.link navigate="/admin/til" class="btn btn-ghost justify-start">
-                <.icon name="hero-light-bulb" class="w-5 h-5" />
-                Manage TILs
+                <.icon name="hero-light-bulb" class="w-5 h-5" /> Manage TILs
               </.link>
               <.link navigate="/admin/quotes" class="btn btn-ghost justify-start">
-                <.icon name="hero-chat-bubble-left" class="w-5 h-5" />
-                Manage Quotes
+                <.icon name="hero-chat-bubble-left" class="w-5 h-5" /> Manage Quotes
               </.link>
               <.link navigate="/admin/links" class="btn btn-ghost justify-start">
-                <.icon name="hero-link" class="w-5 h-5" />
-                Manage Links
+                <.icon name="hero-link" class="w-5 h-5" /> Manage Links
               </.link>
               <.link navigate="/admin/tags" class="btn btn-ghost justify-start">
-                <.icon name="hero-tag" class="w-5 h-5" />
-                Manage Tags
+                <.icon name="hero-tag" class="w-5 h-5" /> Manage Tags
               </.link>
               <.link navigate="/archive" class="btn btn-ghost justify-start">
-                <.icon name="hero-eye" class="w-5 h-5" />
-                View Site
+                <.icon name="hero-eye" class="w-5 h-5" /> View Site
               </.link>
             </div>
           </div>
@@ -93,7 +84,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
                           navigate={~p"/posts/#{post.slug}"}
                           class="link link-hover text-base-content/70"
                         >
-                          <%= post.title %>
+                          {post.title}
                         </.link>
                         <.status_badge status={post.status} />
                       </li>
@@ -114,7 +105,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
                           navigate={~p"/admin/links/#{link.id}/edit"}
                           class="link link-hover text-base-content/70"
                         >
-                          <%= link.title %>
+                          {link.title}
                         </.link>
                       </li>
                     <% end %>

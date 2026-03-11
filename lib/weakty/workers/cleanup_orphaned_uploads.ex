@@ -11,7 +11,7 @@ defmodule Weakty.Workers.CleanupOrphanedUploads do
 
     post_refs =
       posts
-      |> Enum.flat_map(fn post -> [post.featured_image | (post.content_images || [])] end)
+      |> Enum.flat_map(fn post -> [post.featured_image | post.content_images || []] end)
       |> Enum.reject(&is_nil/1)
       |> Enum.map(&Path.basename/1)
       |> MapSet.new()

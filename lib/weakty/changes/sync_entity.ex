@@ -51,7 +51,10 @@ defmodule Weakty.Changes.SyncEntity do
             {:ok, record}
 
           {:error, error} ->
-            Logger.error("SyncEntity failed for #{opts[:entity_type]} #{record.id}: #{inspect(error)}")
+            Logger.error(
+              "SyncEntity failed for #{opts[:entity_type]} #{record.id}: #{inspect(error)}"
+            )
+
             {:ok, record}
         end
       end
@@ -136,12 +139,14 @@ defmodule Weakty.Changes.SyncEntity do
     {:ok, dt, _} = DateTime.from_iso8601(Date.to_iso8601(date) <> "T00:00:00Z")
     dt
   end
+
   defp to_datetime(value), do: value
 
   defp resolve_value(_record, nil), do: nil
   defp resolve_value(_record, value) when is_binary(value), do: value
   defp resolve_value(record, field) when is_atom(field), do: Map.get(record, field)
   defp resolve_value(record, func) when is_function(func, 1), do: func.(record)
+
   defp resolve_value(record, {module, function}) when is_atom(module) and is_atom(function) do
     apply(module, function, [record])
   end

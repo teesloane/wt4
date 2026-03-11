@@ -8,6 +8,20 @@ defmodule Weakty.Content.EntityTag do
     repo Weakty.Repo
   end
 
+  code_interface do
+    define :create_entity_tag, action: :create
+    define :delete_entity_tag, action: :destroy
+  end
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      primary? true
+      accept [:entity_id, :tag_id]
+    end
+  end
+
   attributes do
     uuid_primary_key :id
     timestamps()
@@ -26,21 +40,7 @@ defmodule Weakty.Content.EntityTag do
     end
   end
 
-  actions do
-    defaults [:read, :destroy]
-
-    create :create do
-      primary? true
-      accept [:entity_id, :tag_id]
-    end
-  end
-
   identities do
     identity :unique_entity_tag, [:entity_id, :tag_id]
-  end
-
-  code_interface do
-    define :create_entity_tag, action: :create
-    define :delete_entity_tag, action: :destroy
   end
 end

@@ -26,14 +26,16 @@ defmodule WeaktyWeb.TagAdder do
         if(@tag_suggestions == [], do: "rounded-lg", else: "rounded-t-lg")
       ]}>
         <span :for={tag <- @tags} class="badge badge-sm gap-1 flex-shrink-0">
-          <%= tag %>
+          {tag}
           <button
             type="button"
             phx-click="remove_tag"
             phx-value-tag={tag}
             phx-target={@myself}
             class="leading-none opacity-50 hover:opacity-100"
-          >✕</button>
+          >
+            ✕
+          </button>
         </span>
         <form phx-submit="add_tag" phx-target={@myself} class="flex-1 min-w-[80px]">
           <input
@@ -61,7 +63,7 @@ defmodule WeaktyWeb.TagAdder do
           phx-target={@myself}
           class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200"
         >
-          <%= s %>
+          {s}
         </button>
       </div>
     </div>
@@ -76,6 +78,7 @@ defmodule WeaktyWeb.TagAdder do
 
   def handle_event("add_tag", %{"tag_input" => value}, socket) do
     tag = String.trim(value)
+
     if tag != "" and tag not in socket.assigns.tags do
       updated = socket.assigns.tags ++ [tag]
       send(self(), {:tag_changed, updated})

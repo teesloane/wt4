@@ -1,4 +1,3 @@
-
 defmodule WeaktyWeb.LinkLive.Form do
   use WeaktyWeb, :live_view
   alias AshPhoenix.Form
@@ -8,7 +7,9 @@ defmodule WeaktyWeb.LinkLive.Form do
     if socket.assigns[:current_user] do
       link =
         case params["id"] do
-          nil -> nil
+          nil ->
+            nil
+
           id ->
             Weakty.Links.Link
             |> Ash.get!(id)
@@ -36,8 +37,7 @@ defmodule WeaktyWeb.LinkLive.Form do
       {:ok,
        socket
        |> assign(form: form, link: link, tags: existing_tags)
-       |> assign(:current_path, "/admin/links"),
-       layout: {WeaktyWeb.Layouts, :admin}}
+       |> assign(:current_path, "/admin/links"), layout: {WeaktyWeb.Layouts, :admin}}
     else
       {:ok, redirect(socket, to: "/sign-in")}
     end
@@ -48,7 +48,7 @@ defmodule WeaktyWeb.LinkLive.Form do
     ~H"""
     <div class="mx-auto max-w-2xl px-4 py-8">
       <h1 class="text-3xl font-bold mb-8">
-        <%= if @link, do: "Edit Link", else: "New Link" %>
+        {if @link, do: "Edit Link", else: "New Link"}
       </h1>
 
       <.form
@@ -148,5 +148,4 @@ defmodule WeaktyWeb.LinkLive.Form do
   defp handle_tag_update(link, tags) do
     Weakty.Tags.TagManager.apply_tags(link, :link, tags, Weakty.Links.LinkTag, :link_id)
   end
-
 end

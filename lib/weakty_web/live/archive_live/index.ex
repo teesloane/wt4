@@ -9,7 +9,7 @@ defmodule WeaktyWeb.ArchiveLive.Index do
       |> Ash.load!([:tags], domain: Weakty.Content)
       |> Enum.filter(& &1.public)
       |> Enum.sort_by(& &1.published_at, {:desc, DateTime})
-      |> Enum.uniq_by(& {&1.entity_type, &1.slug})
+      |> Enum.uniq_by(&{&1.entity_type, &1.slug})
 
     {:ok, assign(socket, entities: entities)}
   end

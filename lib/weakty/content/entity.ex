@@ -10,6 +10,108 @@ defmodule Weakty.Content.Entity do
     repo Weakty.Repo
   end
 
+  code_interface do
+    define :list_entities, action: :timeline
+    define :get_entity_by_source, action: :by_source, args: [:entity_type, :source_id]
+    define :related_entities, action: :related, args: [:tag_ids, :exclude_id]
+    define :upsert_entity, action: :create
+    define :delete_entity, action: :destroy
+    define :search_entities, action: :search, args: [:query]
+  end
+
+  actions do
+    defaults [:read, :destroy]
+
+    create :create do
+      accept [
+        :entity_type,
+        :source_id,
+        :title,
+        :content,
+        :url,
+        :slug,
+        :source_path,
+        :hero_url,
+        :thumbnail_url,
+        :rating,
+        :subtype,
+        :status,
+        :favourite,
+        :published_at,
+        :public
+      ]
+
+      upsert? true
+      upsert_identity :unique_source
+
+      upsert_fields [
+        :title,
+        :content,
+        :url,
+        :slug,
+        :source_path,
+        :hero_url,
+        :thumbnail_url,
+        :rating,
+        :subtype,
+        :status,
+        :favourite,
+        :published_at,
+        :public,
+        :updated_at
+      ]
+    end
+
+    read :timeline do
+      prepare build(sort: [published_at: :desc])
+    end
+
+    read :by_source do
+      argument :entity_type, Weakty.Content.EntityType, allow_nil?: false
+      argument :source_id, :uuid, allow_nil?: false
+      get? true
+      filter expr(entity_type == ^arg(:entity_type) and source_id == ^arg(:source_id))
+    end
+
+    read :search do
+      argument :query, :string, allow_nil?: false
+
+      prepare fn query, _context ->
+        require Ash.Query
+        term = Ash.Query.get_argument(query, :query)
+        pattern = "%#{String.downcase(String.trim(term))}%"
+
+        Ash.Query.filter(
+          query,
+          entity_type != :media_log and
+            public == true and
+            (fragment("lower(coalesce(title, '')) LIKE ?", ^pattern) or
+               fragment("lower(coalesce(content, '')) LIKE ?", ^pattern) or
+               exists(tags, fragment("lower(coalesce(name, '')) LIKE ?", ^pattern)))
+        )
+      end
+
+      prepare build(sort: [published_at: :desc], limit: 15, load: [:tags])
+    end
+
+    read :related do
+      argument :tag_ids, {:array, :uuid}, allow_nil?: false
+      argument :exclude_id, :uuid, allow_nil?: false
+
+      filter expr(
+               public == true and
+                 source_id != ^arg(:exclude_id) and
+                 exists(tags, id in ^arg(:tag_ids))
+             )
+    end
+  end
+
+  policies do
+    policy always() do
+      authorize_if always()
+    end
+  end
+
   attributes do
     uuid_primary_key :id
 
@@ -95,77 +197,5 @@ defmodule Weakty.Content.Entity do
 
   identities do
     identity :unique_source, [:entity_type, :source_id]
-  end
-
-  actions do
-    defaults [:read, :destroy]
-
-    create :create do
-      accept [:entity_type, :source_id, :title, :content, :url, :slug, :source_path,
-              :hero_url, :thumbnail_url, :rating, :subtype, :status, :favourite,
-              :published_at, :public]
-      upsert? true
-      upsert_identity :unique_source
-      upsert_fields [:title, :content, :url, :slug, :source_path,
-                      :hero_url, :thumbnail_url, :rating, :subtype, :status, :favourite,
-                      :published_at, :public, :updated_at]
-    end
-
-    read :timeline do
-      prepare build(sort: [published_at: :desc])
-    end
-
-    read :by_source do
-      argument :entity_type, Weakty.Content.EntityType, allow_nil?: false
-      argument :source_id, :uuid, allow_nil?: false
-      get? true
-      filter expr(entity_type == ^arg(:entity_type) and source_id == ^arg(:source_id))
-    end
-
-    read :search do
-      argument :query, :string, allow_nil?: false
-
-      prepare fn query, _context ->
-        require Ash.Query
-        term = Ash.Query.get_argument(query, :query)
-        pattern = "%#{String.downcase(String.trim(term))}%"
-
-        Ash.Query.filter(
-          query,
-          entity_type != :media_log and
-            public == true and
-            (fragment("lower(coalesce(title, '')) LIKE ?", ^pattern) or
-              fragment("lower(coalesce(content, '')) LIKE ?", ^pattern) or
-              exists(tags, fragment("lower(coalesce(name, '')) LIKE ?", ^pattern)))
-        )
-      end
-
-      prepare build(sort: [published_at: :desc], limit: 15, load: [:tags])
-    end
-
-    read :related do
-      argument :tag_ids, {:array, :uuid}, allow_nil?: false
-      argument :exclude_id, :uuid, allow_nil?: false
-      filter expr(
-        public == true and
-        source_id != ^arg(:exclude_id) and
-        exists(tags, id in ^arg(:tag_ids))
-      )
-    end
-  end
-
-  code_interface do
-    define :list_entities, action: :timeline
-    define :get_entity_by_source, action: :by_source, args: [:entity_type, :source_id]
-    define :related_entities, action: :related, args: [:tag_ids, :exclude_id]
-    define :upsert_entity, action: :create
-    define :delete_entity, action: :destroy
-    define :search_entities, action: :search, args: [:query]
-  end
-
-  policies do
-    policy always() do
-      authorize_if always()
-    end
   end
 end
