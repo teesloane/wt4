@@ -12,12 +12,7 @@ defmodule WeaktyWeb.ProjectLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-6xl px-4 py-8">
-      <div class="mb-8">
-        <div class="flex justify-between items-center">
-          <h1 class="text-3xl font-bold">Projects</h1>
-        </div>
-      </div>
+    <.page_container size="4xl" title="Projects">
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <%= if Enum.empty?(@projects) do %>
@@ -28,7 +23,7 @@ defmodule WeaktyWeb.ProjectLive.Index do
           </div>
         <% else %>
           <%= for project <- @projects do %>
-            <.link navigate={~p"/projects/#{project.slug}"}>
+            <.link class="w-full" navigate={~p"/projects/#{project.slug}"}>
               <div class="bg-base-100 shadow-none hover:shadow-sm transition-shadow">
                 <%= if project.featured_image do %>
                   <figure>
@@ -64,7 +59,7 @@ defmodule WeaktyWeb.ProjectLive.Index do
           <% end %>
         <% end %>
       </div>
-    </div>
+      </.page_container>
     """
   end
 

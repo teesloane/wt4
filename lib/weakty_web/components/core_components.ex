@@ -97,6 +97,7 @@ defmodule WeaktyWeb.CoreComponents do
   def page_container(assigns) do
     ~H"""
     <div class={[@class, "max-w-#{@size}"]}>
+    <header class="mb-16">
       <h1
         :if={@title}
         class="text-xl mx-auto font-normal my-8 text-center uppercase prose tracking-wide averia"
@@ -105,10 +106,11 @@ defmodule WeaktyWeb.CoreComponents do
       </h1>
 
       <%= if @header != [] do %>
-        <div class="mb-16 lg:mb-24">
+        <div class="mb-12">
           {render_slot(@header)}
         </div>
       <% end %>
+      </header>
 
       {render_slot(@inner_block)}
     </div>
