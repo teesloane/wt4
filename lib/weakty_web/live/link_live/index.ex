@@ -43,7 +43,9 @@ defmodule WeaktyWeb.LinkLive.Index do
               </a>
             </h2>
             <%= if link.commentary do %>
-              <p class="opacity-80 leading-relaxed mb-4">{link.commentary}</p>
+              <div class="prose prose-sm max-w-none opacity-80 mb-4">
+                {Phoenix.HTML.raw(MDEx.to_html!(link.commentary))}
+              </div>
             <% end %>
             <div class="flex gap-3 text-sm opacity-60">
               <button

@@ -44,7 +44,9 @@ defmodule WeaktyWeb.LinkLive.Show do
         </header>
 
         <%= if @link.commentary do %>
-          <p class="opacity-80 leading-relaxed mb-6">{@link.commentary}</p>
+          <div class="prose prose-sm max-w-none opacity-80 mb-6">
+            {Phoenix.HTML.raw(MDEx.to_html!(@link.commentary))}
+          </div>
         <% end %>
 
         <%= if @link.tags && length(@link.tags) > 0 do %>
@@ -54,9 +56,51 @@ defmodule WeaktyWeb.LinkLive.Show do
             <% end %>
           </div>
         <% end %>
+
+        <%= if @current_user do %>
+          <div class="border-t border-base-300 mt-16 pt-8 text-center">
+            <div class="flex gap-3 justify-center">
+              <.link navigate={~p"/admin/links/#{@link.id}/edit"} class="btn btn-primary btn-sm">
+                Edit Link
+              </.link>
+              <%= if @link.public do %>
+                <button phx-click="unpublish" class="btn btn-warning btn-sm">
+                  Make Private
+                </button>
+              <% else %>
+                <button phx-click="publish" class="btn btn-success btn-sm">
+                  Make Public
+                </button>
+              <% end %>
+              <button
+                phx-click="delete"
+                data-confirm="Are you sure you want to delete this link?"
+                class="btn btn-error btn-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        <% end %>
       </article>
     </.page_container>
     """
+  end
+
+  @impl true
+  def handle_event("publish", _params, socket) do
+    {:ok, link} = Ash.update(socket.assigns.link, %{public: true}, action: :update)
+    {:noreply, assign(socket, link: link)}
+  end
+
+  def handle_event("unpublish", _params, socket) do
+    {:ok, link} = Ash.update(socket.assigns.link, %{public: false}, action: :update)
+    {:noreply, assign(socket, link: link)}
+  end
+
+  def handle_event("delete", _params, socket) do
+    Ash.destroy!(socket.assigns.link)
+    {:noreply, push_navigate(socket, to: ~p"/links")}
   end
 
   defp admin?(socket) do

@@ -32,7 +32,7 @@
       --color-base-100: #20242b;
     --color-base-200: #262b33;
     --color-base-300: #3e4455;
-    --color-base-content: #abb2bf;
+    --color-base-content: #eeeeee;
     --color-primary: #61afef;
     --color-primary-content: oklch(96% 0.018 272.314);
     --color-secondary: #c678dd;
@@ -119,7 +119,7 @@
 /* Dark Literary Typography */
 @layer base {
   body {
-    font-family: 'IBM Plex Serif', serif;
+    font-family: 'IBM Plex Sans', serif;
     font-size: 18px;
     line-height: 1.8;
     -webkit-font-smoothing: antialiased;

@@ -19,6 +19,7 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
      |> assign(:workers, load_workers())
      |> assign(:image_audit, nil)
      |> assign(:thumbnail_audit, nil)
+     |> assign(:link_check, nil)
      |> assign(:backups, Weakty.Workers.BackupDatabase.list_backups())
      |> load_jobs(), layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -59,6 +60,16 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
     {:noreply, assign(socket, :image_audit, results)}
   end
 
+  def handle_event("run_link_check", _params, socket) do
+    lv = self()
+    Task.start(fn ->
+      results = Weakty.LinkChecker.check_all()
+      send(lv, {:link_check_complete, results})
+    end)
+
+    {:noreply, assign(socket, :link_check, :running)}
+  end
+
   def handle_event("backup_now", _params, socket) do
     %{} |> Weakty.Workers.BackupDatabase.new() |> Oban.insert!()
     {:noreply, socket |> put_flash(:info, "Backup job enqueued.") |> load_jobs()}
@@ -83,6 +94,10 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
 
   def handle_info(:reload, socket) do
     {:noreply, reload(socket)}
+  end
+
+  def handle_info({:link_check_complete, results}, socket) do
+    {:noreply, assign(socket, :link_check, results)}
   end
 
   @impl true
@@ -225,6 +240,89 @@ defmodule WeaktyWeb.AdminLive.Jobs.Index do
                 <% end %>
             <% end %>
           </div>
+          <div class="bg-base-200 rounded-lg px-4 py-3">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <span class="font-mono text-sm font-medium">LinkChecker</span>
+                <span class="text-xs text-base-content/50 ml-3">
+                  checks external links in posts and projects for broken URLs
+                </span>
+              </div>
+              <button
+                phx-click="run_link_check"
+                disabled={@link_check == :running}
+                class="btn btn-sm btn-ghost"
+              >
+                <%= if @link_check == :running do %>
+                  <span class="loading loading-spinner loading-xs"></span>
+                  Checking...
+                <% else %>
+                  <.icon name="hero-play" class="w-4 h-4" /> Run now
+                <% end %>
+              </button>
+            </div>
+
+            <%= cond do %>
+              <% @link_check == nil -> %>
+                <%!-- not yet run --%>
+              <% @link_check == :running -> %>
+                <p class="text-xs text-base-content/50">Fetching links… this may take a minute.</p>
+              <% @link_check.broken == [] -> %>
+                <p class="text-sm text-success flex items-center gap-2">
+                  <.icon name="hero-check-circle" class="w-4 h-4" />
+                  All <%= @link_check.total %> links OK.
+                </p>
+              <% true -> %>
+                <p class="text-xs text-base-content/50 mb-3">
+                  <%= @link_check.total %> unique URLs checked ·
+                  <span class="text-error"><%= length(@link_check.broken) %> broken</span>
+                </p>
+                <div class="overflow-x-auto">
+                  <table class="table table-sm font-sans">
+                    <thead>
+                      <tr>
+                        <th>Source</th>
+                        <th>URL</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <%= for item <- @link_check.broken do %>
+                        <tr class="align-top">
+                          <td class="whitespace-nowrap">
+                            <.link navigate={item.admin_path} class="hover:opacity-70 text-xs">
+                              <%= item.source_title %>
+                            </.link>
+                            <div class="text-xs text-base-content/40"><%= item.source_type %></div>
+                          </td>
+                          <td class="max-w-xs">
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-xs font-mono text-error break-all hover:underline"
+                            >
+                              <%= item.url %>
+                            </a>
+                          </td>
+                          <td class="whitespace-nowrap text-xs text-base-content/60">
+                            <%= cond do %>
+                              <% item.result[:status] -> %>
+                                <span class="badge badge-sm badge-error"><%= item.result.status %></span>
+                              <% item.result[:error] -> %>
+                                <%= item.result.error %>
+                              <% true -> %>
+                                unknown
+                            <% end %>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+            <% end %>
+          </div>
+
         </div>
         <%!-- end flex flex-col gap-2 --%>
       </div>
