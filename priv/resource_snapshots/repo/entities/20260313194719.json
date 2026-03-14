@@ -14,9 +14,49 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "title",
+      "source": "entity_type",
       "references": null,
       "allow_nil?": false,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "uuid",
+      "source": "source_id",
+      "references": null,
+      "allow_nil?": false,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "text",
+      "source": "title",
+      "references": null,
+      "allow_nil?": true,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "text",
+      "source": "content",
+      "references": null,
+      "allow_nil?": true,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "text",
+      "source": "url",
+      "references": null,
+      "allow_nil?": true,
       "generated?": false,
       "primary_key?": false
     },
@@ -34,7 +74,7 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "markdown",
+      "source": "source_path",
       "references": null,
       "allow_nil?": false,
       "generated?": false,
@@ -44,7 +84,7 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "html",
+      "source": "hero_url",
       "references": null,
       "allow_nil?": true,
       "generated?": false,
@@ -54,7 +94,17 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "featured_image",
+      "source": "thumbnail_url",
+      "references": null,
+      "allow_nil?": true,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "bigint",
+      "source": "rating",
       "references": null,
       "allow_nil?": true,
       "generated?": false,
@@ -64,7 +114,7 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "excerpt",
+      "source": "subtype",
       "references": null,
       "allow_nil?": true,
       "generated?": false,
@@ -76,7 +126,7 @@
       "type": "text",
       "source": "status",
       "references": null,
-      "allow_nil?": false,
+      "allow_nil?": true,
       "generated?": false,
       "primary_key?": false
     },
@@ -84,19 +134,9 @@
       "default": "nil",
       "size": null,
       "type": "boolean",
-      "source": "featured",
+      "source": "favourite",
       "references": null,
-      "allow_nil?": false,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "boolean",
-      "source": "public",
-      "references": null,
-      "allow_nil?": false,
+      "allow_nil?": true,
       "generated?": false,
       "primary_key?": false
     },
@@ -113,8 +153,8 @@
     {
       "default": "nil",
       "size": null,
-      "type": "text",
-      "source": "post_type",
+      "type": "boolean",
+      "source": "public",
       "references": null,
       "allow_nil?": false,
       "generated?": false,
@@ -139,35 +179,10 @@
       "allow_nil?": false,
       "generated?": false,
       "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "uuid",
-      "source": "user_id",
-      "references": {
-        "name": "posts_user_id_fkey",
-        "table": "users",
-        "multitenancy": {
-          "global": null,
-          "attribute": null,
-          "strategy": null
-        },
-        "primary_key?": true,
-        "destination_attribute": "id",
-        "on_update": null,
-        "on_delete": null,
-        "deferrable": false,
-        "destination_attribute_default": null,
-        "destination_attribute_generated": null
-      },
-      "allow_nil?": false,
-      "generated?": false,
-      "primary_key?": false
     }
   ],
-  "table": "posts",
-  "hash": "C4E4FF84D203F59E56D92E8C16BE2618BAEB76263C22EE7300D5D5C3A077A915",
+  "table": "entities",
+  "hash": "09382F3F48FE421EEF84F83D7129B840448FF947D4F4D7FB6E5A080A79E57782",
   "multitenancy": {
     "global": null,
     "attribute": null,
@@ -175,12 +190,13 @@
   },
   "identities": [
     {
-      "name": "unique_slug",
+      "name": "unique_source",
       "keys": [
-        "slug"
+        "entity_type",
+        "source_id"
       ],
-      "base_filter": null,
-      "index_name": "posts_unique_slug_index"
+      "index_name": "entities_unique_source_index",
+      "base_filter": null
     }
   ],
   "repo": "Elixir.Weakty.Repo",

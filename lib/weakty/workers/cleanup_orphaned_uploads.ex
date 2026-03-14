@@ -85,6 +85,30 @@ defmodule Weakty.Workers.CleanupOrphanedUploads do
       end)
     end
 
+    # Clean uploads/link_thumbnails/ — remove images no longer referenced by any link
+    link_thumbs_dir = Path.join(uploads_dir, "link_thumbnails")
+
+    if File.exists?(link_thumbs_dir) do
+      links = Ash.read!(Weakty.Links.Link, authorize?: false)
+
+      link_image_refs =
+        links
+        |> Enum.map(& &1.og_image)
+        |> Enum.reject(&is_nil/1)
+        |> Enum.filter(&String.starts_with?(&1, "/uploads/link_thumbnails/"))
+        |> Enum.map(&Path.basename/1)
+        |> MapSet.new()
+
+      link_thumbs_dir
+      |> File.ls!()
+      |> Enum.each(fn file ->
+        unless MapSet.member?(link_image_refs, file) do
+          File.rm!(Path.join(link_thumbs_dir, file))
+          Logger.info("Deleted orphaned link thumbnail: #{file}")
+        end
+      end)
+    end
+
     :ok
   end
 end

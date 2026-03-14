@@ -38,8 +38,15 @@ defmodule WeaktyWeb.LinkLive.Form do
 
     {:ok,
      socket
-     |> assign(form: form, link: link, tags: existing_tags)
-     |> assign(:current_path, "/admin/links"), layout: {WeaktyWeb.Layouts, :admin}}
+     |> assign(form: form, link: link, tags: existing_tags, pending_og_image: nil)
+     |> assign(:current_path, "/admin/links")
+     |> allow_upload(:og_image,
+       accept: ~w(.jpg .jpeg .png .webp .gif),
+       max_entries: 1,
+       max_file_size: 10_000_000,
+       auto_upload: true,
+       progress: &handle_progress/3
+     ), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
@@ -114,6 +121,84 @@ defmodule WeaktyWeb.LinkLive.Form do
         </label>
       </.form>
 
+      <%!-- OG Image upload — only shown when editing an existing link --%>
+      <%= if @link do %>
+        <div class="form-control mt-6">
+          <label class="label">
+            <span class="label-text text-sm font-semibold">Preview Image</span>
+            <%= if @pending_og_image || @link.og_image_pinned do %>
+              <span class="badge badge-sm badge-info">pinned</span>
+            <% end %>
+          </label>
+
+          <%!-- Current image preview (saved or just uploaded) --%>
+          <% preview_image = @pending_og_image || @link.og_image %>
+          <%= if preview_image do %>
+            <div class="relative w-full aspect-video bg-base-300 rounded-lg overflow-hidden mb-3">
+              <img
+                src={preview_image}
+                alt="Preview"
+                class="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                phx-click="remove_og_image"
+                class="absolute top-2 right-2 btn btn-xs btn-error"
+                data-confirm="Remove this image? The pin will also be cleared."
+              >
+                <.icon name="hero-x-mark" class="w-3 h-3" /> Remove
+              </button>
+            </div>
+          <% end %>
+
+          <%!-- File drop zone --%>
+          <section
+            phx-drop-target={@uploads.og_image.ref}
+            class="border-2 border-dashed border-base-300 rounded-lg p-6 text-center [&.phx-drop-target-active]:border-primary [&.phx-drop-target-active]:bg-primary/5 transition-colors"
+          >
+            <.live_file_input form="link-form" upload={@uploads.og_image} class="hidden" />
+
+            <%= for entry <- @uploads.og_image.entries do %>
+              <article class="mb-3">
+                <.live_img_preview entry={entry} class="w-full rounded-lg mb-2" />
+                <progress value={entry.progress} max="100" class="progress progress-primary w-full">
+                </progress>
+                <div class="flex justify-between text-xs text-base-content/60 mt-1">
+                  <span>{entry.client_name}</span>
+                  <button
+                    type="button"
+                    phx-click="cancel_upload"
+                    phx-value-ref={entry.ref}
+                    class="text-error hover:underline"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </article>
+            <% end %>
+
+            <%= if Enum.empty?(@uploads.og_image.entries) do %>
+              <label for={@uploads.og_image.ref} class="cursor-pointer block">
+                <.icon name="hero-photo" class="w-8 h-8 mx-auto text-base-content/30 mb-1" />
+                <span class="text-sm text-base-content/60">
+                  {if @link.og_image, do: "Drop or click to replace", else: "Drop image here or click to upload"}
+                </span>
+                <span class="block text-xs text-base-content/40 mt-1">JPG, PNG, WebP, GIF · max 10MB</span>
+              </label>
+            <% end %>
+
+            <%= for err <- upload_errors(@uploads.og_image) do %>
+              <p class="text-error text-xs mt-1">{upload_error_to_string(err)}</p>
+            <% end %>
+          </section>
+
+          <p class="text-xs text-base-content/50 mt-2">
+            Uploading an image pins it — the auto-fetch won't overwrite it.
+            Remove it to let the fetcher try again.
+          </p>
+        </div>
+      <% end %>
+
       <div class="form-control mt-4">
         <label class="label">
           <span class="label-text text-sm font-semibold">Tags</span>
@@ -146,6 +231,7 @@ defmodule WeaktyWeb.LinkLive.Form do
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, link} ->
         handle_tag_update(link, socket.assigns.tags)
+        maybe_consume_og_upload(socket, link)
 
         message =
           if socket.assigns.link,
@@ -159,6 +245,23 @@ defmodule WeaktyWeb.LinkLive.Form do
     end
   end
 
+  def handle_event("cancel_upload", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :og_image, ref)}
+  end
+
+  def handle_event("remove_og_image", _params, socket) do
+    link = socket.assigns.link
+
+    link
+    |> Ash.Changeset.for_update(:update_og, %{og_image: nil, og_image_pinned: false},
+      authorize?: false
+    )
+    |> Ash.update(authorize?: false)
+
+    updated_link = %{link | og_image: nil, og_image_pinned: false}
+    {:noreply, assign(socket, link: updated_link, pending_og_image: nil)}
+  end
+
   def handle_event("delete_link", _params, socket) do
     case Ash.destroy(socket.assigns.link) do
       :ok ->
@@ -169,12 +272,53 @@ defmodule WeaktyWeb.LinkLive.Form do
     end
   end
 
+  def handle_progress(:og_image, entry, socket) when entry.done? do
+    local_path =
+      consume_uploaded_entry(socket, entry, fn %{path: tmp_path} ->
+        uuid = Ecto.UUID.generate()
+        ext = entry.client_name |> Path.extname() |> String.trim_leading(".") |> String.downcase()
+        ext = if ext in ~w(jpg jpeg png webp gif), do: ext, else: "jpg"
+        filename = "#{uuid}.#{ext}"
+        dir = Path.join([:code.priv_dir(:weakty), "static", "uploads", "link_thumbnails"])
+        File.mkdir_p!(dir)
+        File.cp!(tmp_path, Path.join(dir, filename))
+        {:ok, "/uploads/link_thumbnails/#{filename}"}
+      end)
+
+    {:noreply, assign(socket, :pending_og_image, local_path)}
+  end
+
+  def handle_progress(_name, _entry, socket), do: {:noreply, socket}
+
   @impl true
   def handle_info({:tag_changed, tags}, socket) do
     {:noreply, assign(socket, :tags, tags)}
   end
 
+  defp maybe_consume_og_upload(socket, link) do
+    case socket.assigns.pending_og_image do
+      nil ->
+        link
+
+      local_path ->
+        link
+        |> Ash.Changeset.for_update(
+          :update_og,
+          %{og_image: local_path, og_image_pinned: true},
+          authorize?: false
+        )
+        |> Ash.update(authorize?: false)
+
+        link
+    end
+  end
+
   defp handle_tag_update(link, tags) do
     Weakty.Tags.TagManager.apply_tags(link, :link, tags, Weakty.Links.LinkTag, :link_id)
   end
+
+  defp upload_error_to_string(:too_large), do: "File is too large (max 10MB)"
+  defp upload_error_to_string(:not_accepted), do: "Unsupported file type"
+  defp upload_error_to_string(:too_many_files), do: "Only one image allowed"
+  defp upload_error_to_string(_), do: "Upload failed"
 end

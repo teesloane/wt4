@@ -39,6 +39,18 @@ defmodule Weakty.Links.Link do
                # Delete link_tags join table entries
                Weakty.Repo.delete_all(from lt in "link_tags", where: lt.link_id == ^link.id)
 
+               # Delete OG image file if stored locally
+               if link.og_image && String.starts_with?(link.og_image, "/uploads/link_thumbnails/") do
+                 path =
+                   Path.join([
+                     :code.priv_dir(:weakty),
+                     "static",
+                     link.og_image
+                   ])
+
+                 File.rm(path)
+               end
+
                changeset
              end)
     end
@@ -81,6 +93,14 @@ defmodule Weakty.Links.Link do
           end
         end
       end
+
+      change after_action(fn _changeset, link, _context ->
+               %{"link_id" => link.id}
+               |> Weakty.Workers.FetchLinkMetadata.new()
+               |> Oban.insert()
+
+               {:ok, link}
+             end)
     end
 
     update :update do
@@ -98,6 +118,11 @@ defmodule Weakty.Links.Link do
                on_no_match: :create,
                use_identities: [:unique_name]
              )
+    end
+
+    update :update_og do
+      accept [:og_title, :og_description, :og_image, :og_image_pinned]
+      require_atomic? false
     end
   end
 
@@ -148,6 +173,24 @@ defmodule Weakty.Links.Link do
     attribute :public, :boolean do
       allow_nil? false
       default false
+      public? true
+    end
+
+    attribute :og_title, :string do
+      public? true
+    end
+
+    attribute :og_description, :string do
+      public? true
+    end
+
+    attribute :og_image, :string do
+      public? true
+    end
+
+    attribute :og_image_pinned, :boolean do
+      default false
+      allow_nil? false
       public? true
     end
 

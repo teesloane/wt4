@@ -132,7 +132,8 @@ config :weakty, Oban,
     {Oban.Plugins.Cron,
      crontab: [
        {"0 3 * * *", Weakty.Workers.CleanupOrphanedUploads},
-       {"0 2 * * *", Weakty.Workers.BackupDatabase}
+       {"0 2 * * *", Weakty.Workers.BackupDatabase},
+       {"0 4 * * *", Weakty.Workers.BackfillLinkMetadata}
      ]}
   ]
 

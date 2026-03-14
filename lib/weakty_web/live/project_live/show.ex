@@ -16,7 +16,10 @@ defmodule WeaktyWeb.ProjectLive.Show do
 
       for %{"link" => url} <- project.links || [] do
         Task.start(fn ->
-          image = fetch_og_image(url)
+          image = case Weakty.OpenGraph.fetch(url) do
+            {:ok, %{image: img}} -> img
+            _ -> nil
+          end
           send(lv, {:og_image, url, image})
         end)
       end
@@ -189,29 +192,6 @@ defmodule WeaktyWeb.ProjectLive.Show do
     {:noreply, push_navigate(socket, to: ~p"/projects")}
   end
 
-  defp fetch_og_image(url) do
-    case Req.get(url, headers: [{"user-agent", "Mozilla/5.0"}], receive_timeout: 5_000) do
-      {:ok, %{body: body}} when is_binary(body) -> parse_og_image(body)
-      _ -> nil
-    end
-  rescue
-    _ -> nil
-  end
-
-  defp parse_og_image(html) do
-    # Match either attribute order: property=... content=... or content=... property=...
-    patterns = [
-      ~r/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
-      ~r/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i
-    ]
-
-    Enum.find_value(patterns, fn pattern ->
-      case Regex.run(pattern, html) do
-        [_, image_url] -> image_url
-        _ -> nil
-      end
-    end)
-  end
 
   defp format_date(date) do
     Calendar.strftime(date, "%B %Y")

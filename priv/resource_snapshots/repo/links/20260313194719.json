@@ -14,6 +14,16 @@
       "default": "nil",
       "size": null,
       "type": "text",
+      "source": "url",
+      "references": null,
+      "allow_nil?": false,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "text",
       "source": "title",
       "references": null,
       "allow_nil?": false,
@@ -24,80 +34,17 @@
       "default": "nil",
       "size": null,
       "type": "text",
+      "source": "commentary",
+      "references": null,
+      "allow_nil?": true,
+      "generated?": false,
+      "primary_key?": false
+    },
+    {
+      "default": "nil",
+      "size": null,
+      "type": "text",
       "source": "slug",
-      "references": null,
-      "allow_nil?": false,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "text",
-      "source": "markdown",
-      "references": null,
-      "allow_nil?": false,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "text",
-      "source": "html",
-      "references": null,
-      "allow_nil?": true,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "text",
-      "source": "featured_image",
-      "references": null,
-      "allow_nil?": true,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "[]",
-      "size": null,
-      "type": [
-        "array",
-        "text"
-      ],
-      "source": "content_images",
-      "references": null,
-      "allow_nil?": true,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "text",
-      "source": "excerpt",
-      "references": null,
-      "allow_nil?": true,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "text",
-      "source": "status",
-      "references": null,
-      "allow_nil?": false,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "boolean",
-      "source": "featured",
       "references": null,
       "allow_nil?": false,
       "generated?": false,
@@ -116,8 +63,8 @@
     {
       "default": "nil",
       "size": null,
-      "type": "utc_datetime_usec",
-      "source": "published_at",
+      "type": "text",
+      "source": "og_title",
       "references": null,
       "allow_nil?": true,
       "generated?": false,
@@ -127,17 +74,7 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "post_type",
-      "references": null,
-      "allow_nil?": false,
-      "generated?": false,
-      "primary_key?": false
-    },
-    {
-      "default": "nil",
-      "size": null,
-      "type": "text",
-      "source": "attribution",
+      "source": "og_description",
       "references": null,
       "allow_nil?": true,
       "generated?": false,
@@ -147,7 +84,7 @@
       "default": "nil",
       "size": null,
       "type": "text",
-      "source": "attribution_url",
+      "source": "og_image",
       "references": null,
       "allow_nil?": true,
       "generated?": false,
@@ -179,7 +116,7 @@
       "type": "uuid",
       "source": "user_id",
       "references": {
-        "name": "posts_user_id_fkey",
+        "name": "links_user_id_fkey",
         "table": "users",
         "multitenancy": {
           "global": null,
@@ -187,20 +124,20 @@
           "strategy": null
         },
         "primary_key?": true,
-        "destination_attribute": "id",
-        "on_update": null,
         "on_delete": null,
+        "destination_attribute": "id",
         "deferrable": false,
         "destination_attribute_default": null,
-        "destination_attribute_generated": null
+        "destination_attribute_generated": null,
+        "on_update": null
       },
       "allow_nil?": false,
       "generated?": false,
       "primary_key?": false
     }
   ],
-  "table": "posts",
-  "hash": "A51A03F57C648D74BB095C35717BBB1ACE458E2E0218E032132738DC54DD26AE",
+  "table": "links",
+  "hash": "1D61A8B302B6C85C4BBEB3DD62FCBF760F7B640F8C744455A5BCE1EA1BE39D81",
   "multitenancy": {
     "global": null,
     "attribute": null,
@@ -212,8 +149,8 @@
       "keys": [
         "slug"
       ],
-      "base_filter": null,
-      "index_name": "posts_unique_slug_index"
+      "index_name": "links_unique_slug_index",
+      "base_filter": null
     }
   ],
   "repo": "Elixir.Weakty.Repo",
