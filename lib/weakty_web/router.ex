@@ -34,6 +34,7 @@ defmodule WeaktyWeb.Router do
     get "/posts/rss", RssController, :posts
 
     ash_authentication_live_session :authenticated_routes do
+      live "/focus", FocusLive.Index, :index
       live "/now", UpdateLive.Index, :index
       live "/now/:slug", UpdateLive.Show, :show
       live "/areas", AreaLive.Index, :index

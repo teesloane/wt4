@@ -69,6 +69,12 @@ defmodule WeaktyWeb.AdminComponents do
           />
           <li class="my-1"></li>
           <.nav_item
+            path="/focus"
+            label="Focus"
+            icon="hero-clock"
+            current_path={@current_path}
+          />
+          <.nav_item
             path="/admin/jobs"
             label="Jobs"
             icon="hero-queue-list"

@@ -70,7 +70,8 @@ config :weakty,
     Weakty.Tags,
     Weakty.Posts,
     Weakty.Projects,
-    Weakty.MediaLogs
+    Weakty.MediaLogs,
+    Weakty.FocusSessions
   ],
   ash_authentication: [return_error_on_invalid_magic_link_token?: true]
 

@@ -80,10 +80,38 @@ const SearchModal = {
   }
 }
 
+// FocusNotify: handles web notifications when a Pomodoro session or break completes.
+// Attached to the floating timer widget container (always in the DOM when logged in).
+const FocusNotify = {
+  mounted() {
+    this.handleEvent("focus:complete", ({type, title}) => {
+      if (type === "pomodoro") {
+        this.notify("Pomodoro complete! ☕", `"${title}" is done. Time for a break.`)
+      } else {
+        this.notify("Break's over!", "Time to get back to work.")
+      }
+    })
+  },
+
+  notify(title, body) {
+    if (!("Notification" in window)) return
+
+    const fire = () => new Notification(title, {body, icon: "/favicon.ico"})
+
+    if (Notification.permission === "granted") {
+      fire()
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") fire()
+      })
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, SearchModal},
+  hooks: {...colocatedHooks, SearchModal, FocusNotify},
 })
 
 // Show progress bar on live navigation and form submits

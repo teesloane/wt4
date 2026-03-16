@@ -229,6 +229,7 @@
     </script>
 
     {live_render(@conn, WeaktyWeb.SearchLive, id: "global-search")}
+    {live_render(@conn, WeaktyWeb.FocusTimerLive, id: "global-focus-timer")}
 
     {@inner_content}
   </body>
