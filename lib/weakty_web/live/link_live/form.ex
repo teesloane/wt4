@@ -144,7 +144,7 @@ defmodule WeaktyWeb.LinkLive.Form do
                 type="button"
                 phx-click="remove_og_image"
                 class="absolute top-2 right-2 btn btn-xs btn-error"
-                data-confirm="Remove this image? The pin will also be cleared."
+                phx-confirm="Remove this image? The pin will also be cleared."
               >
                 <.icon name="hero-x-mark" class="w-3 h-3" /> Remove
               </button>
@@ -211,7 +211,7 @@ defmodule WeaktyWeb.LinkLive.Form do
         <button
           type="button"
           phx-click="delete_link"
-          data-confirm="Are you sure you want to delete this link?"
+          phx-confirm="Are you sure you want to delete this link?"
           class="btn btn-error btn-sm w-full"
         >
           Delete link

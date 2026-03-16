@@ -426,7 +426,7 @@ defmodule WeaktyWeb.AdminLive.Posts.Form do
             <button
               type="button"
               phx-click="delete_post"
-              data-confirm="Are you sure you want to delete this post?"
+              phx-confirm="Are you sure you want to delete this post?"
               class="btn btn-error btn-sm w-full"
             >
               Delete post

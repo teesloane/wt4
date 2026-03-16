@@ -142,7 +142,7 @@ defmodule WeaktyWeb.ProjectLive.Show do
                 <% end %>
                 <button
                   phx-click="delete"
-                  data-confirm="Are you sure you want to delete this project?"
+                  phx-confirm="Are you sure you want to delete this project?"
                   class="btn btn-error btn-sm"
                 >
                   Delete

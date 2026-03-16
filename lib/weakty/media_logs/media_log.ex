@@ -366,7 +366,7 @@ defmodule Weakty.MediaLogs.MediaLog do
 
     attribute :public, :boolean do
       allow_nil? false
-      default false
+      default true
       public? true
     end
 

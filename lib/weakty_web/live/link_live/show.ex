@@ -74,7 +74,7 @@ defmodule WeaktyWeb.LinkLive.Show do
               <% end %>
               <button
                 phx-click="delete"
-                data-confirm="Are you sure you want to delete this link?"
+                phx-confirm="Are you sure you want to delete this link?"
                 class="btn btn-error btn-sm"
               >
                 Delete

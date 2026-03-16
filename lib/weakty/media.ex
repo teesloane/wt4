@@ -27,8 +27,6 @@ defmodule Weakty.Media do
   Returns {:ok, [MediaResult.t()]} or {:error, reason}.
   """
   def search(media_type, query) when is_binary(query) do
-    dbg()
-
     case String.trim(query) do
       "" ->
         {:ok, []}

@@ -47,7 +47,8 @@ defmodule WeaktyWeb.MediaLogLive.Form do
        tags: existing_tags,
        media_type: media_type,
        search_query: "",
-       search_results: []
+       search_results: [],
+       pending_cover: nil
      )
      |> assign(:current_path, "/admin/media-logs"), layout: {WeaktyWeb.Layouts, :admin}}
   end
@@ -124,14 +125,15 @@ defmodule WeaktyWeb.MediaLogLive.Form do
                 <div class="space-y-1 max-h-60 overflow-y-auto mt-2">
                   <%= for result <- @search_results do %>
                     <div class="flex items-center gap-3 p-2 rounded hover:bg-base-300">
+                      <% thumb_class = if @media_type in [:music, "music"], do: "w-10 h-10", else: "w-8 h-12" %>
                       <%= if result.cover_url do %>
                         <img
                           src={result.cover_url}
                           alt={result.title}
-                          class="w-8 h-12 object-cover rounded flex-shrink-0"
+                          class={"#{thumb_class} object-cover rounded flex-shrink-0"}
                         />
                       <% else %>
-                        <div class="w-8 h-12 bg-base-300 rounded flex-shrink-0" />
+                        <div class={"#{thumb_class} bg-base-300 rounded flex-shrink-0"} />
                       <% end %>
                       <div class="flex-1 min-w-0">
                         <div class="font-medium text-xs truncate">{result.title}</div>
@@ -141,8 +143,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
                       </div>
                       <button
                         type="button"
-                        phx-click="select_result"
-                        phx-value-id={result.external_id}
+                        phx-click={JS.push("select_result", value: %{id: result.external_id})}
                         class="btn btn-xs btn-primary flex-shrink-0"
                       >
                         Use
@@ -366,7 +367,7 @@ defmodule WeaktyWeb.MediaLogLive.Form do
             <button
               type="button"
               phx-click="delete_media_log"
-              data-confirm="Are you sure you want to delete this entry?"
+              phx-confirm="Are you sure you want to delete this entry?"
               class="btn btn-error btn-sm w-full"
             >
               Delete entry
@@ -380,6 +381,17 @@ defmodule WeaktyWeb.MediaLogLive.Form do
 
   @impl true
   def handle_event("validate", %{"form" => params}, socket) do
+    # Sidebar inputs (thumbnail_url, etc.) may not be serialized when a different
+    # sidebar input triggers phx-change — preserve existing values if absent.
+    params =
+      case {params["thumbnail_url"], socket.assigns.form[:thumbnail_url].value} do
+        {empty, existing} when empty in [nil, ""] and not is_nil(existing) ->
+          Map.put(params, "thumbnail_url", to_string(existing))
+
+        _ ->
+          params
+      end
+
     form = Form.validate(socket.assigns.form, params, errors: true)
 
     media_type =
@@ -392,7 +404,11 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   def handle_event("save", %{"form" => params}, socket) do
-    params = maybe_download_thumbnail(params)
+    params =
+      case socket.assigns.pending_cover do
+        nil -> maybe_download_thumbnail(params)
+        local_path -> Map.put(params, "thumbnail_url", local_path)
+      end
 
     case Form.submit(socket.assigns.form, params: params) do
       {:ok, media_log} ->
@@ -413,16 +429,21 @@ defmodule WeaktyWeb.MediaLogLive.Form do
     end
   end
 
+
   def handle_event("delete_media_log", _params, socket) do
-    case Weakty.MediaLogs.MediaLog.delete_media_log(socket.assigns.media_log) do
+    case Ash.destroy(socket.assigns.media_log, authorize?: false) do
       :ok ->
         {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
 
       {:ok, _} ->
         {:noreply, push_navigate(socket, to: ~p"/admin/media-logs")}
 
-      {:error, _} ->
+      {:error, reason} ->
+        Logger.error("MediaLog delete failed: #{inspect(reason)}")
         {:noreply, put_flash(socket, :error, "Failed to delete entry")}
+      e ->
+        IO.inspect e
+        {:noreply, put_flash(socket, :error, "something failed")}
     end
   end
 
@@ -438,7 +459,9 @@ defmodule WeaktyWeb.MediaLogLive.Form do
   end
 
   def handle_event("select_result", %{"id" => external_id}, socket) do
+    IO.inspect(external_id, label: "select_result")
     result = Enum.find(socket.assigns.search_results, &(&1.external_id == external_id))
+    IO.inspect({!is_nil(result), result && result.cover_url}, label: "select_result found/cover")
 
     if result do
       params =
@@ -450,14 +473,38 @@ defmodule WeaktyWeb.MediaLogLive.Form do
         }
         |> maybe_put_date("date_published", result.year)
 
+      if result.cover_url do
+        lv = self()
+
+        Task.start(fn ->
+          IO.inspect(result.cover_url, label: "cover download starting")
+
+          case Weakty.ImageDownloader.download(result.cover_url, "media") do
+            {:ok, local_path} ->
+              IO.inspect(local_path, label: "cover download success")
+              send(lv, {:cover_downloaded, local_path})
+
+            {:error, reason} ->
+              IO.inspect(reason, label: "cover download failed")
+          end
+        end)
+      else
+        IO.inspect(external_id, label: "select_result no cover_url")
+      end
+
       form = socket.assigns.form |> Form.validate(params, errors: false) |> to_form()
-      {:noreply, assign(socket, form: form, search_results: [])}
+      {:noreply, assign(socket, form: form, search_results: [], pending_cover: nil)}
     else
       {:noreply, socket}
     end
   end
 
   @impl true
+  def handle_info({:cover_downloaded, local_path}, socket) do
+    IO.inspect(local_path, label: "cover_downloaded")
+    {:noreply, assign(socket, :pending_cover, local_path)}
+  end
+
   def handle_info({:tag_changed, tags}, socket) do
     {:noreply, assign(socket, :tags, tags)}
   end

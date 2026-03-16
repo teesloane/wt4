@@ -56,10 +56,14 @@ defmodule Weakty.Media.Adapters.MusicBrainz do
   defp build_result(release) do
     id = release["id"]
     has_front_cover = get_in(release, ["cover-art-archive", "front"]) == true
+    release_group_id = get_in(release, ["release-group", "id"])
 
     cover_url =
-      if has_front_cover do
-        "#{@cover_url}/#{id}/front-250"
+      cond do
+        has_front_cover -> "#{@cover_url}/#{id}/front-250"
+        release_group_id -> "https://coverartarchive.org/release-group/#{release_group_id}/front-250"
+        id -> "#{@cover_url}/#{id}/front-250"
+        true -> nil
       end
 
     creators =

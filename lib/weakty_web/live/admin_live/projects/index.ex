@@ -179,7 +179,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Index do
                       <button
                         phx-click="delete"
                         phx-value-id={project.id}
-                        data-confirm="Are you sure you want to delete this project?"
+                        phx-confirm="Are you sure you want to delete this project?"
                         class="btn btn-ghost btn-xs text-error"
                         title="Delete"
                       >

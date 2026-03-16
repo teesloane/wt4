@@ -488,7 +488,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
             <button
               type="button"
               phx-click="delete_project"
-              data-confirm="Delete this project?"
+              phx-confirm="Delete this project?"
               class="btn btn-error btn-sm w-full"
             >
               Delete project

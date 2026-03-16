@@ -59,7 +59,7 @@ defmodule WeaktyWeb.LinkLive.Index do
               <button
                 phx-click="delete"
                 phx-value-slug={link.slug}
-                data-confirm="Are you sure?"
+                phx-confirm="Are you sure?"
                 class="hover:text-error transition-colors"
               >
                 Delete

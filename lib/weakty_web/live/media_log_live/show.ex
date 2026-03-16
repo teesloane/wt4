@@ -166,7 +166,7 @@ defmodule WeaktyWeb.MediaLogLive.Show do
           <% end %>
           <button
             phx-click="delete"
-            data-confirm="Are you sure you want to delete this media log?"
+            phx-confirm="Are you sure you want to delete this media log?"
             class="btn btn-error"
           >
             Delete

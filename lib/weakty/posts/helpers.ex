@@ -15,6 +15,7 @@ defmodule Weakty.Posts.Helpers do
     case post.post_type do
       :til -> "/til"
       :quote -> "/quotes"
+      :update -> "/now"
       _ -> "/posts"
     end
   end

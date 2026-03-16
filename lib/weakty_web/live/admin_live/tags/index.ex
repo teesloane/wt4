@@ -183,7 +183,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
       <:actions>
         <button
           phx-click="cleanup_orphaned"
-          data-confirm="Delete all tags not attached to any content?"
+          phx-confirm="Delete all tags not attached to any content?"
           class="btn btn-ghost btn-sm"
         >
           Clean up unused
@@ -281,7 +281,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                     <button
                       phx-click="delete"
                       phx-value-id={tag.id}
-                      data-confirm="Are you sure you want to delete this tag?"
+                      phx-confirm="Are you sure you want to delete this tag?"
                       class="btn btn-ghost btn-xs text-error"
                     >
                       <.icon name="hero-trash" class="w-3 h-3" />
@@ -357,7 +357,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                         <button
                           phx-click="delete"
                           phx-value-id={tag.id}
-                          data-confirm="Are you sure you want to delete this tag? This will remove it from all posts and links."
+                          phx-confirm="Are you sure you want to delete this tag? This will remove it from all posts and links."
                           class="btn btn-ghost btn-xs text-error"
                           title="Delete"
                         >

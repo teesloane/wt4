@@ -30,14 +30,20 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    media_log = Ash.get!(Weakty.MediaLogs.MediaLog, id)
+    require Logger
 
-    case Weakty.MediaLogs.MediaLog.delete_media_log(media_log) do
+    media_log = Ash.get!(Weakty.MediaLogs.MediaLog, id, authorize?: false)
+
+    case Ash.destroy(media_log, authorize?: false) do
       :ok ->
         {:noreply, socket |> put_flash(:info, "Deleted.") |> load_media_logs()}
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete media log")}
+      {:ok, _} ->
+        {:noreply, socket |> put_flash(:info, "Deleted.") |> load_media_logs()}
+
+      {:error, reason} ->
+        Logger.error("MediaLog delete failed: #{inspect(reason)}")
+        {:noreply, put_flash(socket, :error, "Failed to delete")}
     end
   end
 
@@ -151,10 +157,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
             </thead>
             <tbody>
               <%= for media_log <- @media_logs do %>
-                <tr
-                  class="hover cursor-pointer"
-                  phx-click={JS.navigate(~p"/admin/media-logs/#{media_log.id}/edit")}
-                >
+                <tr class="hover">
                   <td>
                     <div class="flex items-center gap-3">
                       <%= if media_log.thumbnail_url do %>
@@ -215,7 +218,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
                       <button
                         phx-click="delete"
                         phx-value-id={media_log.id}
-                        data-confirm="Delete this media log?"
+                        phx-confirm="Delete this media log?"
                         class="btn btn-ghost btn-xs text-error"
                         title="Delete"
                       >

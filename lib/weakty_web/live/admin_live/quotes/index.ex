@@ -110,7 +110,7 @@ defmodule WeaktyWeb.AdminLive.Quotes.Index do
                       <button
                         phx-click="delete"
                         phx-value-id={q.id}
-                        data-confirm="Delete this quote?"
+                        phx-confirm="Delete this quote?"
                         class="btn btn-ghost btn-xs text-error"
                         title="Delete"
                       >

@@ -155,7 +155,7 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
                   <button
                     phx-click="delete"
                     phx-value-id={link.id}
-                    data-confirm="Are you sure you want to delete this link?"
+                    phx-confirm="Are you sure you want to delete this link?"
                     class="btn btn-ghost btn-xs text-error flex-1"
                     title="Delete"
                   >

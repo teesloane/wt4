@@ -125,7 +125,7 @@ defmodule WeaktyWeb.QuoteLive.Form do
             <button
               type="button"
               phx-click="delete"
-              data-confirm="Delete this quote?"
+              phx-confirm="Delete this quote?"
               class="btn btn-error btn-sm w-full"
             >
               Delete

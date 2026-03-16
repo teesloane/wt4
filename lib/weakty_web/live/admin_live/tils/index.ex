@@ -118,7 +118,7 @@ defmodule WeaktyWeb.AdminLive.Tils.Index do
                       <button
                         phx-click="delete"
                         phx-value-id={til.id}
-                        data-confirm="Delete this TIL?"
+                        phx-confirm="Delete this TIL?"
                         class="btn btn-ghost btn-xs text-error"
                         title="Delete"
                       >

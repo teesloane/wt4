@@ -29,7 +29,7 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-      --color-base-100: #20242b;
+    --color-base-100: #20242b;
     --color-base-200: #262b33;
     --color-base-300: #3e4455;
     --color-base-content: #eeeeee;
@@ -72,22 +72,23 @@
   --color-base-200: oklch(98% 0 0);
   --color-base-300: oklch(96% 0.001 286.375);
   --color-base-content: oklch(20% 0 0);
-  --color-primary: oklch(62% 0.214 259.815);
-  --color-primary-content: oklch(97% 0.014 254.604);
-  --color-secondary: oklch(87% 0 0);
-  --color-secondary-content: oklch(26% 0 0);
-  --color-accent: oklch(85% 0.199 91.936);
-  --color-accent-content: oklch(26% 0 0);
+    --color-primary: #0082ce;
+    --color-primary-content: oklch(96% 0.018 272.314);
+    --color-secondary: oklch(83% 0.128 66.29);
+    --color-secondary-content: oklch(40% 0.123 38.172);
+    --color-accent: #e5c07b;
+    --color-accent-content: #e8e7ea;
   --color-neutral: oklch(87% 0 0);
   --color-neutral-content: oklch(26% 0 0);
-  --color-info: oklch(80% 0.105 251.813);
-  --color-info-content: oklch(28% 0.091 267.935);
-  --color-success: oklch(69% 0.17 162.48);
-  --color-success-content: oklch(98% 0.014 180.72);
-  --color-warning: oklch(47% 0.137 46.201);
-  --color-warning-content: oklch(92% 0.12 95.746);
-  --color-error: oklch(63% 0.237 25.331);
-  --color-error-content: oklch(88% 0.062 18.334);
+
+    --color-info: #56b6c2;
+    --color-info-content: #e8e7ea;
+    --color-success: #98c379;
+    --color-success-content: #e8e7ea;
+    --color-warning: #d19a66;
+    --color-warning-content: #091b2f;
+    --color-error: #be5046;
+    --color-error-content: #e8e7ea;
   --radius-selector: 0rem;
   --radius-field: 0.25rem;
   --radius-box: 0.25rem;
@@ -119,7 +120,7 @@
 /* Dark Literary Typography */
 @layer base {
   body {
-    font-family: 'IBM Plex Sans', serif;
+    font-family: 'IBM Plex Serif', serif;
     font-size: 18px;
     line-height: 1.8;
     -webkit-font-smoothing: antialiased;

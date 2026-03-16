@@ -112,7 +112,7 @@ defmodule WeaktyWeb.TilLive.Form do
             <button
               type="button"
               phx-click="delete"
-              data-confirm="Delete this TIL?"
+              phx-confirm="Delete this TIL?"
               class="btn btn-error btn-sm w-full"
             >
               Delete

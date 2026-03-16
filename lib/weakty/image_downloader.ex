@@ -23,7 +23,12 @@ defmodule Weakty.ImageDownloader do
   end
 
   def download(url, subdir) do
-    with {:ok, resp} <- Req.get(url, max_redirects: 5, decode_body: false),
+    with {:ok, resp} <-
+           Req.get(url,
+             max_redirects: 10,
+             decode_body: false,
+             headers: [{"user-agent", "Weakty/0.1 (https://weakty.com)"}]
+           ),
          200 <- resp.status,
          ext <- detect_ext(resp) do
       uuid = Ecto.UUID.generate()
