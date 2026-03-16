@@ -372,7 +372,7 @@ defmodule WeaktyWeb.AdminLive.Projects.Form do
                 class="input input-bordered input-sm w-full text-sm"
               />
               <input
-                type="url"
+                type="text"
                 value={@link_url}
                 name="link_url"
                 placeholder="https://..."

@@ -13,10 +13,14 @@ defmodule WeaktyWeb.UpdateLive.Show do
 
     all_updates = Weakty.Posts.Post.list_published_updates!()
 
+    week_entities =
+      if post.published_at, do: load_week_entities(post.published_at), else: []
+
     {:ok,
      socket
      |> assign(:post, post)
      |> assign(:updates, all_updates)
+     |> assign(:week_entities, week_entities)
      |> assign(:page_title, post.title)}
   end
 
@@ -56,6 +60,23 @@ defmodule WeaktyWeb.UpdateLive.Show do
         </div>
       </article>
 
+      <%= if @week_entities != [] do %>
+        <div class="border-t border-base-300 mb-12"></div>
+        <h2 class="text-base font-normal tracking-wide averia  opacity-60 mb-8">
+          Also published this week:
+        </h2>
+        <div class="space-y-3">
+          <%= for entity <- @week_entities do %>
+            <.content_item
+              href={entity_href(entity)}
+              title={entity.title}
+              date={entity.published_at}
+              label={entity_type_label(entity)}
+            />
+          <% end %>
+        </div>
+      <% end %>
+
       <%= if @current_user && @current_user.id == @post.user_id do %>
         <div class="border-t border-base-300 mt-16 pt-8 text-center">
           <div class="flex gap-3 justify-center">
@@ -68,7 +89,7 @@ defmodule WeaktyWeb.UpdateLive.Show do
 
       <%= if !Enum.empty?(@updates) do %>
         <div class="border-t border-base-300 my-12"></div>
-        <h2 class="text-lg font-normal tracking-wide averia opacity-60 mb-8">Updates</h2>
+        <h2 class="text-base font-normal tracking-wide averia opacity-60 mb-8">Previous Updates</h2>
         <div class="space-y-3">
           <.content_item
             :for={update <- @updates}
@@ -82,6 +103,31 @@ defmodule WeaktyWeb.UpdateLive.Show do
     </.page_container>
     """
   end
+
+  defp load_week_entities(published_at) do
+    from_dt = DateTime.add(published_at, -6 * 24 * 60 * 60, :second)
+
+    Weakty.Content.Entity
+    |> Ash.Query.for_read(:timeline)
+    |> Ash.Query.filter(
+      public == true and
+        not (entity_type == :post and subtype == "update") and
+        not (entity_type == :media_log) and
+        published_at >= ^from_dt and
+        published_at <= ^published_at
+    )
+    |> Ash.read!(authorize?: false)
+  end
+
+  defp entity_href(%{source_path: source_path, slug: slug}) do
+    "#{source_path}/#{slug}"
+  end
+
+  defp entity_type_label(%{entity_type: :post, subtype: subtype}) when subtype in ["til", "quote", "fiction"],
+    do: subtype
+
+  defp entity_type_label(%{entity_type: type}),
+    do: type |> to_string() |> String.replace("_", " ")
 
   defp format_date(datetime), do: Calendar.strftime(datetime, "%Y/%m/%d")
 end
