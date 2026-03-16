@@ -44,7 +44,7 @@
     --color-info: #56b6c2;
     --color-info-content: #e8e7ea;
     --color-success: #98c379;
-    --color-success-content: #e8e7ea;
+    --color-success-content: #111111;
     --color-warning: #d19a66;
     --color-warning-content: #091b2f;
     --color-error: #be5046;
@@ -56,7 +56,7 @@
     --size-field: 0.25rem;
     --border: 1px;
     --depth: 1;
-    --noise: 0;
+    --noise: 1;
   
   }
 
