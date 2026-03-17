@@ -245,7 +245,7 @@ defmodule WeaktyWeb.AdminLive.Tags.Index do
                 navigate={~p"/admin/tags/#{tag.id}"}
                 class="font-medium text-sm leading-tight hover:opacity-60 transition-opacity"
               >
-                <div class="border border-base-300/50 p-3 hover:bg-base-200/50 transition-colors">
+                <div class="border border-base-300/50 p-3 hover:bg-base-200/50 transition-colors min-h-28">
                   <div class="flex items-start justify-between gap-1 mb-2">
                     {tag.name}
                     <%= if tag.public do %>

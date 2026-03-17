@@ -285,7 +285,7 @@ defmodule Weakty.MediaLogs.MediaLog do
   changes do
     change {Weakty.Changes.SyncEntity,
             entity_type: :media_log,
-            title: :title,
+            title: {Weakty.MediaLogs.MediaLog, :entity_title},
             content: :notes,
             slug: :slug,
             source_path: "/media-logs",
@@ -398,5 +398,13 @@ defmodule Weakty.MediaLogs.MediaLog do
 
   identities do
     identity :unique_slug, [:slug]
+  end
+
+  def entity_title(record) do
+    if record.creator && record.creator != "" do
+      "#{record.creator} - #{record.title}"
+    else
+      record.title
+    end
   end
 end

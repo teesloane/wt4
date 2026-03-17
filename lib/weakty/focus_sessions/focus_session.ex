@@ -63,7 +63,19 @@ defmodule Weakty.FocusSessions.FocusSession do
       require_atomic? false
 
       change fn changeset, _context ->
-        Ash.Changeset.force_change_attribute(changeset, :status, :abandoned)
+        started_at = Ash.Changeset.get_attribute(changeset, :started_at) ||
+          changeset.data.started_at
+
+        elapsed =
+          if started_at do
+            max(0, DateTime.diff(DateTime.utc_now(), started_at, :second) |> div(60))
+          else
+            0
+          end
+
+        changeset
+        |> Ash.Changeset.force_change_attribute(:status, :abandoned)
+        |> Ash.Changeset.force_change_attribute(:elapsed_minutes, elapsed)
       end
     end
 
@@ -111,6 +123,10 @@ defmodule Weakty.FocusSessions.FocusSession do
       default :idle
       public? true
       constraints one_of: [:idle, :active, :on_break, :completed, :abandoned]
+    end
+
+    attribute :elapsed_minutes, :integer do
+      public? true
     end
 
     attribute :started_at, :utc_datetime_usec do

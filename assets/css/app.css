@@ -133,6 +133,19 @@
   font-family: 'Averia Serif Libre', serif;
 }
 
+@utility input {
+  &:focus {
+    @apply outline-1 outline-base-content/50 outline-offset-0;
+  }
+}
+
+
+@utility select {
+  &:focus {
+    @apply outline-1 outline-base-content/50 outline-offset-0;
+  }
+}
+
 /* Typography overrides for prose */
 @layer components {
 

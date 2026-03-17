@@ -451,7 +451,7 @@ defmodule WeaktyWeb.CoreComponents do
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
+            @class || "w-full input no-outline !outline-none",
             @errors != [] && (@error_class || "input-error")
           ]}
           {@rest}
@@ -593,13 +593,14 @@ defmodule WeaktyWeb.CoreComponents do
   attr :date, :any, default: nil
   attr :href, :string, default: nil
   attr :label, :string, default: nil
+  attr :label_position, :atom, default: :left, values: [:left, :right]
   attr :current, :boolean, default: false
   attr :size, :string, default: "sm", values: ~w(sm base lg xl)
 
   def content_item(assigns) do
     ~H"""
-    <div class="flex items-baseline gap-6">
-      <span :if={@label} class="text-xs opacity-90 tabular-nums flex-shrink-0 min-w-24 capitalize">
+    <div class={"flex items-baseline gap-6 text-#{@size}"}>
+      <span :if={@label && @label_position == :left} class="opacity-90 tabular-nums flex-shrink-0 min-w-24 capitalize">
         {@label}
       </span>
       <%= if @href do %>
@@ -612,7 +613,10 @@ defmodule WeaktyWeb.CoreComponents do
       <% else %>
         <span class={"flex-1 text-#{@size} opacity-50 truncate"}>{@title}</span>
       <% end %>
-      <time class="text-xs opacity-30 tabular-nums flex-shrink-0">
+      <span :if={@label && @label_position == :right} class={"opacity-30 flex-shrink-0 capitalize text-#{@size}"}>
+        {@label}
+      </span>
+      <time class={"opacity-50 tabular-nums  flex-shrink-0 !text-#{@size}" }>
         {if @date, do: Calendar.strftime(@date, "%Y-%m-%d")}
       </time>
     </div>

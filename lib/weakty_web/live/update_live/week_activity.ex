@@ -9,10 +9,11 @@ defmodule WeaktyWeb.UpdateLive.WeekActivity do
 
   def week_activity(assigns) do
     ~H"""
+    <div :if={@week_entities != [] or @week_media_logs !=[]}
+    class="border border-base-300 p-8 mt-8 mb-16 bg-base-200/50 rounded-sm">
     <%= if @week_entities != [] do %>
-      <div class="mb-12 text-center">· 𓉸  · </div>
-      <h2 class="text-base font-normal tracking-wide averia opacity-60 mb-8">
-        Also published this week:
+      <h2 class="text-sm uppercase font-sans font-bold tracking-wide averia opacity-60 mb-8">
+        Around the site this week:
       </h2>
       <div class="space-y-3">
         <%= for entity <- @week_entities do %>
@@ -26,12 +27,11 @@ defmodule WeaktyWeb.UpdateLive.WeekActivity do
       </div>
     <% end %>
 
+    <div class="my-8" :if={@week_media_logs != [] and @week_entities != []} />
+
     <%= if @week_media_logs != [] do %>
-      <%= if @week_entities == [] do %>
-        <div class="mb-12 text-center">· 𓉸  · </div>
-      <% end %>
-      <h2 class="text-base font-normal tracking-wide averia opacity-60 mb-8 mt-8">
-        Reading &amp; listening this week:
+      <h2 class="text-sm uppercase font-sans font-bold tracking-wide averia opacity-60 mb-8">
+        Reading / Listening:
       </h2>
       <div class="space-y-3">
         <%= for log <- @week_media_logs do %>
@@ -60,6 +60,7 @@ defmodule WeaktyWeb.UpdateLive.WeekActivity do
         <% end %>
       </div>
     <% end %>
+      </div>
     """
   end
 

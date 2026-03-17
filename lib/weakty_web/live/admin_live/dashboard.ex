@@ -65,6 +65,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
         <.stat_card label="Quotes" value={@stats.total_quotes} />
       </div>
 
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <!-- Quick Focus Timer -->
       <div class="card bg-base-200">
         <div class="card-body p-6">
@@ -212,6 +213,7 @@ defmodule WeaktyWeb.AdminLive.Dashboard do
             </div>
           <% end %>
         </div>
+      </div>
       </div>
     </div>
     """

@@ -7,6 +7,7 @@ defmodule Weakty.Content.EntityType do
       :bookmark,
       :media_log,
       :photo,
-      :quote
+      :quote,
+      :project
     ]
 end

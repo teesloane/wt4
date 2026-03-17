@@ -59,7 +59,7 @@ defmodule WeaktyWeb.UpdateLive.Show do
         />
       <% end %>
 
-      <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto py-12">
+      <article class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 mx-auto">
         <div class="prose max-w-none">
           {raw(@post.html)}
         </div>

@@ -247,12 +247,11 @@ defmodule WeaktyWeb.FocusLive.Index do
         <h2 class="card-title text-lg mb-4">New Session</h2>
         <form phx-submit="start_session" class="space-y-4">
           <div class="form-control">
-            <label class="label"><span class="label-text">What are you working on?</span></label>
             <input
               type="text"
               name="title"
-              placeholder="Session title..."
-              class="input input-bordered"
+              placeholder="What are you working on?"
+              class="input outline-none input-sm w-full"
               required
               autofocus
             />
@@ -396,7 +395,13 @@ defmodule WeaktyWeb.FocusLive.Index do
           <%= if @session.project do %>
             <span class="badge badge-xs badge-ghost">{@session.project.title}</span>
           <% end %>
-          <span>{@session.duration_minutes} min</span>
+          <span>
+            <%= if @session.status == :abandoned && @session.elapsed_minutes do %>
+              {@session.elapsed_minutes}/{@session.duration_minutes} min
+            <% else %>
+              {@session.duration_minutes} min
+            <% end %>
+          </span>
           <span>{Calendar.strftime(@session.inserted_at, "%b %d")}</span>
         </div>
         <%= if @session.notes do %>
