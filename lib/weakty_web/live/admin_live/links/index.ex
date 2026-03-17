@@ -71,7 +71,7 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
                 <%= if link.og_image do %>
                   <img
                     src={link.og_image}
-                    alt={link.og_title || link.title}
+                    alt={link.title}
                     class="w-full h-full object-cover"
                   />
                 <% else %>
@@ -95,7 +95,7 @@ defmodule WeaktyWeb.AdminLive.Links.Index do
                   class="font-semibold text-sm leading-snug line-clamp-2 cursor-pointer hover:text-primary"
                   phx-click={JS.navigate(~p"/admin/links/#{link.id}/edit")}
                 >
-                  {link.og_title || link.title}
+                  {link.title}
                 </h3>
 
                 <%!-- OG description if different from title --%>
