@@ -160,7 +160,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
       <% else %>
         <%= if @view == "table" do %>
           <div class="overflow-x-auto">
-            <table class="table table-sm table-zebra w-full">
+            <table class="table table-zebra w-full">
               <thead>
                 <tr class="text-base-content/60">
                   <th>Title</th>
@@ -170,13 +170,16 @@ defmodule WeaktyWeb.MediaLogLive.Index do
               </thead>
               <tbody>
                 <%= for media_log <- @filtered_media_logs do %>
-                  <tr class="">
+                  <tr class="relative">
                     <td>
-                      <div class="font-medium">
-                        {media_log.title}
+                      <div class="relative font-medium pl-5">
                         <%= if media_log.favourite do %>
-                          <span class="text-warning ml-1">★</span>
+                          <.icon
+                            name="hero-star-solid"
+                            class="absolute -left-1 top-1.5 w-3.5 h-3.5 text-warning"
+                          />
                         <% end %>
+                        {media_log.title}
                       </div>
                     </td>
                     <td class="hidden sm:table-cell text-base-content/70">{media_log.creator}</td>
@@ -193,26 +196,26 @@ defmodule WeaktyWeb.MediaLogLive.Index do
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
             <%= for media_log <- @filtered_media_logs do %>
               <div class="card bg-base-100">
-                <figure>
+                <figure class="relative">
                   <%= if media_log.thumbnail_url do %>
                     <img
                       src={media_log.thumbnail_url}
                       alt={media_log.title}
-                      class="h-48 w-full object-cover"
+                      class="h-54 w-full object-cover"
                     />
                   <% else %>
                     <div class="bg-base-300 rounded-lg h-48 w-full flex items-center justify-center text-6xl">
                       {media_type_emoji(media_log.media_type)}
                     </div>
                   <% end %>
+                  <%= if media_log.favourite do %>
+                    <span class="absolute bottom-0 left-0 bg-primary p-1 w-8 h-8 flex items-center justify-center">
+                      <.icon name="hero-star-solid" class="w-3 h-3 text-primary-content shadow" />
+                    </span>
+                  <% end %>
                 </figure>
                 <div class="py-2">
-                  <h2 class="text-sm gap-2 flex items-start">
-                    {media_log.title}
-                    <%= if media_log.favourite do %>
-                      <span class="text-warning">★</span>
-                    <% end %>
-                  </h2>
+                  <h2 class="text-sm">{media_log.title}</h2>
                   <%= if media_log.creator do %>
                     <p class="text-sm text-base-content/60">{media_log.creator}</p>
                   <% end %>
