@@ -239,6 +239,7 @@ defmodule WeaktyWeb.MediaLogLive.Index do
     all_media_logs =
       Weakty.MediaLogs.MediaLog
       |> Ash.Query.filter(status == :consumed)
+      |> Ash.Query.filter(public == true)
       |> Ash.Query.sort(date_consumed: :desc)
       |> Ash.read!()
       |> Ash.load!(:tags)
