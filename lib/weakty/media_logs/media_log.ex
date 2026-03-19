@@ -25,8 +25,23 @@ defmodule Weakty.MediaLogs.MediaLog do
     define :delete_media_log, action: :destroy
   end
 
+  calculations do
+    calculate :sort_date, :date,
+              expr(
+                if(
+                  is_nil(date_finished),
+                  if(is_nil(date_consumed), date_started, date_consumed),
+                  date_finished
+                )
+              )
+  end
+
   actions do
     defaults [:read]
+
+    read :list_admin do
+      pagination offset?: true, countable: true, default_limit: 25
+    end
 
     read :get_by_slug do
       get_by :slug

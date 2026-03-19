@@ -5,6 +5,10 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
 
   on_mount {WeaktyWeb.LiveUserAuth, :live_user_required}
 
+  require Ash.Query
+
+  @per_page 25
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -16,16 +20,25 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
      |> assign(:search, "")
      |> assign(:sort_by, "date")
      |> assign(:sort_dir, "desc")
-     |> load_media_logs(), layout: {WeaktyWeb.Layouts, :admin}}
+     |> assign(:page, 1)
+     |> assign(:total_count, 0)
+     |> assign(:total_pages, 1)
+     |> assign(:media_logs, []), layout: {WeaktyWeb.Layouts, :admin}}
   end
 
   @impl true
   def handle_params(params, _url, socket) do
-    {:noreply,
-     socket
-     |> assign(:media_type_filter, Map.get(params, "type", "all"))
-     |> assign(:status_filter, Map.get(params, "status", "all"))
-     |> load_media_logs()}
+    socket =
+      socket
+      |> assign(:media_type_filter, Map.get(params, "type", "all"))
+      |> assign(:status_filter, Map.get(params, "status", "all"))
+      |> assign(:search, Map.get(params, "q", ""))
+      |> assign(:sort_by, Map.get(params, "sort", "date"))
+      |> assign(:sort_dir, Map.get(params, "dir", "desc"))
+      |> assign(:page, parse_page(params["page"]))
+      |> load_media_logs()
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -48,33 +61,30 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
   end
 
   def handle_event("filter_media_type", %{"media_type" => media_type}, socket) do
-    {:noreply,
-     push_patch(socket,
-       to: ~p"/admin/media-logs?type=#{media_type}&status=#{socket.assigns.status_filter}"
-     )}
+    {:noreply, push_patch(socket, to: build_path(socket, %{type: media_type, page: 1}))}
   end
 
   def handle_event("filter_status", %{"status" => status}, socket) do
-    {:noreply,
-     push_patch(socket,
-       to: ~p"/admin/media-logs?type=#{socket.assigns.media_type_filter}&status=#{status}"
-     )}
+    {:noreply, push_patch(socket, to: build_path(socket, %{status: status, page: 1}))}
   end
 
   def handle_event("search", %{"q" => q}, socket) do
-    {:noreply, socket |> assign(:search, q) |> load_media_logs()}
+    {:noreply, push_patch(socket, to: build_path(socket, %{q: q, page: 1}))}
   end
 
   def handle_event("sort", %{"col" => col}, socket) do
-    {sort_by, sort_dir} =
+    dir =
       if socket.assigns.sort_by == col do
-        {col, if(socket.assigns.sort_dir == "asc", do: "desc", else: "asc")}
+        if socket.assigns.sort_dir == "asc", do: "desc", else: "asc"
       else
-        {col, "asc"}
+        "asc"
       end
 
-    {:noreply,
-     socket |> assign(:sort_by, sort_by) |> assign(:sort_dir, sort_dir) |> load_media_logs()}
+    {:noreply, push_patch(socket, to: build_path(socket, %{sort: col, dir: dir, page: 1}))}
+  end
+
+  def handle_event("page", %{"page" => page}, socket) do
+    {:noreply, push_patch(socket, to: build_path(socket, %{page: page}))}
   end
 
   @impl true
@@ -82,7 +92,7 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     ~H"""
     <.admin_header
       title="Media Logs"
-      subtitle={"#{length(@media_logs)} media log#{if length(@media_logs) != 1, do: "s"}"}
+      subtitle={"#{@total_count} media log#{if @total_count != 1, do: "s"}"}
     >
       <:actions>
         <.link navigate="/admin/media-logs/new" class="btn btn-primary">
@@ -231,6 +241,45 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
             </tbody>
           </table>
         </div>
+
+        <%= if @total_pages > 1 do %>
+          <div class="flex justify-center mt-6">
+            <div class="join">
+              <button
+                class="join-item btn btn-sm"
+                phx-click="page"
+                phx-value-page={@page - 1}
+                disabled={@page <= 1}
+              >
+                «
+              </button>
+              <%= for p <- page_range(@page, @total_pages) do %>
+                <%= if p == :gap do %>
+                  <button class="join-item btn btn-sm btn-disabled">…</button>
+                <% else %>
+                  <button
+                    class={"join-item btn btn-sm #{if p == @page, do: "btn-active"}"}
+                    phx-click="page"
+                    phx-value-page={p}
+                  >
+                    {p}
+                  </button>
+                <% end %>
+              <% end %>
+              <button
+                class="join-item btn btn-sm"
+                phx-click="page"
+                phx-value-page={@page + 1}
+                disabled={@page >= @total_pages}
+              >
+                »
+              </button>
+            </div>
+          </div>
+          <p class="text-center text-sm text-base-content/50 mt-2">
+            Page {@page} of {@total_pages} · {@total_count} total
+          </p>
+        <% end %>
       <% end %>
     </div>
     """
@@ -255,73 +304,116 @@ defmodule WeaktyWeb.AdminLive.MediaLogs.Index do
     media_type_filter = socket.assigns.media_type_filter
     status_filter = socket.assigns.status_filter
     search = socket.assigns[:search] || ""
-    sort_by = socket.assigns[:sort_by] || "updated_at"
+    sort_by = socket.assigns[:sort_by] || "date"
     sort_dir = socket.assigns[:sort_dir] || "desc"
+    page = socket.assigns[:page] || 1
 
-    media_logs =
-      case {media_type_filter, status_filter} do
-        {"all", "all"} ->
-          Weakty.MediaLogs.MediaLog.list_media_logs!()
+    sort_order = if sort_dir == "desc", do: :desc, else: :asc
 
-        {"all", status} ->
-          Weakty.MediaLogs.MediaLog.list_by_status!(String.to_existing_atom(status))
-
-        {media_type, "all"} ->
-          Weakty.MediaLogs.MediaLog.list_by_media_type!(String.to_existing_atom(media_type))
-
-        {media_type, status} ->
-          Weakty.MediaLogs.MediaLog.list_media_logs!()
-          |> Enum.filter(fn ml ->
-            ml.media_type == String.to_existing_atom(media_type) &&
-              ml.status == String.to_existing_atom(status)
-          end)
+    sort =
+      case sort_by do
+        "title" -> [title: sort_order]
+        "creator" -> [creator: sort_order]
+        "rating" -> [rating: sort_order]
+        "date" -> [sort_date: sort_order]
+        _ -> [updated_at: sort_order]
       end
-      |> Ash.load!(:tags)
-      |> filter_by_search(search)
-      |> sort_results(sort_by, sort_dir)
 
-    assign(socket, :media_logs, media_logs)
+    query =
+      Weakty.MediaLogs.MediaLog
+      |> Ash.Query.for_read(:list_admin)
+      |> filter_media_type(media_type_filter)
+      |> filter_status(status_filter)
+      |> filter_search(search)
+      |> Ash.Query.sort(sort)
+      |> Ash.Query.load(:tags)
+
+    result =
+      Ash.read!(query,
+        authorize?: false,
+        page: [limit: @per_page, offset: (page - 1) * @per_page, count: true]
+      )
+
+    total_count = result.count || 0
+    total_pages = max(1, ceil(total_count / @per_page))
+
+    socket
+    |> assign(:media_logs, result.results)
+    |> assign(:total_count, total_count)
+    |> assign(:total_pages, total_pages)
   end
 
-  defp filter_by_search(list, ""), do: list
+  defp filter_media_type(query, "all"), do: query
 
-  defp filter_by_search(list, q) do
-    q = String.downcase(q)
-
-    Enum.filter(list, fn ml ->
-      String.contains?(String.downcase(ml.title || ""), q) ||
-        String.contains?(String.downcase(ml.creator || ""), q)
-    end)
+  defp filter_media_type(query, type_str) do
+    type_atom = String.to_existing_atom(type_str)
+    Ash.Query.filter(query, media_type == ^type_atom)
   end
 
-  defp sort_results(list, sort_by, sort_dir) do
-    sorted =
-      Enum.sort_by(list, fn ml ->
-        case sort_by do
-          "title" ->
-            String.downcase(ml.title || "")
+  defp filter_status(query, "all"), do: query
 
-          "creator" ->
-            String.downcase(ml.creator || "")
+  defp filter_status(query, status_str) do
+    status_atom = String.to_existing_atom(status_str)
+    Ash.Query.filter(query, status == ^status_atom)
+  end
 
-          "media_type" ->
-            to_string(ml.media_type)
+  defp filter_search(query, ""), do: query
 
-          "status" ->
-            to_string(ml.status)
+  defp filter_search(query, search_str) do
+    lower = String.downcase(search_str)
 
-          "rating" ->
-            ml.rating || 0
+    Ash.Query.filter(
+      query,
+      contains(string_downcase(title), ^lower) or contains(string_downcase(creator), ^lower)
+    )
+  end
 
-          "date" ->
-            date = ml.date_finished || ml.date_consumed || ml.date_started
-            if date, do: Date.to_gregorian_days(date), else: 0
+  defp build_path(socket, overrides) do
+    params = %{
+      "type" => socket.assigns.media_type_filter,
+      "status" => socket.assigns.status_filter,
+      "q" => socket.assigns.search,
+      "sort" => socket.assigns.sort_by,
+      "dir" => socket.assigns.sort_dir,
+      "page" => socket.assigns.page
+    }
 
-          _ ->
-            if ml.updated_at, do: DateTime.to_unix(ml.updated_at, :microsecond), else: 0
-        end
+    merged =
+      params
+      |> Map.merge(Map.new(overrides, fn {k, v} -> {to_string(k), to_string(v)} end))
+      |> Enum.reject(fn
+        {"type", "all"} -> true
+        {"status", "all"} -> true
+        {"q", ""} -> true
+        {"sort", "date"} -> true
+        {"dir", "desc"} -> true
+        {"page", "1"} -> true
+        _ -> false
       end)
+      |> Map.new()
 
-    if sort_dir == "desc", do: Enum.reverse(sorted), else: sorted
+    ~p"/admin/media-logs?#{merged}"
+  end
+
+  defp parse_page(nil), do: 1
+  defp parse_page(p) when is_integer(p), do: max(1, p)
+
+  defp parse_page(p) when is_binary(p) do
+    case Integer.parse(p) do
+      {n, _} -> max(1, n)
+      :error -> 1
+    end
+  end
+
+  defp page_range(_current, total) when total <= 7 do
+    1..total
+  end
+
+  defp page_range(current, total) do
+    cond do
+      current <= 4 -> Enum.to_list(1..5) ++ [:gap, total]
+      current >= total - 3 -> [1, :gap] ++ Enum.to_list((total - 4)..total)
+      true -> [1, :gap] ++ Enum.to_list((current - 1)..(current + 1)) ++ [:gap, total]
+    end
   end
 end
