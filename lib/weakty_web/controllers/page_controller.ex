@@ -23,7 +23,7 @@ defmodule WeaktyWeb.PageController do
     currently_reading =
       Weakty.MediaLogs.MediaLog
       |> Ash.Query.filter(
-        media_type == :book and not is_nil(date_started) and is_nil(date_finished) and
+        (media_type == :book or media_type == :comic) and not is_nil(date_started) and is_nil(date_finished) and
           public == true
       )
       |> Ash.Query.sort(date_started: :desc)
