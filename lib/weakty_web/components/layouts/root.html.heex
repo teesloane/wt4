@@ -45,7 +45,16 @@
   </head>
   <body>
     <%= if !String.starts_with?(@conn.request_path, "/admin") do %>
-      <nav class="sticky top-0 z-40 border-b border-base-300 bg-base-100">
+      <nav
+        id="main-nav"
+        class={[
+          "top-0 z-40 w-full transition-colors duration-300",
+          if(@conn.request_path == "/",
+            do: "absolute text-white",
+            else: "sticky border-b border-base-300 bg-base-100"
+          )
+        ]}
+      >
         <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between averia">
           <!-- Logo -->
           <.link navigate={~p"/"} class="font-bold text-sm tracking-widest uppercase">
@@ -225,6 +234,26 @@
             closeMenu();
           }
         });
+      })();
+    </script>
+
+    <script>
+      (() => {
+        const nav = document.getElementById('main-nav');
+        if (!nav || !nav.classList.contains('absolute')) return;
+
+        const update = () => {
+          const pastHero = window.scrollY >= window.innerHeight;
+          nav.classList.toggle('fixed', pastHero);
+          nav.classList.toggle('absolute', !pastHero);
+          nav.classList.toggle('bg-base-100', pastHero);
+          nav.classList.toggle('border-b', pastHero);
+          nav.classList.toggle('border-base-300', pastHero);
+          nav.classList.toggle('text-white', !pastHero);
+        };
+
+        window.addEventListener('scroll', update, { passive: true });
+        update();
       })();
     </script>
 

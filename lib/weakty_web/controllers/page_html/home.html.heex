@@ -1,57 +1,28 @@
 <Layouts.flash_group flash={@flash} />
 
+<div class="relative w-full h-screen">
+  <img src={~p"/images/woods.webp"} alt="" class="absolute inset-0 w-full h-full object-cover" />
+  <div class="absolute inset-0 bg-black/40" />
+  <div class="absolute inset-0 flex flex-col items-start justify-center p-8  pb-32 max-w-7xl mx-auto">
+    <div class="text-white text-2xl md:text-3xl lg:text-4xl">Hello, my name is Ty.</div>
+    <div class="text-white/70 mt-4 text-base md:text-lg">This is where I write and share my work.</div>
+    <div class="text-white/40 text-base md:text-lg">(That's me in the woods, at peace.)</div>
+    <%= if @recent_fiction do %>
+      <div class="mt-10 text-white/50 text-xs uppercase tracking-widest">Latest short story</div>
+      <a href={~p"/posts/#{@recent_fiction.slug}"} class="mt-2 text-white text-lg md:text-xl hover:text-white/70 transition-colors">
+        {@recent_fiction.title}
+      </a>
+    <% end %>
+  </div>
+</div>
+
 <% section_class =
-  "w-full  mx-auto min-h-[45vh] p-8 px-12 flex flex-col justify-center border border-base-300" %>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-0 flex flex-col max-w-[2560px] mx-auto">
-  <section class={[section_class]}>
-    <div class="md:text-xl lg:text-2xl">
-    Hello, my name is Ty.
-    </div>
-    <div class="mt-8 text-content-200 opacity-50 md:text-base lg:text-lg">
-      This is where I write and share my work.
-    </div>
-  </section>
+  "w-full mx-auto min-h-[360px] p-8 px-12 flex flex-col  border border-base-300" %>
 
-  <%!--
 
-  <section class={section_class}>Some things I've made:</section>
-  --%>
-
-  <section class={section_class}>
-    <div class="w-full">
-      <.home_grid_header>The latest story I wrote is:</.home_grid_header>
-      <%= if @recent_fiction do %>
-        <.content_item
-          href={~p"/posts/#{@recent_fiction.slug}"}
-          size="xl"
-          title={@recent_fiction.title}
-        />
-      <% else %>
-        <p class="text-base-content/40 text-sm">No fiction yet</p>
-      <% end %>
-      <.view_all href={~p"/fiction"} label="View other stories" />
-    </div>
-  </section>
-  <section class={section_class}>
-    <div class="w-full">
-      <.home_grid_header>Currently reading:</.home_grid_header>
-      <%= if Enum.empty?(@currently_reading) do %>
-        <p class="text-base-content/40 text-sm">Nothing at the moment</p>
-      <% else %>
-        <div class="space-y-3">
-          <%= for book <- @currently_reading do %>
-            <div>
-              <div class="text-sm">{book.title}</div>
-              <%= if book.creator do %>
-                <div class="text-xs opacity-40 mt-0.5">{book.creator}</div>
-              <% end %>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
-      <.view_all href={~p"/media-logs?type=book&status=all&year=all"} label="View the media log" />
-    </div>
-  </section>
+<main class="max-w-[2500px] mx-auto  pb-24">
+  
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4">
 
   <section class={section_class}>
     <div class="w-full">
@@ -84,6 +55,28 @@
     </div>
   </section>
 
+  <section class={section_class}>
+    <div class="w-full">
+      <.home_grid_header>Currently reading:</.home_grid_header>
+      <%= if Enum.empty?(@currently_reading) do %>
+        <p class="text-base-content/40 text-sm">Nothing at the moment</p>
+      <% else %>
+        <div class="space-y-3">
+          <%= for book <- @currently_reading do %>
+            <div>
+              <div class="text-sm">{book.title}</div>
+              <%= if book.creator do %>
+                <div class="text-xs opacity-40 mt-0.5">{book.creator}</div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <.view_all href={~p"/media-logs?type=book&status=all&year=all"} label="View the media log" />
+    </div>
+  </section>
+
+
   <section :if={@update} class={section_class}>
     <div class="w-full">
       <.home_grid_header>Now</.home_grid_header>
@@ -93,7 +86,7 @@
       >
         <div class="mb-3">{@update.title}</div>
         <div
-          class="flex flex-col relative max-h-32 overflow-hidden text-sm whitespace-pre-line"
+          class="flex flex-col relative max-h-48 overflow-hidden text-sm whitespace-pre-line"
           style="mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);"
         >
           {truncate_html(@update.html, 500)}
@@ -104,7 +97,7 @@
   </section>
 </div>
 
-<div class="min-h-[4vh] flex flex-col md:flex-row px-12 py-8 md:py-2 space-x-3 text-sm  md:items-center items-start">
+<div class="min-h-[4vh] flex flex-col md:flex-row  py-8 md:py-2 space-x-3 text-sm  md:items-center items-start my-16 justify-center max-w-7xl mx-auto">
   <.home_grid_header class="md:!mb-0">Areas of interest:</.home_grid_header>
   <%= for area <- @top_areas do %>
     <div class="flex items-baseline gap-1 mr-4">
@@ -117,3 +110,4 @@
 
   <.view_all class="md:!mt-0" href={~p"/areas"} label="View all areas" />
 </div>
+</main>

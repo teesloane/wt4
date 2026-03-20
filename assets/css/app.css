@@ -29,9 +29,9 @@
   default: false;
   prefersdark: true;
   color-scheme: "dark";
-    --color-base-100: #20242b;
-    --color-base-200: #262b33;
-    --color-base-300: #3e4455;
+    --color-base-100: oklch(20% 0.004 49.25);
+    --color-base-200: oklch(25% 0.006 56.043);
+    --color-base-300: oklch(30% 0.007 34.298);
     --color-base-content: #eeeeee;
     --color-primary: #61afef;
     --color-primary-content: oklch(96% 0.018 272.314);
