@@ -148,14 +148,17 @@
 
 @utility prose {
     p {
-      color: var(--color-base-content);
+      /* color: var(--color-base-content); */
     
     }
     blockquote {
       font-weight: 400;
       padding-inline-start: 2em;
       border-inline-start-color: var(--color-base-300);
-      color: var(--color-base-content);
+      /* color: var(--color-base-content); */
+
+      /* Tailwind prose overrides blockquote to be brighter). Don't want that */
+      color: color-mix(in oklab, var(--color-base-content) 80%, #0000);
         /* Disable adding quote marks to block-quotes: https://github.com/tailwindlabs/tailwindcss-typography/issues/66 */
         p {
             font-style: normal;
