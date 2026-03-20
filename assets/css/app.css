@@ -146,6 +146,28 @@
   }
 }
 
+@utility prose {
+    p {
+      color: var(--color-base-content);
+    
+    }
+    blockquote {
+      font-weight: 400;
+      padding-inline-start: 2em;
+      border-inline-start-color: var(--color-base-300);
+      color: var(--color-base-content);
+        /* Disable adding quote marks to block-quotes: https://github.com/tailwindlabs/tailwindcss-typography/issues/66 */
+        p {
+            font-style: normal;
+            &:first-of-type::before,
+            &:last-of-type::after {
+                content: none;
+            }
+            margin-bottom: 1em;
+        }
+    }
+}
+
 /* Typography overrides for prose */
 @layer components {
 
