@@ -40,9 +40,8 @@ defmodule WeaktyWeb.PageController do
       Weakty.Posts.Post
       |> Ash.Query.filter(status == :published and post_type == :fiction)
       |> Ash.Query.sort(published_at: :desc)
-      |> Ash.Query.limit(1)
+      |> Ash.Query.limit(3)
       |> Ash.read!()
-      |> List.first()
 
     projects =
       Weakty.Projects.Project
@@ -69,6 +68,7 @@ defmodule WeaktyWeb.PageController do
       currently_reading: currently_reading,
       update: update,
       recent_fiction: recent_fiction,
+      latest_story: recent_fiction |> List.first,
       random_quote: random_quote,
       top_areas: top_areas
     )
