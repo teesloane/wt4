@@ -174,8 +174,4 @@
 /* Typography overrides for prose */
 @layer components {
 
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
 }

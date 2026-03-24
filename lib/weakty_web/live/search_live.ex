@@ -128,7 +128,7 @@ defmodule WeaktyWeb.SearchLive do
             <div id="search-results" class="max-h-80 overflow-y-auto">
               <%= if @query != "" do %>
                 <%= if Enum.empty?(@results) do %>
-                  <div class="px-4 py-8 text-center text-base-content/50 text-sm">
+                  <div class="px-4 py-6 text-center text-base-content/50 text-sm">
                     No results for "{@query}"
                   </div>
                 <% else %>

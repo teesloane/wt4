@@ -152,13 +152,6 @@ defmodule Weakty.Tags.Tag do
     timestamps()
   end
 
-  aggregates do
-    count :links_count, :links
-    count :posts_count, :posts
-    count :media_logs_count, :media_logs
-    count :projects_count, :projects
-  end
-
   relationships do
     many_to_many :links, Weakty.Links.Link do
       through Weakty.Links.LinkTag
