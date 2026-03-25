@@ -8,7 +8,7 @@
     <div class="text-white/70 mt-4 text-base md:text-lg">This is where I write and share my work.</div>
     <div class="text-white/40 text-base md:text-lg">(That's me in the woods, at peace.)</div>
     <%= if @latest_story do %>
-      <div class="mt-10 text-white/50 text-xs uppercase tracking-widest">Latest short story</div>
+      <div class="mt-10 text-white/70 text-xs uppercase tracking-widest">Latest short story</div>
       <a href={~p"/posts/#{@latest_story.slug}"} class="mt-2 text-white text-lg md:text-xl hover:text-white/70 transition-colors">
         {@latest_story.title}
       </a>
@@ -17,7 +17,7 @@
 </div>
 
 <% section_class =
-  "w-full mx-auto min-h-[360px] p-12 px-16 flex flex-col  border border-base-300" %>
+  "w-full mx-auto min-h-[360px] p-12 px-16 flex flex-col justify-center  border border-base-300" %>
 
 
 <main class="max-w-[2500px] mx-auto  pb-24">
@@ -27,11 +27,13 @@
   <section class={section_class}>
     <div class="w-full">
       <.home_grid_header>About This Site</.home_grid_header>
-      <div class="space-y-3 text-sm">
-      <p>This site is a catalogue of the creative projects and interests I explore in my free time, usually taking the form of non/fiction writing, programming, music, and visuals & design. </p>
-      <p>Everything on this site was made by me, unless stated otherwise.</p>
-      <p>If any of this matters to you, send me an e-mail and tell me why (or just say hello): weakty [at] fastmail.com</p>
-      <p>Thank you.</p>
+      <div class="space-y-3 text-base">
+      <p>This site is a catalogue of the creative projects and interests I explore in my free time, usually taking the form of non/fiction writing, programming, music, and visuals & design.
+      Everything on this site was made by me, unless stated otherwise.
+      </p>
+      <p>Thank you for visiting and
+      <a href="mailto:weakty@fastmail.com" class="text-base-content/70 border-b border-bg-base-100/0 hover:border-bg-base-100/100  hover:text-base-content/100 transition-all">don't hesitate to say hi.</a>
+      </p>
       </div>
     </div>
   </section>
@@ -65,7 +67,7 @@
     <div class="w-full">
       <.home_grid_header>Projects & Experiments</.home_grid_header>
       <%= if Enum.empty?(@projects) do %>
-        <p class="text-base-content/40 text-sm">No projects yet</p>
+        <p class="text-base-content/40 text-base">No projects yet</p>
       <% else %>
         <div class="space-y-3">
           <%= for project <- @projects do %>
@@ -84,12 +86,12 @@
     <div class="w-full">
       <.home_grid_header>Currently reading:</.home_grid_header>
       <%= if Enum.empty?(@currently_reading) do %>
-        <p class="text-base-content/40 text-sm">Nothing at the moment</p>
+        <p class="text-base-content/40 text-base">Nothing at the moment</p>
       <% else %>
         <div class="space-y-3">
           <%= for book <- @currently_reading do %>
             <div>
-              <div class="text-sm">{book.title}</div>
+              <div class="text-base">{book.title}</div>
               <%= if book.creator do %>
                 <div class="text-xs opacity-40 mt-0.5">{book.creator}</div>
               <% end %>
@@ -107,11 +109,11 @@
       <.home_grid_header>Now</.home_grid_header>
       <a
         href={~p"/now/#{@update.slug}"}
-        class="hover:opacity-50 transition-opacity text-sm block mb-3"
+        class="hover:opacity-50 transition-opacity text-base block mb-3"
       >
         <div class="mb-3">{@update.title}</div>
         <div
-          class="flex flex-col relative max-h-48 overflow-hidden text-sm whitespace-pre-line"
+          class="flex flex-col relative max-h-48 overflow-hidden text-base whitespace-pre-line"
           style="mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);"
         >
           {truncate_html(@update.html, 500)}
@@ -122,11 +124,11 @@
   </section>
 </div>
 
-<div class="min-h-[4vh] flex flex-col md:flex-row  py-8 md:py-2 space-x-3 text-sm  md:items-center items-start my-16 justify-center max-w-7xl mx-auto">
+<div class="min-h-[4vh] flex flex-col md:flex-row  py-8 md:py-2 space-x-3 text-base  md:items-center items-start my-16 justify-center max-w-7xl mx-auto">
   <.home_grid_header class="md:!mb-0">Areas of interest:</.home_grid_header>
   <%= for area <- @top_areas do %>
     <div class="flex items-baseline gap-1 mr-4">
-      <a href={~p"/areas/#{area.slug}"} class="flex-1 text-sm hover:opacity-100 transition-opacity">
+      <a href={~p"/areas/#{area.slug}"} class="flex-1 text-base hover:opacity-100 transition-opacity">
         {area.name}
       </a>
       <span class="text-xs opacity-50 tabular-nums">[{area.count}]</span>

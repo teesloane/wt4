@@ -44,7 +44,7 @@ defmodule WeaktyWeb.LinkLive.Show do
         </header>
 
         <%= if @link.commentary do %>
-          <div class="prose prose-sm max-w-none opacity-80 mb-6">
+          <div class="prose max-w-none mb-6">
             {Phoenix.HTML.raw(MDEx.to_html!(@link.commentary))}
           </div>
         <% end %>

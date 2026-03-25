@@ -595,7 +595,7 @@ defmodule WeaktyWeb.CoreComponents do
   attr :label, :string, default: nil
   attr :label_position, :atom, default: :left, values: [:left, :right]
   attr :current, :boolean, default: false
-  attr :size, :string, default: "sm", values: ~w(sm base lg xl)
+  attr :size, :string, default: "base", values: ~w(sm base lg xl)
 
   def content_item(assigns) do
     ~H"""
