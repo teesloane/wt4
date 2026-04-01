@@ -47,3 +47,6 @@ seed/weakty-ghost.json
 seed/books
 
 priv/static/uploads
+
+# Docker bind-mount data
+data/

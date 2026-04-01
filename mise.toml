@@ -1,0 +1,56 @@
+[settings]
+experimental = true
+
+[env]
+SERVER = "weakty@100.104.105.83"
+REMOTE_DIR = "/home/weakty/server/docker/weakty"
+
+[tasks."deploy"]
+description = "Rsync code to server and rebuild container"
+run = """
+rsync -av --progress \
+  --exclude='_build/' \
+  --exclude='deps/' \
+  --exclude='*.db' \
+  --exclude='*.db-*' \
+  --exclude='.env' \
+  --exclude='priv/static/uploads/' \
+  ./ $SERVER:$REMOTE_DIR/
+ssh $SERVER "cd $REMOTE_DIR && docker compose up -d --build"
+"""
+
+[tasks."deploy:init"]
+description = "First deploy — copies code + database, creates remote dir, builds container"
+run = """
+ssh $SERVER "mkdir -p $REMOTE_DIR"
+rsync -av --progress \
+  --exclude='_build/' \
+  --exclude='deps/' \
+  --exclude='.env' \
+  --exclude='priv/static/uploads/' \
+  ./ $SERVER:$REMOTE_DIR/
+ssh $SERVER "cd $REMOTE_DIR && docker compose up -d --build"
+"""
+
+[tasks."deploy:logs"]
+description = "Tail logs from the remote container"
+run = "ssh $SERVER 'cd $REMOTE_DIR && docker compose logs -f'"
+
+[tasks."init:db"]
+description = "FIRST DEPLOY ONLY — overwrites server db with local dev db"
+run = "rsync -av weakty_dev.db $SERVER:$REMOTE_DIR/weakty.db"
+
+[tasks."init:uploads"]
+description = "FIRST DEPLOY ONLY — overwrites server uploads with local dev uploads"
+run = """
+ssh $SERVER "mkdir -p $REMOTE_DIR/priv/static/uploads"
+rsync -av priv/static/uploads/ $SERVER:$REMOTE_DIR/priv/static/uploads/
+"""
+
+[tasks."deploy:uploads:pull"]
+description = "Pull production uploads down to priv/static/uploads/"
+run = "rsync -av $SERVER:$REMOTE_DIR/priv/static/uploads/ priv/static/uploads/"
+
+[tasks."deploy:db:pull"]
+description = "Pull the production database down to ./weakty_prod.db"
+run = "rsync -av $SERVER:$REMOTE_DIR/weakty.db ./weakty_prod.db"

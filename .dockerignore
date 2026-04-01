@@ -1,0 +1,16 @@
+_build/
+deps/
+doc/
+.git/
+.elixir_ls/
+cover/
+tmp/
+*.db
+*.db-*
+priv/static/assets/
+priv/static/cache_manifest.json
+priv/static/uploads/
+assets/node_modules/
+.DS_Store
+.env
+data/

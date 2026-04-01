@@ -1,0 +1,16 @@
+services:
+  web:
+    build: .
+    platform: linux/amd64
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4000:4000"
+    env_file:
+      - .env
+    volumes:
+      - ./weakty.db:/data/weakty.db
+      - ./priv/static/uploads:/app/lib/weakty-0.1.0/priv/static/uploads
+      - ./priv/backups:/app/lib/weakty-0.1.0/priv/backups
+    environment:
+      DATABASE_PATH: /data/weakty.db
+      PHX_SERVER: "true"

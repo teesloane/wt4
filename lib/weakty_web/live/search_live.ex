@@ -114,7 +114,7 @@ defmodule WeaktyWeb.SearchLive do
                 name="query"
                 phx-keyup="search"
                 phx-debounce="100"
-                placeholder="Search posts, projects, links, media..."
+                placeholder="Search posts, projects, links, etc..."
                 class="flex-1 py-4 bg-transparent text-base placeholder:text-base-content/40 focus:outline-none"
                 phx-mounted={JS.focus()}
                 autocomplete="off"

@@ -1,0 +1,8 @@
+"/Users/ty/Sync/PARA/projects/development/weakty4/entrypoint.sh"
+"/Users/ty/Sync/PARA/projects/development/weakty4/deploying.md"
+"/Users/ty/Sync/PARA/projects/development/weakty4/docker-compose.yml"
+"/Users/ty/Sync/PARA/projects/development/weakty4/README.md"
+"/Users/ty/Sync/PARA/projects/development/weakty4/mise.toml"
+"/Users/ty/Sync/PARA/projects/development/weakty4/Dockerfile"
+"/Users/ty/Sync/PARA/projects/development/weakty4/.env"
+"/Users/ty/Sync/PARA/projects/development/weakty4/.env.example"
