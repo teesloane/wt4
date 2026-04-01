@@ -6,3 +6,4 @@
 "/Users/ty/Sync/PARA/projects/development/weakty4/Dockerfile"
 "/Users/ty/Sync/PARA/projects/development/weakty4/.env"
 "/Users/ty/Sync/PARA/projects/development/weakty4/.env.example"
+"/Users/ty/Sync/PARA/projects/development/weakty4/lib/weakty_web/live/search_live.ex"

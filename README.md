@@ -36,3 +36,11 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 * Docs: https://hexdocs.pm/phoenix
 * Forum: https://elixirforum.com/c/phoenix-forum
 * Source: https://github.com/phoenixframework/phoenix
+
+## Deploying
+
+```
+mise run deploy
+```
+
+BEWARE! Don't run the mise `init` tasks unless you are starting fresh on a new server for this app. These commands will push things like the db, uploads folder etc, to the destination, replacing existing things.
