@@ -83,7 +83,10 @@ defmodule WeaktyWeb.AdminComponents do
         </ul>
       </nav>
 
-      <div class="p-4 border-t border-base-300">
+      <div class="p-4 border-t border-base-300 flex items-center justify-between">
+        <.link href="/sign-out" class="text-sm text-base-content/50 hover:text-base-content">
+          <.icon name="hero-arrow-right-on-rectangle" class="w-5 h-5" />
+        </.link>
         <label class="swap swap-rotate">
           <input
             type="checkbox"
