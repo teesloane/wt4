@@ -1,3 +1,4 @@
+"/Users/ty/Desktop/weaknotes.md"
 "/Users/ty/Sync/PARA/projects/development/weakty4/entrypoint.sh"
 "/Users/ty/Sync/PARA/projects/development/weakty4/deploying.md"
 "/Users/ty/Sync/PARA/projects/development/weakty4/docker-compose.yml"
