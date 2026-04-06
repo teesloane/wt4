@@ -96,7 +96,7 @@ const FocusNotify = {
   notify(title, body) {
     if (!("Notification" in window)) return
 
-    const fire = () => new Notification(title, {body, icon: "/favicon.ico"})
+    const fire = () => new Notification(title, {body, icon: "/favicon.png"})
 
     if (Notification.permission === "granted") {
       fire()
