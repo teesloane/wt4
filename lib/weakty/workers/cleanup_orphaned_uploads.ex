@@ -16,6 +16,18 @@ defmodule Weakty.Workers.CleanupOrphanedUploads do
       |> Enum.map(&Path.basename/1)
       |> MapSet.new()
 
+    # Projects → root uploads/ files
+    projects = Ash.read!(Weakty.Projects.Project, domain: Weakty.Projects, authorize?: false)
+
+    project_refs =
+      projects
+      |> Enum.flat_map(fn project -> [project.featured_image | project.images || []] end)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.map(&Path.basename/1)
+      |> MapSet.new()
+
+    post_refs = MapSet.union(post_refs, project_refs)
+
     # MediaLogs → uploads/media/ files
     media_logs = Ash.read!(Weakty.MediaLogs.MediaLog, domain: Weakty.MediaLogs, authorize?: false)
 
