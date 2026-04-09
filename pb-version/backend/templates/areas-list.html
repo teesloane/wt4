@@ -1,0 +1,26 @@
+{{define "areas-list"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>areas · weakty</title>
+  {{template "styles" .}}
+</head>
+<body>
+<div class="wrap">
+  {{template "nav" .}}
+  <main>
+    <p class="page-label">areas of interest</p>
+    <div class="areas-grid">
+      {{range .Tags}}
+      <a class="area-card" href="/areas/{{.Slug}}">
+        <h2>{{.Name}}</h2>
+      </a>
+      {{end}}
+    </div>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

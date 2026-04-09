@@ -1,0 +1,37 @@
+{{define "media-detail"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}} · weakty</title>
+  {{template "styles" .}}
+</head>
+<body>
+<div class="wrap">
+  {{template "nav" .}}
+  <article>
+    <header>
+      {{if .Thumbnail}}<img src="{{.Thumbnail}}" alt="" style="height:160px;width:auto;margin-bottom:1.25rem;display:block;">{{end}}
+      <h1>{{.Title}}</h1>
+      {{if .Creator}}<p class="media-creator">{{.Creator}}</p>{{end}}
+      <p class="meta">
+        <span class="type-label">{{.MediaType}}</span>
+        {{if .PublishedAt}}{{.PublishedAt}}{{end}}
+        {{if .Rating}} · <span class="rating">{{.Rating}}</span>{{end}}
+      </p>
+      {{if .Tags}}<div class="tags" style="margin-top:0.5rem">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+    </header>
+    {{if .Notes}}<div class="body">{{.Notes}}</div>{{end}}
+    {{if .ExternalURL}}
+    <p style="margin-top:1.5rem">
+      <a href="{{.ExternalURL}}" target="_blank" rel="noopener"
+         style="font-family:system-ui,sans-serif;font-size:0.9rem;color:#888">external link →</a>
+    </p>
+    {{end}}
+    <div class="back-link"><a href="/media-logs">← media</a></div>
+  </article>
+</div>
+</body>
+</html>
+{{end}}

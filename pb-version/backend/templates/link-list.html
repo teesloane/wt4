@@ -1,0 +1,27 @@
+{{define "link-list"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>links · weakty</title>
+  {{template "styles" .}}
+</head>
+<body>
+<div class="wrap">
+  {{template "nav" .}}
+  <main>
+    <p class="page-label">links</p>
+    {{range .Items}}
+    <div class="item">
+      <h2><a href="{{.URL}}">{{.Title}}</a></h2>
+      <p class="meta">{{.PublishedAt}}</p>
+      {{if .Excerpt}}<p class="excerpt">{{.Excerpt}}</p>{{end}}
+      {{if .Tags}}<div class="tags">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+    </div>
+    {{end}}
+  </main>
+</div>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,31 @@
+{{define "area-detail"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Tag.Name}} · weakty</title>
+  {{template "styles" .}}
+</head>
+<body>
+<div class="wrap">
+  {{template "nav" .}}
+  <main>
+    <p class="page-label">area</p>
+    <h1 style="margin-bottom:2rem">{{.Tag.Name}}</h1>
+    {{if .Tag.DescriptionHTML}}<div class="body" style="margin-bottom:2rem">{{.Tag.DescriptionHTML}}</div>{{end}}
+    {{range .Items}}
+    <div class="item">
+      <h2><a href="{{.URL}}">{{.Title}}</a></h2>
+      <p class="meta">
+        {{if .TypeLabel}}<span class="type-label">{{.TypeLabel}}</span>{{end}}
+        {{.PublishedAt}}
+      </p>
+      {{if .Excerpt}}<p class="excerpt">{{.Excerpt}}</p>{{end}}
+    </div>
+    {{end}}
+  </main>
+</div>
+</body>
+</html>
+{{end}}

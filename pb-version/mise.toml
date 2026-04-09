@@ -1,0 +1,42 @@
+[tools]
+go = "latest"
+
+[vars]
+BACKEND_PORT = "8091"
+
+[tasks.build]
+description = "Build the PocketBase binary"
+run = "go build -o pb-weakty ."
+dir = "{{config_root}}/backend"
+
+[tasks.dev]
+description = "Run PocketBase in dev mode (no migration)"
+run = "./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}"
+dir = "{{config_root}}/backend"
+depends = ["build"]
+
+[tasks."migrate-safe"]
+description = "Run migration without wiping pb_data (skips duplicates)"
+run = "MIGRATE_DB=example.db ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}"
+dir = "{{config_root}}/backend"
+depends = ["build"]
+
+[tasks."dangerous-migrate"]
+description = "Wipe pb_data and run a fresh migration from example.db"
+run = """
+read -r -p "This will DELETE pb_data and re-migrate from scratch. Are you sure? [y/N] " confirm
+[ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || { echo "Aborted."; exit 1; }
+rm -rf pb_data
+MIGRATE_DB=example.db ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}
+"""
+dir = "{{config_root}}/backend"
+depends = ["build"]
+
+[tasks."dangerous-clean"]
+description = "Remove built binary and pb_data"
+run = """
+read -r -p "This will delete pb-weakty and pb_data. Are you sure? [y/N] " confirm
+[ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || { echo "Aborted."; exit 1; }
+rm -f pb-weakty && rm -rf pb_data
+"""
+dir = "{{config_root}}/backend"
