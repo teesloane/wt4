@@ -50,3 +50,5 @@ priv/static/uploads
 
 # Docker bind-mount data
 data/
+
+pb-version/frontend/node_modules

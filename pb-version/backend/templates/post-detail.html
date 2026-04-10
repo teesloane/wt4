@@ -1,29 +1,34 @@
 {{define "post-detail"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{.Title}} · weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
+<body class="bg-base-100 text-base-content">
+<div class="max-w-2xl mx-auto px-6 py-16">
   {{template "nav" .}}
   <article>
-    <header>
-      <h1>{{.Title}}</h1>
-      <p class="meta">{{.PublishedAt}}</p>
-      {{if .Tags}}<div class="tags" style="margin-top:0.5rem">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+    {{if .FeaturedImage}}<img src="{{.FeaturedImage}}" alt="" class="w-full h-auto rounded-sm mb-8 block">{{end}}
+    <header class="mb-8">
+      <h1 class="text-2xl font-medium leading-tight mb-2">{{.Title}}</h1>
+      <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">{{.PublishedAt}}</p>
+      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-3">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
     </header>
-    {{if .Excerpt}}<p class="excerpt-block">{{.Excerpt}}</p>{{end}}
-    <div class="body">{{.HTML}}</div>
+    {{if .Excerpt}}
+    <blockquote class="border-l-2 border-base-300 pl-5 italic text-base-content/70 mb-8 leading-relaxed">{{.Excerpt}}</blockquote>
+    {{end}}
+    <div class="prose prose-base max-w-none">{{.HTML}}</div>
     {{if .Attribution}}
-    <p class="attribution">
-      via {{if .AttrURL}}<a href="{{.AttrURL}}">{{.Attribution}}</a>{{else}}{{.Attribution}}{{end}}
+    <p class="font-sans text-sm text-base-content/50 mt-8 pt-6 border-t border-base-200">
+      via {{if .AttrURL}}<a href="{{.AttrURL}}" class="hover:text-base-content transition-colors">{{.Attribution}}</a>{{else}}{{.Attribution}}{{end}}
     </p>
     {{end}}
-    <div class="back-link"><a href="javascript:history.back()">← back</a></div>
+    <div class="mt-10 pt-6 border-t border-base-200">
+      <a href="javascript:history.back()" class="font-sans text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">← back</a>
+    </div>
   </article>
 </div>
 </body>

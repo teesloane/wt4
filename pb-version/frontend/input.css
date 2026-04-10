@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  logs: false;
+}
+
+/* Scan Go templates for class names */
+@source "../backend/templates";
+
+/* ── Light theme (matches Elixir app) ─────────────────────────── */
+[data-theme="light"] {
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(98% 0 0);
+  --color-base-300: oklch(96% 0.001 286.375);
+  --color-base-content: oklch(20% 0 0);
+  --color-primary: #0082ce;
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: oklch(83% 0.128 66.29);
+  --color-secondary-content: oklch(40% 0.123 38.172);
+  --color-accent: #e5c07b;
+  --color-accent-content: #e8e7ea;
+  --color-neutral: oklch(87% 0 0);
+  --color-neutral-content: oklch(26% 0 0);
+  --color-info: #56b6c2;
+  --color-info-content: #e8e7ea;
+  --color-success: #98c379;
+  --color-success-content: #e8e7ea;
+  --color-warning: #d19a66;
+  --color-warning-content: #091b2f;
+  --color-error: #be5046;
+  --color-error-content: #e8e7ea;
+  --radius-selector: 0rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.25rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* ── Dark theme (matches Elixir app) ──────────────────────────── */
+[data-theme="dark"] {
+  --color-base-100: oklch(20% 0.004 49.25);
+  --color-base-200: oklch(25% 0.006 56.043);
+  --color-base-300: oklch(30% 0.007 34.298);
+  --color-base-content: #eeeeee;
+  --color-primary: #61afef;
+  --color-primary-content: oklch(96% 0.018 272.314);
+  --color-secondary: #c678dd;
+  --color-secondary-content: oklch(94% 0.028 342.258);
+  --color-accent: #e5c07b;
+  --color-accent-content: #e8e7ea;
+  --color-neutral: #4b5263;
+  --color-neutral-content: oklch(92% 0.004 286.32);
+  --color-info: #56b6c2;
+  --color-info-content: #e8e7ea;
+  --color-success: #98c379;
+  --color-success-content: #111111;
+  --color-warning: #d19a66;
+  --color-warning-content: #091b2f;
+  --color-error: #be5046;
+  --color-error-content: #e8e7ea;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 1;
+}
+
+/* ── Base typography ──────────────────────────────────────────── */
+@layer base {
+  body {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: 18px;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ── Prose overrides ──────────────────────────────────────────── */
+@utility prose {
+  blockquote {
+    font-weight: 400;
+    padding-inline-start: 2em;
+    border-inline-start-color: var(--color-base-300);
+    color: color-mix(in oklab, var(--color-base-content) 80%, #0000);
+    p {
+      font-style: normal;
+      &:first-of-type::before,
+      &:last-of-type::after {
+        content: none;
+      }
+      margin-bottom: 1em;
+    }
+  }
+}

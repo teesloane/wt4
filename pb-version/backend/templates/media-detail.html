@@ -1,35 +1,37 @@
 {{define "media-detail"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{.Title}} · weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
+<body class="bg-base-100 text-base-content">
+<div class="max-w-2xl mx-auto px-6 py-16">
   {{template "nav" .}}
   <article>
-    <header>
-      {{if .Thumbnail}}<img src="{{.Thumbnail}}" alt="" style="height:160px;width:auto;margin-bottom:1.25rem;display:block;">{{end}}
-      <h1>{{.Title}}</h1>
-      {{if .Creator}}<p class="media-creator">{{.Creator}}</p>{{end}}
-      <p class="meta">
-        <span class="type-label">{{.MediaType}}</span>
+    <header class="mb-8">
+      {{if .Thumbnail}}<img src="{{.Thumbnail}}" alt="" class="h-40 w-auto block mb-5 rounded-sm">{{end}}
+      <h1 class="text-2xl font-medium leading-tight mb-1">{{.Title}}</h1>
+      {{if .Creator}}<p class="italic text-base-content/60 mb-2">{{.Creator}}</p>{{end}}
+      <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">
+        <span class="badge badge-ghost badge-xs mr-1">{{.MediaType}}</span>
         {{if .PublishedAt}}{{.PublishedAt}}{{end}}
-        {{if .Rating}} · <span class="rating">{{.Rating}}</span>{{end}}
+        {{if .Rating}}<span class="text-accent ml-1">{{.Rating}}</span>{{end}}
       </p>
-      {{if .Tags}}<div class="tags" style="margin-top:0.5rem">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-3">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
     </header>
-    {{if .Notes}}<div class="body">{{.Notes}}</div>{{end}}
+    {{if .Notes}}<div class="prose prose-base max-w-none">{{.Notes}}</div>{{end}}
     {{if .ExternalURL}}
-    <p style="margin-top:1.5rem">
+    <p class="mt-6">
       <a href="{{.ExternalURL}}" target="_blank" rel="noopener"
-         style="font-family:system-ui,sans-serif;font-size:0.9rem;color:#888">external link →</a>
+         class="font-sans text-sm text-base-content/50 hover:text-base-content transition-colors">external link →</a>
     </p>
     {{end}}
-    <div class="back-link"><a href="/media-logs">← media</a></div>
+    <div class="mt-10 pt-6 border-t border-base-200">
+      <a href="/media-logs" class="font-sans text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">← media</a>
+    </div>
   </article>
 </div>
 </body>

@@ -5,20 +5,47 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/filesystem"
 	"github.com/pocketbase/pocketbase/tools/types"
 
 	_ "modernc.org/sqlite"
 )
 
+// uploadsPathRe matches /uploads/... image paths in markdown and HTML.
+var uploadsPathRe = regexp.MustCompile(`/uploads/[^\s"')\]>]+`)
+
 // migrateFromExample imports data from an Ash SQLite database into PocketBase.
-// Set the MIGRATE_DB environment variable to the path of the source database.
+// Set MIGRATE_DB to the source database path.
+// Set UPLOADS_DIR to override the uploads directory (default: ../../priv/static/uploads
+// relative to the source DB).
 func migrateFromExample(app *pocketbase.PocketBase, dbPath string) error {
 	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
 		return fmt.Errorf("source db not found at %s", dbPath)
+	}
+
+	// Resolve uploads directory.
+	uploadsDir := os.Getenv("UPLOADS_DIR")
+	if uploadsDir == "" {
+		absDBPath, err := filepath.Abs(dbPath)
+		if err != nil {
+			absDBPath = dbPath
+		}
+		uploadsDir = filepath.Join(filepath.Dir(absDBPath), "priv/static/uploads")
+	}
+	if abs, err := filepath.Abs(uploadsDir); err == nil {
+		uploadsDir = abs
+	}
+	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
+		log.Printf("uploads dir not found at %s — images will be skipped", uploadsDir)
+		uploadsDir = ""
+	} else {
+		log.Printf("using uploads dir: %s", uploadsDir)
 	}
 
 	src, err := sql.Open("sqlite", dbPath)
@@ -28,12 +55,12 @@ func migrateFromExample(app *pocketbase.PocketBase, dbPath string) error {
 	defer src.Close()
 
 	// tagIDMap maps source tag ID → PocketBase record ID.
-	tagIDMap, err := migrateTags(app, src)
+	tagIDMap, err := migrateTags(app, src, uploadsDir)
 	if err != nil {
 		return fmt.Errorf("migrate tags: %w", err)
 	}
 
-	if err := migratePosts(app, src, tagIDMap); err != nil {
+	if err := migratePosts(app, src, tagIDMap, uploadsDir); err != nil {
 		return fmt.Errorf("migrate posts: %w", err)
 	}
 
@@ -41,15 +68,40 @@ func migrateFromExample(app *pocketbase.PocketBase, dbPath string) error {
 		return fmt.Errorf("migrate links: %w", err)
 	}
 
-	if err := migrateMediaLogs(app, src, tagIDMap); err != nil {
+	if err := migrateMediaLogs(app, src, tagIDMap, uploadsDir); err != nil {
 		return fmt.Errorf("migrate media_logs: %w", err)
 	}
 
-	if err := migrateProjects(app, src, tagIDMap); err != nil {
+	if err := migrateProjects(app, src, tagIDMap, uploadsDir); err != nil {
 		return fmt.Errorf("migrate projects: %w", err)
 	}
 
+	if err := migrateContentImages(app, uploadsDir); err != nil {
+		return fmt.Errorf("migrate content images: %w", err)
+	}
+
 	return nil
+}
+
+// uploadsFile resolves a source image path (e.g. "/uploads/foo.jpg") to a
+// *filesystem.File ready to attach to a PocketBase record. Returns nil if the
+// path is empty, the uploads directory is unknown, or the file is not found.
+func uploadsFile(uploadsDir, srcPath string) *filesystem.File {
+	if uploadsDir == "" || srcPath == "" {
+		return nil
+	}
+	rel := strings.TrimPrefix(srcPath, "/uploads/")
+	localPath := filepath.Join(uploadsDir, rel)
+	if _, err := os.Stat(localPath); os.IsNotExist(err) {
+		log.Printf("image not found: %s", localPath)
+		return nil
+	}
+	f, err := filesystem.NewFileFromPath(localPath)
+	if err != nil {
+		log.Printf("open image %s: %v", localPath, err)
+		return nil
+	}
+	return f
 }
 
 // scanDate parses an Ash timestamp string into a types.DateTime.
@@ -92,7 +144,7 @@ func tagIDsForSource(src *sql.DB, joinTable, fkCol, sourceID string, tagIDMap ma
 
 // --- tags ---
 
-func migrateTags(app *pocketbase.PocketBase, src *sql.DB) (map[string]string, error) {
+func migrateTags(app *pocketbase.PocketBase, src *sql.DB, uploadsDir string) (map[string]string, error) {
 	col, err := app.FindCollectionByNameOrId("tags")
 	if err != nil {
 		return nil, fmt.Errorf("find tags collection: %w", err)
@@ -133,7 +185,9 @@ func migrateTags(app *pocketbase.PocketBase, src *sql.DB) (map[string]string, er
 		rec.Set("name", name)
 		rec.Set("slug", slug)
 		rec.Set("public", public == 1)
-		rec.Set("featured_image", featuredImage)
+		if f := uploadsFile(uploadsDir, featuredImage); f != nil {
+			rec.Set("featured_image", f)
+		}
 		rec.Set("description", description)
 		rec.Set("description_html", descriptionHTML)
 
@@ -151,7 +205,7 @@ func migrateTags(app *pocketbase.PocketBase, src *sql.DB) (map[string]string, er
 
 // --- posts ---
 
-func migratePosts(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]string) error {
+func migratePosts(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]string, uploadsDir string) error {
 	col, err := app.FindCollectionByNameOrId("posts")
 	if err != nil {
 		return fmt.Errorf("find posts collection: %w", err)
@@ -164,7 +218,7 @@ func migratePosts(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]s
 		       CASE WHEN public = 1 THEN 1 ELSE 0 END,
 		       CASE WHEN featured = 1 THEN 1 ELSE 0 END,
 		       COALESCE(featured_image,''), COALESCE(attribution,''), COALESCE(attribution_url,''),
-		       COALESCE(published_at,''), COALESCE(content_images,'[]')
+		       COALESCE(published_at,'')
 		FROM posts
 		WHERE status = 'published'
 		ORDER BY published_at DESC
@@ -181,13 +235,13 @@ func migratePosts(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]s
 			postType, status                             string
 			public, featured                             int
 			featuredImage, attribution, attrURL          string
-			publishedAt, contentImages                   string
+			publishedAt                                  string
 		)
 		if err := rows.Scan(
 			&srcID, &title, &slug, &excerpt, &html, &markdown,
 			&postType, &status, &public, &featured,
 			&featuredImage, &attribution, &attrURL,
-			&publishedAt, &contentImages,
+			&publishedAt,
 		); err != nil {
 			return fmt.Errorf("scan post: %w", err)
 		}
@@ -207,10 +261,11 @@ func migratePosts(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]s
 		rec.Set("status", status)
 		rec.Set("public", public == 1)
 		rec.Set("featured", featured == 1)
-		rec.Set("featured_image", featuredImage)
+		if f := uploadsFile(uploadsDir, featuredImage); f != nil {
+			rec.Set("featured_image", f)
+		}
 		rec.Set("attribution", attribution)
 		rec.Set("attribution_url", attrURL)
-		rec.Set("content_images", contentImages)
 
 		if dt, ok := scanDate(publishedAt); ok {
 			rec.Set("published_at", dt)
@@ -310,7 +365,7 @@ func migrateLinks(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]s
 
 // --- media_logs ---
 
-func migrateMediaLogs(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]string) error {
+func migrateMediaLogs(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]string, uploadsDir string) error {
 	col, err := app.FindCollectionByNameOrId("media_logs")
 	if err != nil {
 		return fmt.Errorf("find media_logs collection: %w", err)
@@ -369,7 +424,9 @@ func migrateMediaLogs(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[stri
 		rec.Set("slug", slug)
 		rec.Set("media_type", mediaType)
 		rec.Set("creator", creator)
-		rec.Set("thumbnail_url", thumbnailURL)
+		if f := uploadsFile(uploadsDir, thumbnailURL); f != nil {
+			rec.Set("thumbnail_url", f)
+		}
 		rec.Set("status", status)
 		rec.Set("notes", notes)
 		rec.Set("external_url", externalURL)
@@ -410,7 +467,7 @@ func migrateMediaLogs(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[stri
 
 // --- projects ---
 
-func migrateProjects(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]string) error {
+func migrateProjects(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[string]string, uploadsDir string) error {
 	col, err := app.FindCollectionByNameOrId("projects")
 	if err != nil {
 		return fmt.Errorf("find projects collection: %w", err)
@@ -463,7 +520,9 @@ func migrateProjects(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[strin
 		rec.Set("excerpt", excerpt)
 		rec.Set("html", html)
 		rec.Set("markdown", markdown)
-		rec.Set("featured_image", featuredImage)
+		if f := uploadsFile(uploadsDir, featuredImage); f != nil {
+			rec.Set("featured_image", f)
+		}
 		rec.Set("status", status)
 		rec.Set("project_status", projectStatus)
 		rec.Set("featured", featured == 1)
@@ -494,5 +553,101 @@ func migrateProjects(app *pocketbase.PocketBase, src *sql.DB, tagIDMap map[strin
 	}
 
 	log.Printf("projects migration: %d imported, %d skipped", imported, skipped)
+	return nil
+}
+
+// --- content images ---
+
+// migrateContentImages scans markdown and html in posts and projects for
+// /uploads/... image paths, attaches each unique image directly to the record's
+// content_images field, then rewrites the paths in both columns so they point
+// to the record's own PocketBase file URLs.
+func migrateContentImages(app *pocketbase.PocketBase, uploadsDir string) error {
+	if uploadsDir == "" {
+		log.Println("content images: no uploads dir, skipping")
+		return nil
+	}
+
+	totalUploaded, totalUpdated := 0, 0
+
+	for _, collName := range []string{"posts", "projects"} {
+		records, err := app.FindRecordsByFilter(collName, "1=1", "", 2000, 0)
+		if err != nil {
+			return fmt.Errorf("query %s: %w", collName, err)
+		}
+
+		for _, rec := range records {
+			// Skip if already migrated in a previous run.
+			if existing := rec.GetStringSlice("content_images"); len(existing) > 0 {
+				continue
+			}
+
+			markdown := rec.GetString("markdown")
+			html := rec.GetString("html")
+			combined := markdown + "\n" + html
+
+			paths := uploadsPathRe.FindAllString(combined, -1)
+			if len(paths) == 0 {
+				continue
+			}
+
+			// Deduplicate paths, preserving first-seen order.
+			seen := make(map[string]struct{})
+			var uniquePaths []string
+			for _, p := range paths {
+				if _, done := seen[p]; done {
+					continue
+				}
+				seen[p] = struct{}{}
+				uniquePaths = append(uniquePaths, p)
+			}
+
+			// Attach files one at a time so we can reliably map each source
+			// path to the filename PocketBase assigns after save.
+			replacements := make(map[string]string)
+			for _, srcPath := range uniquePaths {
+				f := uploadsFile(uploadsDir, srcPath)
+				if f == nil {
+					log.Printf("content image not found: %s — skipping", srcPath)
+					continue
+				}
+				before := rec.GetStringSlice("content_images")
+				mixed := make([]any, 0, len(before)+1)
+				for _, s := range before {
+					mixed = append(mixed, s)
+				}
+				mixed = append(mixed, f)
+				rec.Set("content_images", mixed)
+				if err := app.Save(rec); err != nil {
+					log.Printf("attach image %s to %s %s: %v", srcPath, collName, rec.Id, err)
+					continue
+				}
+				after := rec.GetStringSlice("content_images")
+				if len(after) > len(before) {
+					stored := after[len(after)-1]
+					replacements[srcPath] = fileURL(collName, rec.Id, stored, "")
+					totalUploaded++
+				}
+			}
+
+			if len(replacements) == 0 {
+				continue
+			}
+
+			for old, new := range replacements {
+				markdown = strings.ReplaceAll(markdown, old, new)
+				html = strings.ReplaceAll(html, old, new)
+			}
+			rec.Set("markdown", markdown)
+			rec.Set("html", html)
+			if err := app.Save(rec); err != nil {
+				log.Printf("rewrite %s %s: %v", collName, rec.Id, err)
+				continue
+			}
+			totalUpdated++
+		}
+	}
+
+	log.Printf("content images: %d uploaded, %d records updated", totalUploaded, totalUpdated)
 	return nil
 }

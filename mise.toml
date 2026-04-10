@@ -38,7 +38,10 @@ run = "ssh $SERVER 'cd $REMOTE_DIR && docker compose logs -f'"
 
 [tasks."init:db"]
 description = "FIRST DEPLOY ONLY — overwrites server db with local dev db"
-run = "rsync -av weakty_dev.db $SERVER:$REMOTE_DIR/weakty.db"
+run = """
+sqlite3 weakty_dev.db "PRAGMA wal_checkpoint(TRUNCATE);"
+rsync -av weakty_dev.db $SERVER:$REMOTE_DIR/weakty.db
+"""
 
 [tasks."init:uploads"]
 description = "FIRST DEPLOY ONLY — overwrites server uploads with local dev uploads"

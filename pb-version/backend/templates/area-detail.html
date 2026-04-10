@@ -1,27 +1,29 @@
 {{define "area-detail"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{.Tag.Name}} · weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
+<body class="bg-base-100 text-base-content">
+<div class="max-w-2xl mx-auto px-6 py-16">
   {{template "nav" .}}
   <main>
-    <p class="page-label">area</p>
-    <h1 style="margin-bottom:2rem">{{.Tag.Name}}</h1>
-    {{if .Tag.DescriptionHTML}}<div class="body" style="margin-bottom:2rem">{{.Tag.DescriptionHTML}}</div>{{end}}
+    <p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-3">area</p>
+    <h1 class="text-2xl font-medium mb-8">{{.Tag.Name}}</h1>
+    {{if .Tag.DescriptionHTML}}
+    <div class="prose prose-base max-w-none mb-10 text-base-content/70">{{.Tag.DescriptionHTML}}</div>
+    {{end}}
     {{range .Items}}
-    <div class="item">
-      <h2><a href="{{.URL}}">{{.Title}}</a></h2>
-      <p class="meta">
-        {{if .TypeLabel}}<span class="type-label">{{.TypeLabel}}</span>{{end}}
+    <div class="py-6 border-b border-base-200 last:border-0">
+      <h2 class="font-medium"><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></h2>
+      <p class="font-sans text-xs text-base-content/50 mt-1 uppercase tracking-wide">
+        {{if .TypeLabel}}<span class="badge badge-ghost badge-xs mr-1">{{.TypeLabel}}</span>{{end}}
         {{.PublishedAt}}
       </p>
-      {{if .Excerpt}}<p class="excerpt">{{.Excerpt}}</p>{{end}}
+      {{if .Excerpt}}<p class="text-base-content/70 text-sm mt-2 leading-relaxed">{{.Excerpt}}</p>{{end}}
     </div>
     {{end}}
   </main>

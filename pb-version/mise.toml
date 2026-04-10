@@ -3,11 +3,30 @@ go = "latest"
 
 [vars]
 BACKEND_PORT = "8091"
+SOURCE_DB = "../../weakty_dev.db"
+
+[tasks."css:install"]
+description = "Install frontend npm dependencies"
+run = "npm install"
+dir = "{{config_root}}/frontend"
+
+[tasks."css:build"]
+description = "Compile Tailwind CSS (one-shot, minified)"
+run = "npm run build"
+dir = "{{config_root}}/frontend"
+depends = ["css:install"]
+
+[tasks."css:watch"]
+description = "Compile Tailwind CSS and watch for changes"
+run = "npm run watch"
+dir = "{{config_root}}/frontend"
+depends = ["css:install"]
 
 [tasks.build]
-description = "Build the PocketBase binary"
+description = "Build the PocketBase binary (CSS must be built first)"
 run = "go build -o pb-weakty ."
 dir = "{{config_root}}/backend"
+depends = ["css:build"]
 
 [tasks.dev]
 description = "Run PocketBase in dev mode (no migration)"
@@ -15,9 +34,15 @@ run = "./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_POR
 dir = "{{config_root}}/backend"
 depends = ["build"]
 
+[tasks."dev:hot"]
+description = "Run with on-disk templates — edit & refresh without rebuilding"
+run = "TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}"
+dir = "{{config_root}}/backend"
+depends = ["build"]
+
 [tasks."migrate-safe"]
 description = "Run migration without wiping pb_data (skips duplicates)"
-run = "MIGRATE_DB=example.db ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}"
+run = "MIGRATE_DB={{vars.SOURCE_DB}} ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}"
 dir = "{{config_root}}/backend"
 depends = ["build"]
 
@@ -27,7 +52,8 @@ run = """
 read -r -p "This will DELETE pb_data and re-migrate from scratch. Are you sure? [y/N] " confirm
 [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || { echo "Aborted."; exit 1; }
 rm -rf pb_data
-MIGRATE_DB=example.db ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}
+./pb-weakty superuser upsert weakty@fastmail.com password123!
+MIGRATE_DB={{vars.SOURCE_DB}} ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}
 """
 dir = "{{config_root}}/backend"
 depends = ["build"]

@@ -1,21 +1,22 @@
 {{define "areas-list"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>areas · weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
+<body class="bg-base-100 text-base-content">
+<div class="max-w-2xl mx-auto px-6 py-16">
   {{template "nav" .}}
   <main>
-    <p class="page-label">areas of interest</p>
-    <div class="areas-grid">
+    <p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-10">areas of interest</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
       {{range .Tags}}
-      <a class="area-card" href="/areas/{{.Slug}}">
-        <h2>{{.Name}}</h2>
+      <a href="/areas/{{.Slug}}"
+         class="p-4 border border-base-200 rounded-sm text-sm font-medium hover:border-base-content/30 hover:bg-base-200 transition-colors block">
+        {{.Name}}
       </a>
       {{end}}
     </div>

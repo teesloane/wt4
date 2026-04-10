@@ -1,29 +1,143 @@
 {{define "home"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
-  {{template "nav" .}}
-  <main>
-    {{range .Items}}
-    <div class="item">
-      <h2><a href="{{.URL}}">{{.Title}}</a></h2>
-      <p class="meta">
-        {{if .TypeLabel}}<span class="type-label">{{.TypeLabel}}</span>{{end}}
-        {{.PublishedAt}}
-      </p>
-      {{if .Excerpt}}<p class="excerpt">{{.Excerpt}}</p>{{end}}
-      {{if .Tags}}<div class="tags">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+<body class="bg-base-100 text-base-content">
+
+{{/* Hero */}}
+<div class="relative w-full h-screen">
+  <img src="/static/images/woods.webp" alt="" class="absolute inset-0 w-full h-full object-cover">
+  <div class="absolute inset-0 bg-black/40"></div>
+  <div class="absolute inset-0 flex flex-col items-start justify-center p-8 pb-32 max-w-7xl mx-auto">
+    <div class="text-white text-2xl md:text-3xl lg:text-4xl">Hello, my name is Ty.</div>
+    <div class="text-white/70 mt-4 text-base md:text-lg">This is where I write and share my work.</div>
+    <div class="text-white/40 text-base md:text-lg">(That&#39;s me in the woods, at peace.)</div>
+    {{if .LatestStory}}
+    <div class="mt-10 text-white/70 text-xs uppercase tracking-widest">Latest short story</div>
+    <a href="{{.LatestStory.URL}}" class="mt-2 text-white text-lg md:text-xl hover:text-white/70 transition-colors">
+      {{.LatestStory.Title}}
+    </a>
+    {{end}}
+  </div>
+</div>
+
+{{/* Grid */}}
+<main class="max-w-[2500px] mx-auto pb-24">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+
+    {{/* About */}}
+    <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
+      <div class="w-full">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-6">About This Site</p>
+        <div class="space-y-3 text-base">
+          <p>This site is a catalogue of the creative projects and interests I explore in my free time, usually taking the form of non/fiction writing, programming, music, and visuals &amp; design. Everything on this site was made by me, unless stated otherwise.</p>
+          <p>Thank you for visiting and <a href="mailto:weakty@fastmail.com" class="text-base-content/70 border-b border-transparent hover:border-base-content/70 hover:text-base-content transition-all">don&#39;t hesitate to say hi.</a></p>
+        </div>
+      </div>
+    </section>
+
+    {{/* Recent fiction */}}
+    <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
+      <div class="w-full">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-6">Recent fiction</p>
+        <div class="space-y-3">
+          {{range .RecentFiction}}
+          <div><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></div>
+          {{end}}
+        </div>
+        <a href="/fiction" class="mt-6 block text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">View all fiction →</a>
+      </div>
+    </section>
+
+    {{/* Recent non-fiction */}}
+    <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
+      <div class="w-full">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-6">Recent non-fiction</p>
+        <div class="space-y-3">
+          {{range .Posts}}
+          <div><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></div>
+          {{end}}
+        </div>
+        <a href="/posts" class="mt-6 block text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">View all posts →</a>
+      </div>
+    </section>
+
+    {{/* Projects */}}
+    <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
+      <div class="w-full">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-6">Projects &amp; Experiments</p>
+        {{if .Projects}}
+        <div class="space-y-3">
+          {{range .Projects}}
+          <div><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></div>
+          {{end}}
+        </div>
+        {{else}}
+        <p class="text-base-content/40 text-base">No projects yet</p>
+        {{end}}
+        <a href="/projects" class="mt-6 block text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">View all projects →</a>
+      </div>
+    </section>
+
+    {{/* Currently reading */}}
+    <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
+      <div class="w-full">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-6">Currently reading:</p>
+        {{if .CurrentlyReading}}
+        <div class="space-y-3">
+          {{range .CurrentlyReading}}
+          <div>
+            <div class="text-base">{{.Title}}</div>
+            {{if .Creator}}<div class="text-xs opacity-40 mt-0.5">{{.Creator}}</div>{{end}}
+          </div>
+          {{end}}
+        </div>
+        {{else}}
+        <p class="text-base-content/40 text-base">Nothing at the moment</p>
+        {{end}}
+        <a href="/media-logs" class="mt-6 block text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">View the media log →</a>
+      </div>
+    </section>
+
+    {{/* Now */}}
+    {{if .Update}}
+    <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
+      <div class="w-full">
+        <p class="text-xs uppercase tracking-widest opacity-70 mb-6">Now</p>
+        <a href="{{.Update.URL}}" class="hover:opacity-50 transition-opacity text-base block mb-3">
+          <div class="mb-3">{{.Update.Title}}</div>
+          <div class="flex flex-col relative max-h-48 overflow-hidden text-base whitespace-pre-line"
+               style="mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);">
+            {{.Update.HTML}}
+          </div>
+        </a>
+        <a href="/now" class="mt-6 block text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">View previous updates →</a>
+      </div>
+    </section>
+    {{end}}
+
+  </div>
+
+  {{/* Areas of interest */}}
+  {{if .TopAreas}}
+  <div class="flex flex-col md:flex-row p-8 md:py-2 space-x-3 text-base md:items-center items-start my-4 justify-center max-w-7xl mx-auto">
+    <p class="text-xs uppercase tracking-widest opacity-70 mb-4 md:mb-0 md:mr-2">Areas of interest:</p>
+    {{range .TopAreas}}
+    <div class="flex items-baseline gap-1 mr-4">
+      <a href="/areas/{{.Slug}}" class="flex-1 text-base hover:opacity-100 transition-opacity">{{.Name}}</a>
+      <span class="text-xs opacity-50 tabular-nums">[{{.Count}}]</span>
     </div>
     {{end}}
-  </main>
-</div>
+    <a href="/areas" class="mt-4 md:mt-0 text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">View all areas →</a>
+  </div>
+  {{end}}
+</main>
+
 </body>
 </html>
 {{end}}

@@ -32,6 +32,7 @@ func initCollections(app *pocketbase.PocketBase) error {
 	return nil
 }
 
+
 func initTagsCollection(app *pocketbase.PocketBase) error {
 	if col, _ := app.FindCollectionByNameOrId("tags"); col != nil {
 		return nil
@@ -41,7 +42,12 @@ func initTagsCollection(app *pocketbase.PocketBase) error {
 	col.Fields.Add(&core.TextField{Name: "name", Required: true})
 	col.Fields.Add(&core.TextField{Name: "slug", Required: true})
 	col.Fields.Add(&core.BoolField{Name: "public"})
-	col.Fields.Add(&core.TextField{Name: "featured_image"})
+	col.Fields.Add(&core.FileField{
+		Name:      "featured_image",
+		MaxSelect: 1,
+		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
+		Thumbs:    []string{"100x100", "400x0"},
+	})
 	col.Fields.Add(&core.TextField{Name: "description", Max: 1 << 20})
 	col.Fields.Add(&core.TextField{Name: "description_html", Max: 1 << 20})
 	col.Indexes = []string{
@@ -74,11 +80,20 @@ func initPostsCollection(app *pocketbase.PocketBase, tagsColID string) error {
 	col.Fields.Add(&core.SelectField{Name: "status", Values: []string{"draft", "published"}, MaxSelect: 1})
 	col.Fields.Add(&core.BoolField{Name: "public"})
 	col.Fields.Add(&core.BoolField{Name: "featured"})
-	col.Fields.Add(&core.TextField{Name: "featured_image"})
+	col.Fields.Add(&core.FileField{
+		Name:      "featured_image",
+		MaxSelect: 1,
+		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
+		Thumbs:    []string{"100x100", "400x0"},
+	})
 	col.Fields.Add(&core.TextField{Name: "attribution"})
 	col.Fields.Add(&core.TextField{Name: "attribution_url"})
 	col.Fields.Add(&core.DateField{Name: "published_at"})
-	col.Fields.Add(&core.JSONField{Name: "content_images"})
+	col.Fields.Add(&core.FileField{
+		Name:      "content_images",
+		MaxSelect: 99,
+		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
+	})
 	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 0})
 	col.Indexes = []string{
 		"CREATE UNIQUE INDEX idx_posts_slug ON posts (slug)",
@@ -132,7 +147,12 @@ func initMediaLogsCollection(app *pocketbase.PocketBase, tagsColID string) error
 	})
 	col.Fields.Add(&core.TextField{Name: "creator"})
 	col.Fields.Add(&core.DateField{Name: "date_published"})
-	col.Fields.Add(&core.TextField{Name: "thumbnail_url"})
+	col.Fields.Add(&core.FileField{
+		Name:      "thumbnail_url",
+		MaxSelect: 1,
+		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp"},
+		Thumbs:    []string{"100x100", "400x0"},
+	})
 	col.Fields.Add(&core.SelectField{
 		Name:      "status",
 		Values:    []string{"want_to_consume", "consuming", "consumed", "on_hold", "abandoned"},
@@ -169,7 +189,12 @@ func initProjectsCollection(app *pocketbase.PocketBase, tagsColID string) error 
 	col.Fields.Add(&core.TextField{Name: "excerpt"})
 	col.Fields.Add(&core.TextField{Name: "html", Max: 1 << 21})
 	col.Fields.Add(&core.TextField{Name: "markdown", Max: 1 << 21})
-	col.Fields.Add(&core.TextField{Name: "featured_image"})
+	col.Fields.Add(&core.FileField{
+		Name:      "featured_image",
+		MaxSelect: 1,
+		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
+		Thumbs:    []string{"100x100", "400x0"},
+	})
 	col.Fields.Add(&core.SelectField{Name: "status", Values: []string{"draft", "published"}, MaxSelect: 1})
 	col.Fields.Add(&core.SelectField{
 		Name:      "project_status",
@@ -183,6 +208,11 @@ func initProjectsCollection(app *pocketbase.PocketBase, tagsColID string) error 
 	col.Fields.Add(&core.DateField{Name: "end_date"})
 	col.Fields.Add(&core.JSONField{Name: "links"})
 	col.Fields.Add(&core.JSONField{Name: "images"})
+	col.Fields.Add(&core.FileField{
+		Name:      "content_images",
+		MaxSelect: 99,
+		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
+	})
 	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 0})
 	col.Indexes = []string{
 		"CREATE UNIQUE INDEX idx_projects_slug ON projects (slug)",

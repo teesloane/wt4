@@ -1,26 +1,26 @@
 {{define "project-list"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>projects · weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
+<body class="bg-base-100 text-base-content">
+<div class="max-w-2xl mx-auto px-6 py-16">
   {{template "nav" .}}
   <main>
-    <p class="page-label">projects</p>
+    <p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-10">projects</p>
     {{range .Items}}
-    <div class="item">
-      <h2><a href="{{.URL}}">{{.Title}}</a></h2>
-      <p class="meta">
-        {{if .TypeLabel}}<span class="type-label">{{.TypeLabel}}</span>{{end}}
+    <div class="py-6 border-b border-base-200 last:border-0">
+      <h2 class="font-medium"><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></h2>
+      <p class="font-sans text-xs text-base-content/50 mt-1 uppercase tracking-wide">
+        {{if .TypeLabel}}<span class="badge badge-ghost badge-xs mr-1">{{.TypeLabel}}</span>{{end}}
         {{.PublishedAt}}
       </p>
-      {{if .Excerpt}}<p class="excerpt">{{.Excerpt}}</p>{{end}}
-      {{if .Tags}}<div class="tags">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+      {{if .Excerpt}}<p class="text-base-content/70 text-sm mt-2 leading-relaxed">{{.Excerpt}}</p>{{end}}
+      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-2">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
     </div>
     {{end}}
   </main>

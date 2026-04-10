@@ -1,25 +1,28 @@
 {{define "link-detail"}}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{.Title}} · weakty</title>
   {{template "styles" .}}
 </head>
-<body>
-<div class="wrap">
+<body class="bg-base-100 text-base-content">
+<div class="max-w-2xl mx-auto px-6 py-16">
   {{template "nav" .}}
   <article>
-    <header>
-      <h1>{{.Title}}</h1>
-      <p class="meta">{{.PublishedAt}}</p>
-      {{if .Tags}}<div class="tags" style="margin-top:0.5rem">{{range .Tags}}<a class="tag" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
+    <header class="mb-8">
+      <h1 class="text-2xl font-medium leading-tight mb-2">{{.Title}}</h1>
+      <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">{{.PublishedAt}}</p>
+      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-3">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
     </header>
-    {{if .OGImage}}<img class="og-image" src="{{.OGImage}}" alt="">{{end}}
-    <a class="external-link" href="{{.SiteURL}}" target="_blank" rel="noopener">{{.SiteURL}}</a>
-    {{if .Commentary}}<div class="body">{{.Commentary}}</div>{{end}}
-    <div class="back-link"><a href="/links">← links</a></div>
+    {{if .OGImage}}<img src="{{.OGImage}}" alt="" class="w-full h-auto rounded-sm mb-6 block">{{end}}
+    <a href="{{.SiteURL}}" target="_blank" rel="noopener"
+       class="font-sans text-sm text-base-content/50 hover:text-base-content transition-colors break-all mb-6 block">{{.SiteURL}}</a>
+    {{if .Commentary}}<div class="prose prose-base max-w-none">{{.Commentary}}</div>{{end}}
+    <div class="mt-10 pt-6 border-t border-base-200">
+      <a href="/links" class="font-sans text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">← links</a>
+    </div>
   </article>
 </div>
 </body>

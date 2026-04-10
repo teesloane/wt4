@@ -1,19 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 )
+
+// fileURL returns a PocketBase file URL for a record's file field.
+// thumb is optional (e.g. "400x0", "100x100") — pass "" for the original.
+func fileURL(collection, recordID, filename, thumb string) string {
+	if filename == "" {
+		return ""
+	}
+	u := fmt.Sprintf("/api/files/%s/%s/%s", collection, recordID, filename)
+	if thumb != "" {
+		u += "?thumb=" + thumb
+	}
+	return u
+}
 
 func float64Ptr(v float64) *float64 { return &v }
 
 func renderPage(e *core.RequestEvent, name string, data any) error {
 	e.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	e.Response.WriteHeader(http.StatusOK)
-	return tmpl.ExecuteTemplate(e.Response, name, data)
+	return activeTemplates().ExecuteTemplate(e.Response, name, data)
 }
 
 // entityURL returns the public URL path for a given entity type + subtype + slug.
@@ -138,6 +154,7 @@ func postToEntityItem(rec *core.Record) EntityItem {
 	subtype := rec.GetString("post_type")
 	slug := rec.GetString("slug")
 	return EntityItem{
+		ID:          rec.Id,
 		EntityType:  "post",
 		Subtype:     subtype,
 		TypeLabel:   typeLabel("post", subtype),
@@ -146,7 +163,7 @@ func postToEntityItem(rec *core.Record) EntityItem {
 		URL:         entityURL("post", subtype, slug),
 		PublishedAt: formatDate(rec, "published_at"),
 		Excerpt:     rec.GetString("excerpt"),
-		Hero:        rec.GetString("featured_image"),
+		Hero:        fileURL("posts", rec.Id, rec.GetString("featured_image"), "400x0"),
 		Tags:        expandedTags(rec),
 	}
 }
@@ -182,7 +199,7 @@ func mediaLogToEntityItem(rec *core.Record) EntityItem {
 		URL:         entityURL("media_log", "", slug),
 		PublishedAt: date,
 		Excerpt:     rec.GetString("notes"),
-		Thumbnail:   rec.GetString("thumbnail_url"),
+		Thumbnail:   fileURL("media_logs", rec.Id, rec.GetString("thumbnail_url"), "100x100"),
 		Tags:        expandedTags(rec),
 		Favourite:   rec.GetBool("favourite"),
 	}
@@ -200,7 +217,7 @@ func projectToEntityItem(rec *core.Record) EntityItem {
 		URL:         entityURL("project", "", slug),
 		PublishedAt: formatDate(rec, "published_at"),
 		Excerpt:     rec.GetString("excerpt"),
-		Hero:        rec.GetString("featured_image"),
+		Hero:        fileURL("projects", rec.Id, rec.GetString("featured_image"), "400x0"),
 		Tags:        expandedTags(rec),
 	}
 }
@@ -224,6 +241,190 @@ func entityRecordToItem(rec *core.Record) EntityItem {
 	}
 }
 
+func mediaLogToWeekItem(rec *core.Record) MediaLogItem {
+	mediaType := rec.GetString("media_type")
+	return MediaLogItem{
+		Title:     rec.GetString("title"),
+		Creator:   rec.GetString("creator"),
+		MediaType: strings.ReplaceAll(mediaType, "_", " "),
+		Thumbnail: fileURL("media_logs", rec.Id, rec.GetString("thumbnail_url"), "100x100"),
+	}
+}
+
+func buildNowPage(app *pocketbase.PocketBase, rec *core.Record) NowDetailPage {
+	publishedAt := rec.GetDateTime("published_at")
+
+	var weekEntities []EntityItem
+	var weekMediaLogs []MediaLogItem
+
+	if !publishedAt.IsZero() {
+		fromDt := publishedAt.Time().Add(-6 * 24 * time.Hour)
+		fromStr := fromDt.UTC().Format("2006-01-02 15:04:05")
+		toStr := publishedAt.Time().UTC().Format("2006-01-02 15:04:05")
+		fromDate := fromDt.UTC().Format("2006-01-02")
+		toDate := publishedAt.Time().UTC().Format("2006-01-02")
+
+		// Entities active this week, excluding media_logs and update posts
+		entityFilter := fmt.Sprintf(
+			"public=true && entity_type!='media_log' && (entity_type!='post' || subtype!='update') && published_at>='%s' && published_at<='%s'",
+			fromStr, toStr,
+		)
+		entityRecs, err := app.FindRecordsByFilter("entities", entityFilter, "-published_at", 50, 0)
+		if err == nil {
+			for _, r := range entityRecs {
+				weekEntities = append(weekEntities, entityRecordToItem(r))
+			}
+		}
+
+		// Music consumed this week
+		musicFilter := fmt.Sprintf(
+			"public=true && media_type='music' && date_consumed>='%s' && date_consumed<='%s'",
+			fromDate, toDate,
+		)
+		musicRecs, _ := app.FindRecordsByFilter("media_logs", musicFilter, "-date_consumed", 50, 0)
+		for _, r := range musicRecs {
+			weekMediaLogs = append(weekMediaLogs, mediaLogToWeekItem(r))
+		}
+
+		// Books / comics in progress or finished this week.
+		// Fetch all started on/before to_date, then filter in Go because PocketBase
+		// null-date comparisons are unreliable in filter expressions.
+		bookFilter := fmt.Sprintf(
+			"public=true && (media_type='book' || media_type='comic') && date_started!='' && date_started<='%s'",
+			toDate,
+		)
+		bookRecs, _ := app.FindRecordsByFilter("media_logs", bookFilter, "-date_started", 200, 0)
+		for _, r := range bookRecs {
+			dateFinished := r.GetDateTime("date_finished")
+			// Include if: not finished yet, OR finished within the week window
+			if dateFinished.IsZero() || !dateFinished.Time().Before(fromDt) {
+				weekMediaLogs = append(weekMediaLogs, mediaLogToWeekItem(r))
+			}
+		}
+	}
+
+	// All update posts for the sidebar list
+	updateRecs, _ := fetchAndExpand(app, "posts",
+		"public=true && status='published' && post_type='update'", "-published_at", 200)
+	updates := make([]EntityItem, 0, len(updateRecs))
+	for _, r := range updateRecs {
+		updates = append(updates, postToEntityItem(r))
+	}
+
+	return NowDetailPage{
+		Title:         rec.GetString("title"),
+		PublishedAt:   formatDate(rec, "published_at"),
+		FeaturedImage: fileURL("posts", rec.Id, rec.GetString("featured_image"), "800x0"),
+		HTML:          template.HTML(rec.GetString("html")),
+		WeekEntities:  weekEntities,
+		WeekMediaLogs: weekMediaLogs,
+		Updates:       updates,
+		CurrentID:     rec.Id,
+	}
+}
+
+func renderNowDetail(app *pocketbase.PocketBase, e *core.RequestEvent, slug string) error {
+	rec, err := app.FindFirstRecordByData("posts", "slug", slug)
+	if err != nil {
+		return notFound("post not found")
+	}
+	return renderPage(e, "now-detail", buildNowPage(app, rec))
+}
+
+func renderNowLatest(app *pocketbase.PocketBase, e *core.RequestEvent) error {
+	records, err := app.FindRecordsByFilter("posts",
+		"public=true && status='published' && post_type='update'", "-published_at", 1, 0)
+	if err != nil || len(records) == 0 {
+		return notFound("no updates found")
+	}
+	return renderPage(e, "now-list", buildNowPage(app, records[0]))
+}
+
+func renderHome(app *pocketbase.PocketBase, e *core.RequestEvent) error {
+	// Recent non-fiction posts
+	postRecs, _ := fetchAndExpand(app, "posts",
+		"public=true && status='published' && post_type='post'", "-published_at", 5)
+	posts := make([]EntityItem, 0, len(postRecs))
+	for _, r := range postRecs {
+		posts = append(posts, postToEntityItem(r))
+	}
+
+	// Recent fiction
+	fictionRecs, _ := fetchAndExpand(app, "posts",
+		"public=true && status='published' && post_type='fiction'", "-published_at", 3)
+	recentFiction := make([]EntityItem, 0, len(fictionRecs))
+	for _, r := range fictionRecs {
+		recentFiction = append(recentFiction, postToEntityItem(r))
+	}
+	var latestStory *EntityItem
+	if len(recentFiction) > 0 {
+		item := recentFiction[0]
+		latestStory = &item
+	}
+
+	// Projects
+	projectRecs, _ := fetchAndExpand(app, "projects",
+		"status='published'", "-published_at", 5)
+	projects := make([]EntityItem, 0, len(projectRecs))
+	for _, r := range projectRecs {
+		projects = append(projects, projectToEntityItem(r))
+	}
+
+	// Currently reading — books/comics started but not finished
+	bookRecs, _ := app.FindRecordsByFilter("media_logs",
+		"public=true && (media_type='book' || media_type='comic') && date_started!=''",
+		"-date_started", 50, 0)
+	var currentlyReading []BookItem
+	for _, r := range bookRecs {
+		if r.GetDateTime("date_finished").IsZero() {
+			currentlyReading = append(currentlyReading, BookItem{
+				Title:   r.GetString("title"),
+				Creator: r.GetString("creator"),
+			})
+		}
+	}
+
+	// Latest update post preview
+	var update *NowPreview
+	updateRecs, _ := app.FindRecordsByFilter("posts",
+		"public=true && status='published' && post_type='update'", "-published_at", 1, 0)
+	if len(updateRecs) > 0 {
+		u := updateRecs[0]
+		slug := u.GetString("slug")
+		html := u.GetString("html")
+		if len(html) > 600 {
+			html = html[:600]
+		}
+		update = &NowPreview{
+			Title: u.GetString("title"),
+			URL:   "/now/" + slug,
+			HTML:  template.HTML(html),
+		}
+	}
+
+	// Top areas by entity tag count
+	var topAreas []AreaItem
+	app.DB().NewQuery(`
+		SELECT t.name, t.slug, COUNT(et.id) as cnt
+		FROM entity_tags et
+		JOIN tags t ON t.id = et.tag_id
+		WHERE t.public = 1
+		GROUP BY t.id, t.name, t.slug
+		ORDER BY cnt DESC
+		LIMIT 5
+	`).All(&topAreas)
+
+	return renderPage(e, "home", HomePage{
+		Posts:            posts,
+		RecentFiction:    recentFiction,
+		LatestStory:      latestStory,
+		Projects:         projects,
+		CurrentlyReading: currentlyReading,
+		Update:           update,
+		TopAreas:         topAreas,
+	})
+}
+
 // renderPostDetail is shared by /posts/:slug, /til/:slug, /now/:slug, etc.
 func renderPostDetail(app *pocketbase.PocketBase, e *core.RequestEvent, slug string) error {
 	rec, err := app.FindFirstRecordByData("posts", "slug", slug)
@@ -232,13 +433,14 @@ func renderPostDetail(app *pocketbase.PocketBase, e *core.RequestEvent, slug str
 	}
 	app.ExpandRecord(rec, []string{"tags"}, nil)
 	return renderPage(e, "post-detail", PostPage{
-		Title:       rec.GetString("title"),
-		PublishedAt: formatDate(rec, "published_at"),
-		Excerpt:     rec.GetString("excerpt"),
-		HTML:        template.HTML(rec.GetString("html")),
-		Tags:        expandedTags(rec),
-		Attribution: rec.GetString("attribution"),
-		AttrURL:     rec.GetString("attribution_url"),
-		PostType:    rec.GetString("post_type"),
+		Title:         rec.GetString("title"),
+		PublishedAt:   formatDate(rec, "published_at"),
+		Excerpt:       rec.GetString("excerpt"),
+		HTML:          template.HTML(rec.GetString("html")),
+		Tags:          expandedTags(rec),
+		Attribution:   rec.GetString("attribution"),
+		AttrURL:       rec.GetString("attribution_url"),
+		PostType:      rec.GetString("post_type"),
+		FeaturedImage: fileURL("posts", rec.Id, rec.GetString("featured_image"), "800x0"),
 	})
 }

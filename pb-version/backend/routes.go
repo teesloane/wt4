@@ -9,20 +9,13 @@ import (
 )
 
 func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
+	registerStaticHandler(se)
+
 	r := se.Router
 
-	// Home — most recent public entities
+	// Home
 	r.GET("/", func(e *core.RequestEvent) error {
-		records, err := fetchAndExpand(app, "entities",
-			"public=true && published_at!=''", "-published_at", 15)
-		if err != nil {
-			records = []*core.Record{}
-		}
-		items := make([]EntityItem, 0, len(records))
-		for _, rec := range records {
-			items = append(items, entityRecordToItem(rec))
-		}
-		return renderPage(e, "home", ListPage{Items: items})
+		return renderHome(app, e)
 	})
 
 	// Archive — all public entities sorted by date
@@ -49,10 +42,10 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	// Now (updates)
 	r.GET("/now", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='update'", "now")
+		return renderNowLatest(app, e)
 	})
 	r.GET("/now/{slug}", func(e *core.RequestEvent) error {
-		return renderPostDetail(app, e, e.Request.PathValue("slug"))
+		return renderNowDetail(app, e, e.Request.PathValue("slug"))
 	})
 
 	// TIL
@@ -140,7 +133,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 			PublishedAt: date,
 			Notes:       template.HTML(rec.GetString("notes")),
 			ExternalURL: rec.GetString("external_url"),
-			Thumbnail:   rec.GetString("thumbnail_url"),
+			Thumbnail:   fileURL("media_logs", rec.Id, rec.GetString("thumbnail_url"), "400x0"),
 			Tags:        expandedTags(rec),
 		})
 	})
@@ -172,6 +165,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 			HTML:          template.HTML(rec.GetString("html")),
 			Tags:          expandedTags(rec),
 			ProjectStatus: rec.GetString("project_status"),
+			FeaturedImage: fileURL("projects", rec.Id, rec.GetString("featured_image"), "800x0"),
 		})
 	})
 
