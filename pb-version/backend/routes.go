@@ -33,9 +33,19 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 		return renderPage(e, "archive", ListPage{Items: items})
 	})
 
-	// Posts — fiction + non-fiction combined, labelled by type
+	// Posts — fiction + non-fiction combined, labelled by type; ?type=fiction filters
 	r.GET("/posts", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "(post_type='post' || post_type='fiction')", "posts", false)
+		typeParam := e.Request.URL.Query().Get("type")
+		var typeFilter string
+		switch typeParam {
+		case "fiction":
+			typeFilter = "post_type='fiction'"
+		case "post", "nonfiction", "non-fiction":
+			typeFilter = "post_type='post'"
+		default:
+			typeFilter = "(post_type='post' || post_type='fiction')"
+		}
+		return renderPostList(app, e, typeFilter, "posts", false)
 	})
 	r.GET("/posts/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
