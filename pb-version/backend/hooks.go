@@ -3,9 +3,38 @@ package main
 import (
 	"log"
 
+	"weakty-pb/internal/markdown"
+
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 )
+
+// registerMarkdownHooks wires up pre-save hooks that auto-generate the html
+// field from the markdown field for posts, projects, and tags.
+func registerMarkdownHooks(app *pocketbase.PocketBase) {
+	// posts and projects: markdown → html
+	for _, col := range []string{"posts", "projects"} {
+		col := col
+		app.OnRecordCreate(col).BindFunc(func(e *core.RecordEvent) error {
+			e.Record.Set("html", markdown.Render(e.Record.GetString("markdown")))
+			return e.Next()
+		})
+		app.OnRecordUpdate(col).BindFunc(func(e *core.RecordEvent) error {
+			e.Record.Set("html", markdown.Render(e.Record.GetString("markdown")))
+			return e.Next()
+		})
+	}
+
+	// tags: description → description_html
+	app.OnRecordCreate("tags").BindFunc(func(e *core.RecordEvent) error {
+		e.Record.Set("description_html", markdown.Render(e.Record.GetString("description")))
+		return e.Next()
+	})
+	app.OnRecordUpdate("tags").BindFunc(func(e *core.RecordEvent) error {
+		e.Record.Set("description_html", markdown.Render(e.Record.GetString("description")))
+		return e.Next()
+	})
+}
 
 // registerEntityHooks wires up create/update/delete hooks on all content
 // collections so the entities collection stays in sync automatically.

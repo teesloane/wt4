@@ -25,6 +25,7 @@ func fileURL(collection, recordID, filename, thumb string) string {
 
 func float64Ptr(v float64) *float64 { return &v }
 
+
 // entityURL returns the public URL path for a given entity type + subtype + slug.
 func entityURL(entityType, subtype, slug string) string {
 	switch entityType {
@@ -110,7 +111,7 @@ func formatDate(rec *core.Record, field string) string {
 	if dt.IsZero() {
 		return ""
 	}
-	return dt.Time().Format("January 2, 2006")
+	return dt.Time().Format("2006/01/02")
 }
 
 // fetchAndExpand queries a collection and expands tags on every record.

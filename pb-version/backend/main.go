@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"weakty-pb/commands"
+
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -17,6 +19,7 @@ func main() {
 			return fmt.Errorf("initCollections: %w", err)
 		}
 
+		registerMarkdownHooks(app)
 		registerEntityHooks(app)
 		registerRoutes(app, se)
 
@@ -29,6 +32,8 @@ func main() {
 
 		return se.Next()
 	})
+
+	app.RootCmd.AddCommand(commands.NewBackfillHTMLCmd(app))
 
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
