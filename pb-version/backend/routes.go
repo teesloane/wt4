@@ -215,6 +215,11 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 			Items: items,
 		})
 	})
+
+	// Catch-all 404 — must be registered last so specific routes match first
+	r.GET("/{path...}", func(e *core.RequestEvent) error {
+		return render404(e)
+	})
 }
 
 // renderPostList is shared by /posts, /til, /now, /quotes, /fiction.

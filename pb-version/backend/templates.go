@@ -46,6 +46,21 @@ func renderPage(e *core.RequestEvent, name string, data any) error {
 	return tmpl.Execute(e.Response, make(jet.VarMap), data)
 }
 
+// render404 renders the 404 template with a Not Found status.
+func render404(e *core.RequestEvent) error {
+	e.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	e.Response.WriteHeader(http.StatusNotFound)
+	tmpl, err := activeSet().GetTemplate("404.html")
+	if err != nil {
+		_, werr := e.Response.Write([]byte("<h1>404 Not Found</h1><a href='/'>Home</a>"))
+		if werr != nil {
+			return werr
+		}
+		return nil
+	}
+	return tmpl.Execute(e.Response, make(jet.VarMap), nil)
+}
+
 func registerStaticHandler(se *core.ServeEvent) {
 	se.Router.GET("/static/{path...}", func(e *core.RequestEvent) error {
 		path := e.Request.PathValue("path")
