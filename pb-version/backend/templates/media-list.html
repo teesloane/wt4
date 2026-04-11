@@ -1,30 +1,20 @@
-{{define "media-list"}}
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>media · weakty</title>
-  {{template "styles" .}}
-</head>
-<body class="bg-base-100 text-base-content">
-<div class="max-w-2xl mx-auto px-6 py-16">
-  {{template "nav" .}}
-  <main>
-    <p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-10">media</p>
-    {{range .Items}}
-    <div class="py-6 border-b border-base-200 last:border-0">
-      <h2 class="font-medium"><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></h2>
-      <p class="font-sans text-xs text-base-content/50 mt-1 uppercase tracking-wide">
-        {{if .TypeLabel}}<span class="badge badge-ghost badge-xs mr-1">{{.TypeLabel}}</span>{{end}}
-        {{.PublishedAt}}
-      </p>
-      {{if .Excerpt}}<p class="text-base-content/70 text-sm mt-2 leading-relaxed">{{.Excerpt}}</p>{{end}}
-      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-2">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
-    </div>
-    {{end}}
-  </main>
+{{ extends "_layout.html" }}
+{{ block title() }}{{.PageTitle}}{{ end }}
+{{ block body() }}
+<p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-10">{{.PageTitle}}</p>
+<div class="space-y-1">
+{{ range _, item := .Items }}
+<div class="flex items-center gap-4 py-2 border-b border-base-200 last:border-0 min-w-0">
+  {{ if item.Thumbnail }}
+  <img src="{{item.Thumbnail}}" alt="" class="w-10 h-14 object-cover rounded-sm shrink-0 opacity-80 mr-2">  {{ else }}
+  <div class="w-10 h-14 bg-base-200 rounded-sm shrink-0 mr-8"></div>
+  {{ end }}
+  <div class="flex-1 min-w-0">
+    <a href="{{item.URL}}" class="text-sm hover:underline transition-all block truncate">{{item.Title}}</a>
+    {{ if item.Creator }}<p class="text-xs opacity-40 mt-0.5">{{item.Creator}}</p>{{ end }}
+  </div>
+  <time class="text-xs opacity-40 tabular-nums shrink-0">{{item.PublishedAt}}</time>
 </div>
-</body>
-</html>
-{{end}}
+{{ end }}
+</div>
+{{ end }}

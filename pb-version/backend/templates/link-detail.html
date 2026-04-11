@@ -1,30 +1,24 @@
-{{define "link-detail"}}
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{.Title}} · weakty</title>
-  {{template "styles" .}}
-</head>
-<body class="bg-base-100 text-base-content">
-<div class="max-w-2xl mx-auto px-6 py-16">
-  {{template "nav" .}}
-  <article>
-    <header class="mb-8">
-      <h1 class="text-2xl font-medium leading-tight mb-2">{{.Title}}</h1>
-      <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">{{.PublishedAt}}</p>
-      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-3">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
-    </header>
-    {{if .OGImage}}<img src="{{.OGImage}}" alt="" class="w-full h-auto rounded-sm mb-6 block">{{end}}
-    <a href="{{.SiteURL}}" target="_blank" rel="noopener"
-       class="font-sans text-sm text-base-content/50 hover:text-base-content transition-colors break-all mb-6 block">{{.SiteURL}}</a>
-    {{if .Commentary}}<div class="prose prose-base max-w-none">{{.Commentary}}</div>{{end}}
-    <div class="mt-10 pt-6 border-t border-base-200">
-      <a href="/links" class="font-sans text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">← links</a>
+{{ extends "_layout.html" }}
+{{ block title() }}{{.Title}}{{ end }}
+{{ block body() }}
+<article>
+  <header class="mb-8">
+    <h1 class="text-2xl font-medium leading-tight mb-2">{{.Title}}</h1>
+    <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">{{.PublishedAt}}</p>
+    {{ if .Tags }}
+    <div class="flex gap-1 flex-wrap mt-3">
+      {{ range _, tag := .Tags }}
+      <a class="badge badge-ghost badge-sm" href="/areas/{{tag.Slug}}">{{tag.Name}}</a>
+      {{ end }}
     </div>
-  </article>
-</div>
-</body>
-</html>
-{{end}}
+    {{ end }}
+  </header>
+  {{ if .OGImage }}<img src="{{.OGImage}}" alt="" class="w-full h-auto rounded-sm mb-6 block">{{ end }}
+  <a href="{{.SiteURL}}" target="_blank" rel="noopener"
+     class="font-sans text-sm text-base-content/50 hover:text-base-content transition-colors break-all mb-6 block">{{.SiteURL}}</a>
+  {{ if .Commentary }}<div class="prose prose-base max-w-none">{{raw(.Commentary)}}</div>{{ end }}
+  <div class="mt-10 pt-6 border-t border-base-200">
+    <a href="/links" class="font-sans text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">← links</a>
+  </div>
+</article>
+{{ end }}

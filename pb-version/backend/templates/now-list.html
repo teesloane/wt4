@@ -1,97 +1,69 @@
-{{define "now-list"}}
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{.Title}} · weakty</title>
-  {{template "styles" .}}
-</head>
-<body class="bg-base-100 text-base-content">
-<div class="max-w-2xl mx-auto px-6 py-16">
-  {{template "nav" .}}
+{{ extends "_layout.html" }}
+{{ block title() }}{{.Title}}{{ end }}
+{{ block body() }}
 
-  <article>
-    <dl class="flex justify-center gap-8 mb-8 text-xs tracking-widest">
-      <div class="flex flex-col items-center gap-1">
-        <dt class="uppercase opacity-30">Type</dt>
-        <dd class="capitalize opacity-60">Update</dd>
-      </div>
-      <div class="flex flex-col items-center gap-1">
-        <dt class="uppercase opacity-30">Date</dt>
-        <dd class="opacity-60 tabular-nums">{{if .PublishedAt}}{{.PublishedAt}}{{else}}Draft{{end}}</dd>
-      </div>
-    </dl>
-
-    {{if .FeaturedImage}}
-    <img src="{{.FeaturedImage}}" alt="{{.Title}}" class="w-full mb-12 rounded">
-    {{end}}
-
-    <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 max-w-none">
-      {{.HTML}}
+<article>
+  <dl class="flex justify-center gap-8 mb-8 text-xs tracking-widest">
+    <div class="flex flex-col items-center gap-1">
+      <dt class="uppercase opacity-30">Type</dt>
+      <dd class="capitalize opacity-60">Update</dd>
     </div>
-  </article>
-
-  {{if or .WeekEntities .WeekMediaLogs}}
-  <div class="border border-base-300 p-8 mt-8 mb-16 bg-base-200/50 rounded-sm">
-    {{if .WeekEntities}}
-    <h2 class="text-sm uppercase font-sans font-bold tracking-wide opacity-60 mb-8">Around the site this week:</h2>
-    <div class="space-y-3">
-      {{range .WeekEntities}}
-      <div class="flex items-baseline justify-between gap-4">
-        <a href="{{.URL}}" class="text-sm hover:text-primary transition-colors truncate">{{.Title}}</a>
-        <span class="font-sans text-xs text-base-content/40 shrink-0 uppercase tracking-wide">{{.TypeLabel}}</span>
-      </div>
-      {{end}}
+    <div class="flex flex-col items-center gap-1">
+      <dt class="uppercase opacity-30">Date</dt>
+      <dd class="opacity-60 tabular-nums">{{ if .PublishedAt }}{{.PublishedAt}}{{ else }}Draft{{ end }}</dd>
     </div>
-    {{end}}
+  </dl>
+  {{ if .FeaturedImage }}
+  <img src="{{.FeaturedImage}}" alt="{{.Title}}" class="w-full mb-12 rounded">
+  {{ end }}
+  <div class="prose prose-p:mb-0 prose-p:mt-0 prose-p:indent-6 max-w-none">{{raw(.HTML)}}</div>
+</article>
 
-    {{if and .WeekEntities .WeekMediaLogs}}
-    <div class="my-8 border-t border-base-300"></div>
-    {{end}}
-
-    {{if .WeekMediaLogs}}
-    <h2 class="text-sm uppercase font-sans font-bold tracking-wide opacity-60 mb-8">Reading / Listening:</h2>
-    <div class="space-y-3">
-      {{range .WeekMediaLogs}}
-      <div class="flex items-center gap-3">
-        {{if .Thumbnail}}
-        <img src="{{.Thumbnail}}" alt="{{.Title}}" class="w-10 h-10 object-cover rounded shrink-0">
-        {{else}}
-        <div class="w-10 h-10 bg-base-200 rounded shrink-0 flex items-center justify-center text-base-content/30 text-xs font-bold uppercase">
-          {{slice .MediaType 0 1}}
-        </div>
-        {{end}}
-        <div class="min-w-0">
-          <div class="text-sm truncate">{{.Title}}</div>
-          {{if .Creator}}<div class="text-xs opacity-50">{{.Creator}}</div>{{end}}
-        </div>
-        <span class="ml-auto text-xs opacity-30 shrink-0">{{.MediaType}}</span>
-      </div>
-      {{end}}
-    </div>
-    {{end}}
+{{ if .WeekEntities || .WeekMediaLogs }}
+<div class="border border-base-300 p-8 mt-8 mb-16 bg-base-200/50 rounded-sm">
+  {{ if .WeekEntities }}
+  <h2 class="text-sm uppercase font-sans font-bold tracking-wide opacity-60 mb-8">Around the site this week:</h2>
+  <div>
+    {{ range _, item := .WeekEntities }}
+      {{ include "_content-item.html" item }}
+    {{ end }}
   </div>
-  {{end}}
-
-  {{if .Updates}}
-  <div class="border-t border-base-300 my-12"></div>
-  <h2 class="text-base font-normal tracking-wide opacity-60 mb-8">Previous Updates</h2>
+  {{ end }}
+  {{ if .WeekEntities && .WeekMediaLogs }}
+  <div class="my-8 border-t border-base-300"></div>
+  {{ end }}
+  {{ if .WeekMediaLogs }}
+  <h2 class="text-sm uppercase font-sans font-bold tracking-wide opacity-60 mb-8">Reading / Listening:</h2>
   <div class="space-y-3">
-    {{range .Updates}}
-    <div class="flex items-baseline justify-between gap-4 py-1">
-      <a href="{{.URL}}"
-         class="text-sm hover:text-primary transition-colors truncate {{if eq .ID $.CurrentID}}font-bold{{end}}">
-        {{.Title}}
-      </a>
-      <span class="font-sans text-xs text-base-content/40 shrink-0 tabular-nums">{{.PublishedAt}}</span>
+    {{ range _, ml := .WeekMediaLogs }}
+    <div class="flex items-center gap-3">
+      {{ if ml.Thumbnail }}
+      <img src="{{ml.Thumbnail}}" alt="{{ml.Title}}" class="w-10 h-10 object-cover rounded shrink-0">
+      {{ else }}
+      <div class="w-10 h-10 bg-base-200 rounded shrink-0 flex items-center justify-center text-base-content/30 text-xs font-bold uppercase">
+        {{ml.MediaType[0:1]}}
+      </div>
+      {{ end }}
+      <div class="min-w-0">
+        <div class="text-sm truncate">{{ml.Title}}</div>
+        {{ if ml.Creator }}<div class="text-xs opacity-50">{{ml.Creator}}</div>{{ end }}
+      </div>
+      <span class="ml-auto text-xs opacity-30 shrink-0">{{ml.MediaType}}</span>
     </div>
-    {{end}}
+    {{ end }}
   </div>
-  {{end}}
-
+  {{ end }}
 </div>
-</body>
-</html>
-{{end}}
+{{ end }}
 
+{{ if .Updates }}
+<div class="border-t border-base-300 my-12"></div>
+<h2 class="text-base font-normal tracking-wide opacity-60 mb-8">Previous Updates</h2>
+<div>
+  {{ range _, item := .Updates }}
+    {{ include "_content-item.html" item }}
+  {{ end }}
+</div>
+{{ end }}
+
+{{ end }}

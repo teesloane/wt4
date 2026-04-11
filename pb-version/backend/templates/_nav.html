@@ -1,19 +1,70 @@
-{{define "nav"}}
-<nav class="flex flex-wrap items-center gap-x-5 gap-y-1 mb-14 font-sans">
-  <a href="/" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">home</a>
-  <a href="/now" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">now</a>
-  <a href="/posts" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">posts</a>
-  <a href="/til" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">til</a>
-  <a href="/links" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">links</a>
-  <a href="/media-logs" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">media</a>
-  <a href="/projects" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">projects</a>
-  <a href="/areas" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">areas</a>
-  <a href="/archive" class="text-xs uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">archive</a>
-  <button
+<nav class="flex items-center gap-x-5 gap-y-1 font-sans text-xs uppercase tracking-widest" id="site-nav">
+{{link_class := "opacity-40 hover:opacity-100 transition-opacity"}}
+  <div id="nav-links" class="flex flex-wrap items-center gap-x-5 gap-y-1 flex-1">
+    <a href="/" class="{{link_class}}">home</a>
+    <a href="/now" class="{{link_class}}">now</a>
+    <a href="/posts" class="{{link_class}}">posts</a>
+    <a href="/fiction" class="{{link_class}}">fiction</a>
+    {* <a href="/til" class="{{link_class}}">til</a> *}
+    {* <a href="/links" class="{{link_class}}">links</a> *}
+    <a href="/reading" class="{{link_class}}">reading</a>
+    <a href="/projects" class="{{link_class}}">projects</a>
+    <!-- <a href="/areas" class="{{link_class}}">areas</a> -->
+    <a href="/archive" class="{{link_class}}">archive</a>
+  </div>
+  <button id="nav-theme-btn"
     onclick="var h=document.documentElement,t=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',t);localStorage.setItem('theme',t)"
-    class="ml-auto btn btn-ghost btn-xs btn-circle text-base-content/40 hover:text-base-content"
-    aria-label="Toggle theme">
-    ◐
-  </button>
+    class="ml-auto btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
+    aria-label="Toggle theme">◐</button>
+  <button id="nav-hamburger" style="display:none"
+    class="btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
+    aria-label="Open menu">☰</button>
 </nav>
-{{end}}
+
+<div id="mobile-nav-drawer"
+  style="position:fixed;top:0;right:0;bottom:0;width:16rem;z-index:50;background:var(--color-base-100);box-shadow:-4px 0 24px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.25s ease;display:flex;flex-direction:column;padding:2rem;">
+  <button id="nav-close-btn"
+    class="btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
+    style="align-self:flex-end;margin-bottom:2rem"
+    aria-label="Close menu">✕</button>
+  <div id="drawer-links" style="display:flex;flex-direction:column;gap:1.25rem;font-family:inherit;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;"></div>
+</div>
+<div id="mobile-nav-backdrop" style="display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,0.3)"></div>
+
+<script>
+(function() {
+  var BREAKPOINT = 768;
+  var links    = document.getElementById('nav-links');
+  var hamburger = document.getElementById('nav-hamburger');
+  var themeBtn  = document.getElementById('nav-theme-btn');
+  var drawer    = document.getElementById('mobile-nav-drawer');
+  var backdrop  = document.getElementById('mobile-nav-backdrop');
+  var closeBtn  = document.getElementById('nav-close-btn');
+  var drawerLinks = document.getElementById('drawer-links');
+
+  // Populate drawer once by cloning desktop links
+  Array.from(links.children).forEach(function(a) {
+    var clone = a.cloneNode(true);
+    clone.className = 'opacity-40 hover:opacity-100 transition-opacity';
+    drawerLinks.appendChild(clone);
+  });
+
+  function applyLayout() {
+    var mobile = window.innerWidth < BREAKPOINT;
+    links.style.display     = mobile ? 'none' : '';
+    hamburger.style.display = mobile ? '' : 'none';
+    themeBtn.style.marginLeft = mobile ? 'auto' : '';
+    if (!mobile) closeDrawer();
+  }
+
+  function openDrawer()  { drawer.style.transform = 'translateX(0)'; backdrop.style.display = 'block'; }
+  function closeDrawer() { drawer.style.transform = 'translateX(100%)'; backdrop.style.display = 'none'; }
+
+  hamburger.addEventListener('click', openDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+
+  applyLayout();
+  window.addEventListener('resize', applyLayout);
+})();
+</script>

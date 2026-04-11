@@ -1,0 +1,7 @@
+<div class="flex items-baseline gap-6 py-2 border-b border-base-200 last:border-0 min-w-0 text-sm">
+  {{ if .TypeLabel }}
+  <span class="opacity-70 tabular-nums flex-shrink-0 min-w-24 capitalize">{{.TypeLabel}}</span>
+  {{ end }}
+  <a href="{{.URL}}" class="flex-1 min-w-0 truncate hover:underline transition-all {{ if .Current }}font-bold{{ end }}">{{.Title}}</a>
+  <time class="opacity-50 tabular-nums flex-shrink-0 ">{{.PublishedAt}}</time>
+</div>

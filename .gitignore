@@ -52,3 +52,4 @@ priv/static/uploads
 data/
 
 pb-version/frontend/node_modules
+pb-version/backend/pb_data/storage

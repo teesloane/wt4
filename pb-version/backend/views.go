@@ -19,8 +19,10 @@ type EntityItem struct {
 	Excerpt     string
 	Hero        string
 	Thumbnail   string
+	Creator     string
 	Tags        []TagItem
 	Favourite   bool
+	Current     bool
 }
 
 type ListPage struct {

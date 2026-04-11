@@ -34,7 +34,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	// Posts
 	r.GET("/posts", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='post'", "posts")
+		return renderPostList(app, e, "post_type='post'", "posts", true)
 	})
 	r.GET("/posts/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
@@ -50,7 +50,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	// TIL
 	r.GET("/til", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='til'", "TIL")
+		return renderPostList(app, e, "post_type='til'", "TIL", false)
 	})
 	r.GET("/til/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
@@ -58,7 +58,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	// Quotes
 	r.GET("/quotes", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='quote'", "quotes")
+		return renderPostList(app, e, "post_type='quote'", "quotes", false)
 	})
 	r.GET("/quotes/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
@@ -66,7 +66,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	// Fiction
 	r.GET("/fiction", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='fiction'", "fiction")
+		return renderPostList(app, e, "post_type='fiction'", "fiction", false)
 	})
 	r.GET("/fiction/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
@@ -102,8 +102,14 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 	})
 
 	// Media logs
-	r.GET("/media-logs", func(e *core.RequestEvent) error {
-		records, err := fetchAndExpand(app, "media_logs", "public=true", "-created", 200)
+	r.GET("/reading", func(e *core.RequestEvent) error {
+		// Books and comics sorted by date_finished desc (in-progress have no date, appear last in SQLite)
+		records, err := app.FindRecordsByFilter(
+			"media_logs",
+			"public=true && (media_type='book' || media_type='comic') && date_finished!=''",
+			"-date_finished",
+			500, 0,
+		)
 		if err != nil {
 			records = []*core.Record{}
 		}
@@ -111,7 +117,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 		for _, rec := range records {
 			items = append(items, mediaLogToEntityItem(rec))
 		}
-		return renderPage(e, "media-list", ListPage{Items: items})
+		return renderPage(e, "media-list", ListPage{PageTitle: "reading", Items: items})
 	})
 	r.GET("/media-logs/{slug}", func(e *core.RequestEvent) error {
 		slug := e.Request.PathValue("slug")
@@ -210,7 +216,8 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 }
 
 // renderPostList is shared by /posts, /til, /now, /quotes, /fiction.
-func renderPostList(app *pocketbase.PocketBase, e *core.RequestEvent, typeFilter, pageTitle string) error {
+// hideLabel strips the TypeLabel from items before rendering (e.g. /posts doesn't need "post" badges).
+func renderPostList(app *pocketbase.PocketBase, e *core.RequestEvent, typeFilter, pageTitle string, hideLabel bool) error {
 	filter := "public=true && status='published' && " + typeFilter
 	records, err := fetchAndExpand(app, "posts", filter, "-published_at", 200)
 	if err != nil {
@@ -218,7 +225,11 @@ func renderPostList(app *pocketbase.PocketBase, e *core.RequestEvent, typeFilter
 	}
 	items := make([]EntityItem, 0, len(records))
 	for _, rec := range records {
-		items = append(items, postToEntityItem(rec))
+		item := postToEntityItem(rec)
+		if hideLabel {
+			item.TypeLabel = ""
+		}
+		items = append(items, item)
 	}
 	return renderPage(e, "post-list", ListPage{PageTitle: pageTitle, Items: items})
 }

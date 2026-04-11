@@ -1,27 +1,8 @@
-{{define "link-list"}}
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>links · weakty</title>
-  {{template "styles" .}}
-</head>
-<body class="bg-base-100 text-base-content">
-<div class="max-w-2xl mx-auto px-6 py-16">
-  {{template "nav" .}}
-  <main>
-    <p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-10">links</p>
-    {{range .Items}}
-    <div class="py-6 border-b border-base-200 last:border-0">
-      <h2 class="font-medium"><a href="{{.URL}}" class="hover:text-primary transition-colors">{{.Title}}</a></h2>
-      <p class="font-sans text-xs text-base-content/50 mt-1 uppercase tracking-wide">{{.PublishedAt}}</p>
-      {{if .Excerpt}}<p class="text-base-content/70 text-sm mt-2 leading-relaxed">{{.Excerpt}}</p>{{end}}
-      {{if .Tags}}<div class="flex gap-1 flex-wrap mt-2">{{range .Tags}}<a class="badge badge-ghost badge-sm" href="/areas/{{.Slug}}">{{.Name}}</a>{{end}}</div>{{end}}
-    </div>
-    {{end}}
-  </main>
-</div>
-</body>
-</html>
-{{end}}
+{{ extends "_layout.html" }}
+{{ block title() }}links{{ end }}
+{{ block body() }}
+<p class="font-sans text-xs uppercase tracking-widest text-base-content/40 mb-10">links</p>
+{{ range _, item := .Items }}
+  {{ include "_content-item.html" item }}
+{{ end }}
+{{ end }}

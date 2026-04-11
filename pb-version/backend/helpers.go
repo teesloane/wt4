@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"net/http"
 	"strings"
 	"time"
 
@@ -25,12 +24,6 @@ func fileURL(collection, recordID, filename, thumb string) string {
 }
 
 func float64Ptr(v float64) *float64 { return &v }
-
-func renderPage(e *core.RequestEvent, name string, data any) error {
-	e.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
-	e.Response.WriteHeader(http.StatusOK)
-	return activeTemplates().ExecuteTemplate(e.Response, name, data)
-}
 
 // entityURL returns the public URL path for a given entity type + subtype + slug.
 func entityURL(entityType, subtype, slug string) string {
@@ -73,7 +66,7 @@ func typeLabel(entityType, subtype string) string {
 		case "fiction":
 			return "fiction"
 		default:
-			return ""
+			return "post"
 		}
 	case "link":
 		return "link"
@@ -195,6 +188,7 @@ func mediaLogToEntityItem(rec *core.Record) EntityItem {
 		Subtype:     mediaType,
 		TypeLabel:   typeLabel("media_log", mediaType),
 		Title:       rec.GetString("title"),
+		Creator:     rec.GetString("creator"),
 		Slug:        slug,
 		URL:         entityURL("media_log", "", slug),
 		PublishedAt: date,
@@ -308,7 +302,10 @@ func buildNowPage(app *pocketbase.PocketBase, rec *core.Record) NowDetailPage {
 		"public=true && status='published' && post_type='update'", "-published_at", 200)
 	updates := make([]EntityItem, 0, len(updateRecs))
 	for _, r := range updateRecs {
-		updates = append(updates, postToEntityItem(r))
+		item := postToEntityItem(r)
+		item.TypeLabel = ""
+		item.Current = r.Id == rec.Id
+		updates = append(updates, item)
 	}
 
 	return NowDetailPage{

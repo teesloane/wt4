@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ block title() }}{{ end }}{{ block title_suffix() }} · weakty{{ end }}</title>
+  {{ include "_styles.html" }}
+</head>
+<body class="bg-base-100 text-base-content">
+<header id="site-header" class="{{ block header_class() }}sticky top-0 z-40 bg-base-100 border-b border-base-300{{ end }} transition-colors duration-300">
+  <div class="max-w-2xl mx-auto px-6 py-4">
+    {{ include "_nav.html" }}
+  </div>
+</header>
+{{ block hero() }}{{ end }}
+<main class="{{ block main_class() }}max-w-2xl mx-auto px-6 py-12{{ end }}">
+  {{ block body() }}{{ end }}
+</main>
+</body>
+</html>

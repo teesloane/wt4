@@ -2,11 +2,13 @@ package main
 
 import (
 	"embed"
-	"html/template"
 	"mime"
+	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/CloudyKit/jet/v6"
+	"github.com/CloudyKit/jet/v6/loaders/embedfs"
 	"github.com/pocketbase/pocketbase/core"
 )
 
@@ -16,19 +18,32 @@ var templateFS embed.FS
 //go:embed static
 var staticFS embed.FS
 
-var tmpl *template.Template
+var jetSet *jet.Set
 
 func init() {
-	tmpl = template.Must(template.New("").ParseFS(templateFS, "templates/*.html"))
+	loader := embedfs.NewLoader("templates", templateFS)
+	jetSet = jet.NewSet(loader)
 }
 
-// activeTemplates returns disk-loaded templates when TEMPLATE_DIR is set
-// (hot reload in dev), otherwise returns the embedded templates.
-func activeTemplates() *template.Template {
+// activeSet returns a live-reloading set when TEMPLATE_DIR is set (dev),
+// otherwise returns the embedded production set.
+func activeSet() *jet.Set {
 	if dir := os.Getenv("TEMPLATE_DIR"); dir != "" {
-		return template.Must(template.New("").ParseGlob(dir + "/*.html"))
+		s := jet.NewSet(jet.NewOSFileSystemLoader(dir), jet.InDevelopmentMode())
+		return s
 	}
-	return tmpl
+	return jetSet
+}
+
+// renderPage executes a Jet template by file name with the given data.
+func renderPage(e *core.RequestEvent, name string, data any) error {
+	e.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
+	e.Response.WriteHeader(http.StatusOK)
+	tmpl, err := activeSet().GetTemplate(name + ".html")
+	if err != nil {
+		return err
+	}
+	return tmpl.Execute(e.Response, make(jet.VarMap), data)
 }
 
 func registerStaticHandler(se *core.ServeEvent) {
