@@ -40,6 +40,17 @@ run = "TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127
 dir = "{{config_root}}/backend"
 depends = ["build"]
 
+[tasks.start]
+description = "Build once, then run CSS watcher + dev server in parallel"
+depends = ["build"]
+dir = "{{config_root}}/backend"
+run = """
+npm --prefix {{config_root}}/frontend run watch &
+CSS_WATCH_PID=$!
+trap 'kill $CSS_WATCH_PID 2>/dev/null' EXIT
+TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}
+"""
+
 [tasks."migrate-safe"]
 description = "Run migration without wiping pb_data (skips duplicates)"
 run = "MIGRATE_DB={{vars.SOURCE_DB}} ./pb-weakty serve --dir pb_data --http 127.0.0.1:{{vars.BACKEND_PORT}}"
