@@ -29,18 +29,6 @@ dir = "{{config_root}}/backend"
 depends = ["css:build"]
 
 [tasks.dev]
-description = "Run PocketBase in dev mode (no migration)"
-run = "./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}"
-dir = "{{config_root}}/backend"
-depends = ["build"]
-
-[tasks."dev:hot"]
-description = "Run with on-disk templates — edit & refresh without rebuilding"
-run = "TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}"
-dir = "{{config_root}}/backend"
-depends = ["build"]
-
-[tasks.start]
 description = "Build once, then run CSS watcher + dev server in parallel"
 depends = ["build"]
 dir = "{{config_root}}/backend"
@@ -50,6 +38,12 @@ CSS_WATCH_PID=$!
 trap 'kill $CSS_WATCH_PID 2>/dev/null' EXIT
 TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}
 """
+
+[tasks."dev:hot"]
+description = "Run with on-disk templates — edit & refresh without rebuilding"
+run = "TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}"
+dir = "{{config_root}}/backend"
+depends = ["build"]
 
 [tasks."migrate-safe"]
 description = "Run migration without wiping pb_data (skips duplicates)"
