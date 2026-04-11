@@ -10,6 +10,7 @@ import (
 
 func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 	registerStaticHandler(se)
+	registerRSSRoute(app, se)
 
 	r := se.Router
 
@@ -110,30 +111,30 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 		}
 		return renderPage(e, "media-list", ListPage{PageTitle: "reading", Items: items})
 	})
-	r.GET("/media-logs/{slug}", func(e *core.RequestEvent) error {
-		slug := e.Request.PathValue("slug")
-		rec, err := app.FindFirstRecordByData("media_logs", "slug", slug)
-		if err != nil {
-			return notFound("media log not found")
-		}
-		app.ExpandRecord(rec, []string{"tags"}, nil)
-		date := formatDate(rec, "date_consumed")
-		if date == "" {
-			date = formatDate(rec, "date_finished")
-		}
-		return renderPage(e, "media-detail", MediaLogPage{
-			Title:       rec.GetString("title"),
-			Creator:     rec.GetString("creator"),
-			MediaType:   rec.GetString("media_type"),
-			Status:      rec.GetString("status"),
-			Rating:      starsFromRating(rec.GetFloat("rating")),
-			PublishedAt: date,
-			Notes:       template.HTML(rec.GetString("notes")),
-			ExternalURL: rec.GetString("external_url"),
-			Thumbnail:   fileURL("media_logs", rec.Id, rec.GetString("thumbnail_url"), "400x0"),
-			Tags:        expandedTags(rec),
-		})
-	})
+	// r.GET("/media-logs/{slug}", func(e *core.RequestEvent) error {
+	// 	slug := e.Request.PathValue("slug")
+	// 	rec, err := app.FindFirstRecordByData("media_logs", "slug", slug)
+	// 	if err != nil {
+	// 		return notFound("media log not found")
+	// 	}
+	// 	app.ExpandRecord(rec, []string{"tags"}, nil)
+	// 	date := formatDate(rec, "date_consumed")
+	// 	if date == "" {
+	// 		date = formatDate(rec, "date_finished")
+	// 	}
+	// 	return renderPage(e, "media-detail", MediaLogPage{
+	// 		Title:       rec.GetString("title"),
+	// 		Creator:     rec.GetString("creator"),
+	// 		MediaType:   rec.GetString("media_type"),
+	// 		Status:      rec.GetString("status"),
+	// 		Rating:      starsFromRating(rec.GetFloat("rating")),
+	// 		PublishedAt: date,
+	// 		Notes:       template.HTML(rec.GetString("notes")),
+	// 		ExternalURL: rec.GetString("external_url"),
+	// 		Thumbnail:   fileURL("media_logs", rec.Id, rec.GetString("thumbnail_url"), "400x0"),
+	// 		Tags:        expandedTags(rec),
+	// 	})
+	// })
 
 	// Projects
 	r.GET("/projects", func(e *core.RequestEvent) error {
