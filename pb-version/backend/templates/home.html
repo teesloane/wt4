@@ -20,12 +20,12 @@
 </div>
 {{ end }}
 {{ block body() }}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 text-sm">
 
   <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
     <div class="w-full">
       <p class="text-xs uppercase tracking-widest opacity-70 mb-6">About This Site</p>
-      <div class="space-y-3 text-base">
+      <div class="space-y-3">
         <p>This site is a catalogue of the creative projects and interests I explore in my free time, usually taking the form of non/fiction writing, programming, music, and visuals &amp; design. Everything on this site was made by me, unless stated otherwise.</p>
         <p>Thank you for visiting and <a href="mailto:weakty@fastmail.com" class="text-base-content/70 border-b border-transparent hover:border-base-content/70 hover:text-base-content transition-all">don&#39;t hesitate to say hi.</a></p>
       </div>
@@ -95,9 +95,9 @@
   <section class="w-full mx-auto min-h-[360px] p-8 lg:p-16 flex flex-col justify-center border border-base-300">
     <div class="w-full">
       <p class="text-xs uppercase tracking-widest opacity-70 mb-6">Now</p>
-      <a href="{{.Update.URL}}" class="hover:opacity-50 transition-opacity text-base block mb-3">
+      <a href="{{.Update.URL}}" class="hover:opacity-50 transition-opacity  block mb-3">
         <div class="mb-3">{{.Update.Title}}</div>
-        <div class="flex flex-col relative max-h-48 overflow-hidden text-base whitespace-pre-line"
+        <div class="flex flex-col relative max-h-48 overflow-hidden whitespace-pre-line para-indent"
              style="mask-image: linear-gradient(to bottom, black 20%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);">
           {{raw(.Update.HTML)}}
         </div>

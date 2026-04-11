@@ -37,7 +37,7 @@ func entityURL(entityType, subtype, slug string) string {
 		case "quote":
 			return "/quotes/" + slug
 		case "fiction":
-			return "/fiction/" + slug
+			return "/posts/" + slug
 		default:
 			return "/posts/" + slug
 		}

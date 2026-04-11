@@ -85,6 +85,14 @@
   }
 }
 
+/* ── Utilities ────────────────────────────────────────────────── */
+@layer utilities {
+  /* Indent paragraphs inside injected HTML content */
+  .para-indent p {
+    text-indent: 1.5rem !important;
+  }
+}
+
 /* ── Prose overrides ──────────────────────────────────────────── */
 @utility prose {
   blockquote {

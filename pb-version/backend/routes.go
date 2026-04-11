@@ -32,14 +32,13 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 		return renderPage(e, "archive", ListPage{Items: items})
 	})
 
-	// Posts
+	// Posts — fiction + non-fiction combined, labelled by type
 	r.GET("/posts", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='post'", "posts", true)
+		return renderPostList(app, e, "(post_type='post' || post_type='fiction')", "posts", false)
 	})
 	r.GET("/posts/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
 	})
-
 	// Now (updates)
 	r.GET("/now", func(e *core.RequestEvent) error {
 		return renderNowLatest(app, e)
@@ -61,14 +60,6 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 		return renderPostList(app, e, "post_type='quote'", "quotes", false)
 	})
 	r.GET("/quotes/{slug}", func(e *core.RequestEvent) error {
-		return renderPostDetail(app, e, e.Request.PathValue("slug"))
-	})
-
-	// Fiction
-	r.GET("/fiction", func(e *core.RequestEvent) error {
-		return renderPostList(app, e, "post_type='fiction'", "fiction", false)
-	})
-	r.GET("/fiction/{slug}", func(e *core.RequestEvent) error {
 		return renderPostDetail(app, e, e.Request.PathValue("slug"))
 	})
 
