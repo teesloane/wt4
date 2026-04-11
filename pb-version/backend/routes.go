@@ -14,10 +14,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	r := se.Router
 
-	// Home
-	r.GET("/", func(e *core.RequestEvent) error {
-		return renderHome(app, e)
-	})
+	// Home — handled inside catch-all below to avoid ServeMux conflict with /{path...}
 
 	// Archive — all public entities sorted by date
 	r.GET("/archive", func(e *core.RequestEvent) error {
@@ -216,8 +213,13 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 		})
 	})
 
-	// Catch-all 404 — must be registered last so specific routes match first
+	// Catch-all: home at "/" (path=="") and 404 for everything else.
+	// Must be registered last — specific routes above match first.
+	// NOTE: GET / conflicts with GET /{path...} in Go's ServeMux, so home is handled here.
 	r.GET("/{path...}", func(e *core.RequestEvent) error {
+		if e.Request.PathValue("path") == "" {
+			return renderHome(app, e)
+		}
 		return render404(e)
 	})
 }
