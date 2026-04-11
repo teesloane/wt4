@@ -2,19 +2,10 @@
 {{ block title() }}{{.Title}}{{ end }}
 {{ block body() }}
 
-<header class="mb-16">
-  <h1 class="text-xl mx-auto font-normal my-8 text-center uppercase prose tracking-wide averia">{{.Title}}</h1>
-  <dl class="flex justify-center gap-8 mb-8 text-xs tracking-widest">
-    <div class="flex flex-col items-center gap-1">
-      <dt class="uppercase opacity-30">Type</dt>
-      <dd class="capitalize opacity-60">Update</dd>
-    </div>
-    <div class="flex flex-col items-center gap-1">
-      <dt class="uppercase opacity-30">Date</dt>
-      <dd class="opacity-60 tabular-nums">{{ if .PublishedAt }}{{.PublishedAt}}{{ else }}Draft{{ end }}</dd>
-    </div>
-  </dl>
-</header>
+  <header class="mb-16 text-center">
+    <h1 class="text-xl font-medium leading-tight mb-2">{{.Title}}</h1>
+    <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">{{.PublishedAt}}</p>
+  </header>
 
 {{ if .FeaturedImage }}
 <img src="{{.FeaturedImage}}" alt="{{.Title}}" class="w-full mb-12 rounded">

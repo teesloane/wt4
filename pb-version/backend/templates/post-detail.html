@@ -3,20 +3,22 @@
 {{ block body() }}
 <article>
   {{ if .FeaturedImage }}<img src="{{.FeaturedImage}}" alt="" class="w-full h-auto rounded-sm mb-8 block">{{ end }}
-  <header class="mb-8">
-    <h1 class="text-2xl font-medium leading-tight mb-2">{{.Title}}</h1>
+  <header class="mb-16 text-center">
+    <h1 class="text-xl font-medium leading-tight mb-2">{{.Title}}</h1>
     <p class="font-sans text-xs text-base-content/50 uppercase tracking-wide">{{.PublishedAt}}</p>
     {{ if .Tags }}
-    <div class="flex gap-1 flex-wrap mt-3">
+    <div class="flex gap-1 flex-wrap mt-3 justify-center">
       {{ range _, tag := .Tags }}
       <a class="badge badge-ghost badge-sm" href="/areas/{{tag.Slug}}">{{tag.Name}}</a>
       {{ end }}
     </div>
     {{ end }}
-  </header>
+
   {{ if .Excerpt }}
-  <blockquote class="border-l-2 border-base-300 pl-5 italic text-base-content/70 mb-8 leading-relaxed">{{.Excerpt}}</blockquote>
+  <blockquote class="italic text-sm text-base-content/70 mb-8 leading-relaxed my-8">{{.Excerpt}}</blockquote>
   {{ end }}
+
+  </header>
   <div class="prose prose-base max-w-none">{{raw(.HTML)}}</div>
   {{ if .Attribution }}
   <p class="font-sans text-sm text-base-content/50 mt-8 pt-6 border-t border-base-200">

@@ -4,15 +4,11 @@
 <link rel="stylesheet" href="/static/app.css">
 <script>
   (function(){
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
     function applyTheme() {
-      var stored = localStorage.getItem('theme');
-      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-theme', mq.matches ? 'dark' : 'light');
     }
     applyTheme();
-    // Re-apply when system preference changes (only if no manual override stored)
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
-      if (!localStorage.getItem('theme')) applyTheme();
-    });
+    mq.addEventListener('change', applyTheme);
   })();
 </script>

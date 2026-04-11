@@ -32,7 +32,6 @@ func initCollections(app *pocketbase.PocketBase) error {
 	return nil
 }
 
-
 func initTagsCollection(app *pocketbase.PocketBase) error {
 	if col, _ := app.FindCollectionByNameOrId("tags"); col != nil {
 		return nil
@@ -94,7 +93,7 @@ func initPostsCollection(app *pocketbase.PocketBase, tagsColID string) error {
 		MaxSelect: 99,
 		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
 	})
-	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 0})
+	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 10})
 	col.Indexes = []string{
 		"CREATE UNIQUE INDEX idx_posts_slug ON posts (slug)",
 	}
@@ -121,7 +120,7 @@ func initLinksCollection(app *pocketbase.PocketBase, tagsColID string) error {
 	col.Fields.Add(&core.TextField{Name: "og_image"})
 	col.Fields.Add(&core.BoolField{Name: "og_image_pinned"})
 	col.Fields.Add(&core.DateField{Name: "published_at"})
-	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 0})
+	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 10})
 	col.Indexes = []string{
 		"CREATE UNIQUE INDEX idx_links_slug ON links (slug)",
 	}
@@ -213,7 +212,7 @@ func initProjectsCollection(app *pocketbase.PocketBase, tagsColID string) error 
 		MaxSelect: 99,
 		MimeTypes: []string{"image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"},
 	})
-	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 0})
+	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 10})
 	col.Indexes = []string{
 		"CREATE UNIQUE INDEX idx_projects_slug ON projects (slug)",
 	}
@@ -248,7 +247,7 @@ func initEntitiesCollection(app *pocketbase.PocketBase, tagsColID string) error 
 	col.Fields.Add(&core.BoolField{Name: "favourite"})
 	col.Fields.Add(&core.DateField{Name: "published_at"})
 	col.Fields.Add(&core.BoolField{Name: "public"})
-	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 0})
+	col.Fields.Add(&core.RelationField{Name: "tags", CollectionId: tagsColID, MaxSelect: 10})
 	col.Indexes = []string{
 		"CREATE UNIQUE INDEX idx_entities_source_id ON entities (source_id)",
 	}

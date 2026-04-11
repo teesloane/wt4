@@ -1,6 +1,6 @@
 <nav class="flex items-center gap-x-5 gap-y-1 font-sans text-xs uppercase tracking-widest" id="site-nav">
 {{link_class := "opacity-40 hover:opacity-100 transition-opacity"}}
-  <div id="nav-links" class="flex flex-wrap items-center gap-x-5 gap-y-1 flex-1">
+  <div id="nav-links" class="flex flex-wrap justify-between items-center gap-x-5 gap-y-1 flex-1">
     <a href="/" class="{{link_class}}">home</a>
     <a href="/posts" class="{{link_class}}">writing</a>
     {* <a href="/til" class="{{link_class}}">til</a> *}
@@ -11,10 +11,6 @@
     <!-- <a href="/areas" class="{{link_class}}">areas</a> -->
     <a href="/archive" class="{{link_class}}">archive</a>
   </div>
-  <button id="nav-theme-btn"
-    onclick="var h=document.documentElement,t=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',t);localStorage.setItem('theme',t)"
-    class="ml-auto btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
-    aria-label="Toggle theme">◐</button>
   <button id="nav-hamburger" style="display:none"
     class="btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
     aria-label="Open menu">☰</button>
@@ -35,7 +31,6 @@
   var BREAKPOINT = 768;
   var links    = document.getElementById('nav-links');
   var hamburger = document.getElementById('nav-hamburger');
-  var themeBtn  = document.getElementById('nav-theme-btn');
   var drawer    = document.getElementById('mobile-nav-drawer');
   var backdrop  = document.getElementById('mobile-nav-backdrop');
   var closeBtn  = document.getElementById('nav-close-btn');
@@ -52,7 +47,6 @@
     var mobile = window.innerWidth < BREAKPOINT;
     links.style.display     = mobile ? 'none' : '';
     hamburger.style.display = mobile ? '' : 'none';
-    themeBtn.style.marginLeft = mobile ? 'auto' : '';
     if (!mobile) closeDrawer();
   }
 

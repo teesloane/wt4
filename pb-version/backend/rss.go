@@ -11,10 +11,10 @@ import (
 )
 
 func registerRSSRoute(app *pocketbase.PocketBase, se *core.ServeEvent) {
-	se.Router.GET("/rss.xml", func(e *core.RequestEvent) error {
+	se.Router.GET("/posts/rss.xml", func(e *core.RequestEvent) error {
 		return handleRSS(app, e)
 	})
-	se.Router.GET("/rss/", func(e *core.RequestEvent) error {
+	se.Router.GET("/posts/rss/", func(e *core.RequestEvent) error {
 		return handleRSS(app, e)
 	})
 }
