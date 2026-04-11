@@ -62,18 +62,33 @@ func render404(e *core.RequestEvent) error {
 }
 
 func registerStaticHandler(se *core.ServeEvent) {
+	devMode := os.Getenv("TEMPLATE_DIR") != ""
+
 	se.Router.GET("/static/{path...}", func(e *core.RequestEvent) error {
 		path := e.Request.PathValue("path")
-		data, err := staticFS.ReadFile("static/" + path)
+
+		var data []byte
+		var err error
+		if devMode {
+			// In dev mode serve from disk so css:watch changes are visible immediately.
+			data, err = os.ReadFile("static/" + path)
+		} else {
+			data, err = staticFS.ReadFile("static/" + path)
+		}
 		if err != nil {
 			return e.NotFoundError("", nil)
 		}
+
 		ct := mime.TypeByExtension(filepath.Ext(path))
 		if ct == "" {
 			ct = "application/octet-stream"
 		}
 		e.Response.Header().Set("Content-Type", ct)
-		e.Response.Header().Set("Cache-Control", "public, max-age=3600")
+		if devMode {
+			e.Response.Header().Set("Cache-Control", "no-store")
+		} else {
+			e.Response.Header().Set("Cache-Control", "public, max-age=3600")
+		}
 		_, err = e.Response.Write(data)
 		return err
 	})
