@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ThemeProvider } from './components/theme-provider'
 import AuthGuard from './components/AuthGuard'
 import AdminLayout from './components/AdminLayout'
 import Login from './pages/Login'
@@ -13,6 +14,7 @@ const queryClient = new QueryClient()
 
 export default function App() {
   return (
+    <ThemeProvider defaultTheme="dark" storageKey="weakty-admin-theme">
     <QueryClientProvider client={queryClient}>
       <BrowserRouter basename="/admin">
         <Routes>
@@ -28,5 +30,6 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
+    </ThemeProvider>
   )
 }

@@ -64,8 +64,8 @@ export default function PostsPage() {
     queryFn: () =>
       pb.collection("posts").getList(1, 500, {
         filter: buildFilter(type, status),
-        sort: "-created",
-        fields: "id,title,post_type,status,published_at,created",
+        sort: "-published_at",
+        fields: "id,title,post_type,status,published_at",
       }),
   })
 
@@ -117,7 +117,7 @@ export default function PostsPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {formatDate(post.published_at || post.created)}
+                  {formatDate(post.published_at)}
                 </TableCell>
               </TableRow>
             ))}
