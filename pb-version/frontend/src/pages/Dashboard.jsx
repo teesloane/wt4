@@ -9,9 +9,9 @@ const statQueries = [
   { key: "drafts",    label: "Drafts",   fn: () => pb.collection("posts").getList(1, 1, { filter: "status='draft'",      fields: "id" }) },
   { key: "tils",      label: "TILs",     fn: () => pb.collection("posts").getList(1, 1, { filter: "post_type='til'",     fields: "id" }) },
   { key: "quotes",    label: "Quotes",   fn: () => pb.collection("posts").getList(1, 1, { filter: "post_type='quote'",   fields: "id" }) },
-  { key: "links",     label: "Links",    fn: () => pb.collection("links").getList(1, 1,  {                               fields: "id" }) },
-  { key: "tags",      label: "Tags",     fn: () => pb.collection("tags").getList(1, 1,   {                               fields: "id" }) },
-  { key: "media",     label: "Media",    fn: () => pb.collection("media_logs").getList(1, 1, {                           fields: "id" }) },
+  { key: "links",     label: "Links",    fn: () => pb.collection("links").getList(1, 1,  { fields: "id" }) },
+  { key: "tags",      label: "Tags",     fn: () => pb.collection("tags").getList(1, 1,   { fields: "id" }) },
+  { key: "media",     label: "Media",    fn: () => pb.collection("media_logs").getList(1, 1, { fields: "id" }) },
 ]
 
 export default function Dashboard() {

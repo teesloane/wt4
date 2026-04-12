@@ -26,7 +26,7 @@ function buildFilter(type, status) {
   const parts = []
   if (type)   parts.push(`post_type='${type}'`)
   if (status) parts.push(`status='${status}'`)
-  return parts.join(" && ")
+  return parts.join(" && ") || undefined
 }
 
 function FilterBar({ filters, active, onChange }) {

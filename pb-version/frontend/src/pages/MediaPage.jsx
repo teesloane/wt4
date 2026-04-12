@@ -56,7 +56,7 @@ export default function MediaPage() {
     queryKey: ["media", type],
     queryFn: () =>
       pb.collection("media_logs").getList(1, 500, {
-        filter: type ? `media_type='${type}'` : "",
+        filter: type ? `media_type='${type}'` : undefined,
         sort: "-created",
         fields: "id,title,creator,media_type,status,date_finished,date_consumed,public,rating",
       }),

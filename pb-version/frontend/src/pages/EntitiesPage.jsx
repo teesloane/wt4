@@ -48,7 +48,7 @@ export default function EntitiesPage() {
     queryKey: ["entities", type],
     queryFn: () =>
       pb.collection("entities").getList(1, 500, {
-        filter: type ? `entity_type='${type}'` : "",
+        filter: type ? `entity_type='${type}'` : undefined,
         sort: "-published_at",
         fields: "id,entity_type,subtype,title,slug,published_at,public",
       }),
