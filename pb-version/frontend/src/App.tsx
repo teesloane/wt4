@@ -14,7 +14,7 @@ const queryClient = new QueryClient()
 
 export default function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="weakty-admin-theme">
+    <ThemeProvider defaultTheme="system" storageKey="weakty-admin-theme">
     <QueryClientProvider client={queryClient}>
       <BrowserRouter basename="/admin">
         <Routes>

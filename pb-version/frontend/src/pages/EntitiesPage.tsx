@@ -57,7 +57,7 @@ export default function EntitiesPage() {
   const entities = data?.items ?? []
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 text-foreground">
       <FilterBar filters={TYPE_FILTERS} active={type} onChange={setType} />
 
       <div className="rounded-md border">

@@ -72,7 +72,7 @@ export default function PostsPage() {
   const posts = data?.items ?? []
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 text-foreground">
       <div className="flex flex-wrap gap-4">
         <FilterBar filters={TYPE_FILTERS}   active={type}   onChange={setType} />
         <div className="w-px bg-border self-stretch" />

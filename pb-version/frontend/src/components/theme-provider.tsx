@@ -7,11 +7,23 @@ export function ThemeProvider({ children, defaultTheme = "dark", storageKey = "w
 
   useEffect(() => {
     const root = window.document.documentElement
-    root.classList.remove("light", "dark")
+
+    function applyTheme(t: string) {
+      root.classList.remove("light", "dark")
+      if (t === "system") {
+        root.classList.add(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      } else {
+        root.classList.add(t)
+      }
+    }
+
+    applyTheme(theme)
+
     if (theme === "system") {
-      root.classList.add(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-    } else {
-      root.classList.add(theme)
+      const mq = window.matchMedia("(prefers-color-scheme: dark)")
+      const handler = () => applyTheme("system")
+      mq.addEventListener("change", handler)
+      return () => mq.removeEventListener("change", handler)
     }
   }, [theme])
 

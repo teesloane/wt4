@@ -19,7 +19,7 @@ export default function TagsPage() {
   const tags = data?.items ?? []
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 space-y-4 text-foreground">
       <div className="rounded-md border">
         <Table>
           <TableHeader>
