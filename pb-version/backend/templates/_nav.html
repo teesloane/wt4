@@ -1,6 +1,8 @@
-<nav class="flex items-center gap-x-5 gap-y-1 font-sans text-xs uppercase tracking-widest" id="site-nav">
+<nav class="flex items-center justify-between gap-x-5 gap-y-1 font-sans text-xs uppercase tracking-widest" id="site-nav">
 {{link_class := "opacity-40 hover:opacity-100 transition-opacity"}}
+
   <div id="nav-links" class="flex flex-wrap justify-between items-center gap-x-5 gap-y-1 flex-1">
+    <div class="hidden md:flex"> WEAKTY</div>
     <a href="/" class="{{link_class}}">home</a>
     <a href="/posts" class="{{link_class}}">writing</a>
     {* <a href="/til" class="{{link_class}}">til</a> *}
@@ -11,20 +13,27 @@
     <!-- <a href="/areas" class="{{link_class}}">areas</a> -->
     <a href="/archive" class="{{link_class}}">archive</a>
   </div>
+
+    <div class="md:hidden"> WEAKTY</div>
   <button id="nav-hamburger" style="display:none"
-    class="btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
-    aria-label="Open menu">☰</button>
+    class="btn btn-ghost btn-circle opacity-40 hover:opacity-100"
+    aria-label="Open menu">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <line x1="3" y1="6"  x2="19" y2="6"/>
+      <line x1="3" y1="11" x2="19" y2="11"/>
+      <line x1="3" y1="16" x2="19" y2="16"/>
+    </svg>
+  </button>
 </nav>
 
 <div id="mobile-nav-drawer"
-  style="position:fixed;top:0;right:0;bottom:0;width:16rem;z-index:50;background:var(--color-base-100);box-shadow:-4px 0 24px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.25s ease;display:flex;flex-direction:column;padding:2rem;">
+  class="fixed top-0 right-0 bottom-0 w-64 z-50 bg-base-100 shadow-[-4px_0_24px_rgba(0,0,0,0.15)] flex flex-col p-8 translate-x-full transition-transform duration-250 ease-in-out">
   <button id="nav-close-btn"
-    class="btn btn-ghost btn-xs btn-circle opacity-40 hover:opacity-100"
-    style="align-self:flex-end;margin-bottom:2rem"
+    class="btn btn-ghost btn-circle opacity-40 hover:opacity-100 self-end mb-8"
     aria-label="Close menu">✕</button>
-  <div id="drawer-links" style="display:flex;flex-direction:column;gap:1.25rem;font-family:inherit;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;"></div>
+  <div id="drawer-links" class="flex flex-col gap-5 font-sans text-xs uppercase tracking-widest"></div>
 </div>
-<div id="mobile-nav-backdrop" style="display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,0.3)"></div>
+<div id="mobile-nav-backdrop" class="hidden fixed inset-0 z-40 bg-black/30"></div>
 
 <script>
 (function() {
@@ -50,8 +59,8 @@
     if (!mobile) closeDrawer();
   }
 
-  function openDrawer()  { drawer.style.transform = 'translateX(0)'; backdrop.style.display = 'block'; }
-  function closeDrawer() { drawer.style.transform = 'translateX(100%)'; backdrop.style.display = 'none'; }
+  function openDrawer()  { drawer.classList.remove('translate-x-full'); backdrop.classList.remove('hidden'); }
+  function closeDrawer() { drawer.classList.add('translate-x-full');    backdrop.classList.add('hidden'); }
 
   hamburger.addEventListener('click', openDrawer);
   closeBtn.addEventListener('click', closeDrawer);

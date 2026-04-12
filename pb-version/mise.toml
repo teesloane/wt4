@@ -5,6 +5,10 @@ go = "latest"
 BACKEND_PORT = "8091"
 SOURCE_DB = "../../weakty_dev.db"
 
+[env]
+SERVER = "weakty@100.104.105.83"
+REMOTE_DIR = "/home/weakty/server/bin/weakty"
+
 [tasks."css:install"]
 description = "Install frontend npm dependencies"
 run = "npm install"
@@ -12,21 +16,33 @@ dir = "{{config_root}}/frontend"
 
 [tasks."css:build"]
 description = "Compile Tailwind CSS (one-shot, minified)"
-run = "npm run build"
+run = "npm run css:build"
 dir = "{{config_root}}/frontend"
 depends = ["css:install"]
 
 [tasks."css:watch"]
 description = "Compile Tailwind CSS and watch for changes"
-run = "npm run watch"
+run = "npm run css:watch"
+dir = "{{config_root}}/frontend"
+depends = ["css:install"]
+
+[tasks."admin:build"]
+description = "Build the React admin SPA to backend/static/admin/"
+run = "npm run build"
+dir = "{{config_root}}/frontend"
+depends = ["css:install"]
+
+[tasks."admin:dev"]
+description = "Run Vite dev server for the admin SPA (proxies /api to PocketBase on :8091)"
+run = "npm run dev"
 dir = "{{config_root}}/frontend"
 depends = ["css:install"]
 
 [tasks.build]
-description = "Build the PocketBase binary (CSS must be built first)"
+description = "Build the PocketBase binary (CSS + admin SPA must be built first)"
 run = "go build -o pb-weakty ."
 dir = "{{config_root}}/backend"
-depends = ["css:build"]
+depends = ["css:build", "admin:build"]
 
 [tasks.dev]
 description = "Build once, then run CSS watcher + dev server in parallel"
@@ -62,6 +78,42 @@ MIGRATE_DB={{vars.SOURCE_DB}} ./pb-weakty serve --dir pb_data --http 127.0.0.1:{
 """
 dir = "{{config_root}}/backend"
 depends = ["build"]
+
+[tasks."build:linux-amd64"]
+description = "Build CSS + admin SPA and compile Go binary for linux/amd64"
+depends = ["css:build", "admin:build"]
+run = "GOOS=linux GOARCH=amd64 go build -o pb-weakty-linux-amd64 ."
+dir = "{{config_root}}/backend"
+
+[tasks."deploy"]
+description = "Build and deploy binary to server, restart service"
+depends = ["build:linux-amd64"]
+run = """
+rsync -az --progress backend/pb-weakty-linux-amd64 $SERVER:$REMOTE_DIR/pb-weakty
+ssh $SERVER "systemctl --user restart weakty"
+"""
+
+[tasks."deploy:init"]
+description = "Initial deploy — copies binary and pb_data to server"
+depends = ["build:linux-amd64"]
+run = """
+ssh $SERVER "mkdir -p $REMOTE_DIR"
+rsync -az --progress backend/pb-weakty-linux-amd64 $SERVER:$REMOTE_DIR/pb-weakty
+rsync -az --progress backend/pb_data/ $SERVER:$REMOTE_DIR/pb_data/
+ssh $SERVER "systemctl --user restart weakty"
+"""
+
+[tasks."deploy:logs"]
+description = "Tail systemd user logs for the weakty service on the server"
+run = 'ssh $SERVER "journalctl --user -u weakty -n 100 --no-pager"'
+
+[tasks."deploy:db:pull"]
+description = "Pull the production database down to ./weakty_prod.db"
+run = """
+read -r -p "This will overwrite weakty_prod.db with the production database. Are you sure? [y/N] " confirm
+[ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || { echo "Aborted."; exit 1; }
+rsync -av $SERVER:$REMOTE_DIR/pb_data/data.db ./weakty_prod.db
+"""
 
 [tasks."dangerous-clean"]
 description = "Remove built binary and pb_data"

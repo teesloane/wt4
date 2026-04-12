@@ -1,0 +1,13 @@
+[Unit]
+Description=Weakty PocketBase server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/weakty/server/bin/weakty
+ExecStart=/home/weakty/server/bin/weakty/pb-weakty serve --dir pb_data --http 127.0.0.1:8091
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

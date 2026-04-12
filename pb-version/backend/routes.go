@@ -10,6 +10,7 @@ import (
 
 func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 	registerStaticHandler(se)
+	registerAdminRoute(se)
 	registerRSSRoute(app, se)
 
 	r := se.Router
