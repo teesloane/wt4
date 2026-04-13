@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { CheckIcon, ChevronsUpDownIcon, XIcon, PlusIcon } from "lucide-react"
+import { CheckIcon, ChevronsUpDownIcon, XIcon, PlusIcon, LoaderIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -57,15 +57,14 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
 
   const selectedTags = allTags.filter(t => selectedIds.includes(t.id))
 
-  // Filter allTags by search, excluding already shown in the list
   const filtered = allTags.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  // Show "Create" option if search doesn't match any existing tag exactly
+  const trimmedSearch = search.trim()
   const canCreate =
-    search.trim().length > 0 &&
-    !allTags.some(t => t.name.toLowerCase() === search.trim().toLowerCase())
+    trimmedSearch.length > 0 &&
+    !allTags.some(t => t.name.toLowerCase() === trimmedSearch.toLowerCase())
 
   return (
     <div className="space-y-1.5">
@@ -108,6 +107,13 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
               placeholder="Search or create…"
               value={search}
               onValueChange={setSearch}
+              // Press Enter to create when no match exists
+              onKeyDown={e => {
+                if (e.key === "Enter" && canCreate && !createTag.isPending) {
+                  e.preventDefault()
+                  createTag.mutate(trimmedSearch)
+                }
+              }}
             />
             <CommandList>
               {filtered.length === 0 && !canCreate && (
@@ -130,20 +136,30 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
                   ))}
                 </CommandGroup>
               )}
-              {canCreate && (
-                <CommandGroup>
-                  <CommandItem
-                    value={`__create__${search}`}
-                    onSelect={() => createTag.mutate(search.trim())}
-                    className="text-muted-foreground"
-                  >
-                    <PlusIcon className="size-3.5 mr-1" />
-                    Create &ldquo;{search.trim()}&rdquo;
-                  </CommandItem>
-                </CommandGroup>
-              )}
             </CommandList>
           </Command>
+
+          {/* Create button lives outside cmdk to avoid event conflicts with base-ui Popover */}
+          {canCreate && (
+            <div className="border-t p-1">
+              <button
+                type="button"
+                disabled={createTag.isPending}
+                // onMouseDown instead of onClick: prevents blur/close race condition
+                onMouseDown={e => {
+                  e.preventDefault()
+                  createTag.mutate(trimmedSearch)
+                }}
+                className="w-full flex items-center gap-1.5 px-2 py-1.5 text-sm rounded-sm hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {createTag.isPending
+                  ? <LoaderIcon className="size-3.5 animate-spin" />
+                  : <PlusIcon className="size-3.5" />
+                }
+                Create &ldquo;{trimmedSearch}&rdquo;
+              </button>
+            </div>
+          )}
         </PopoverContent>
       </Popover>
     </div>

@@ -2,7 +2,6 @@ import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Image from "@tiptap/extension-image"
 import Placeholder from "@tiptap/extension-placeholder"
-import Typography from "@tiptap/extension-typography"
 import { Markdown } from "tiptap-markdown"
 import { useEffect, useRef } from "react"
 import { toast } from "sonner"
@@ -38,7 +37,6 @@ export default function PostEditor({ content, onChange, postId, ensurePostExists
       Placeholder.configure({
         placeholder: "Start writing…",
       }),
-      Typography,
       Markdown.configure({
         html: false,
         tightLists: true,
@@ -55,7 +53,7 @@ export default function PostEditor({ content, onChange, postId, ensurePostExists
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[400px]",
+        class: "focus:outline-none min-h-[400px] text-foreground",
       },
       handleDrop: (view, event, _slice, moved) => {
         if (moved) return false
