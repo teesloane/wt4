@@ -1,0 +1,31 @@
+/* TipTap placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: color-mix(in oklch, var(--muted-foreground) 50%, transparent);
+  pointer-events: none;
+  height: 0;
+}
+
+.tiptap img {
+  border-radius: 4px;
+  max-width: 100%;
+}
+
+.tiptap img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-primary, #0082ce);
+  outline-offset: 2px;
+}
+
+/* Internal post links — bold + distinct color so they stand out */
+.tiptap a[href^="/posts/"],
+.tiptap a[href^="/til/"],
+.tiptap a[href^="/quotes/"],
+.tiptap a[href^="/now/"],
+.tiptap a[href^="/areas/"],
+.tiptap a[href^="/projects/"],
+.tiptap a.post-link {
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

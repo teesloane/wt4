@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { Separator } from "@/components/ui/separator"
 import { AppSidebar } from "@/components/app-sidebar"
 
-const TITLES = {
+const TITLES: Record<string, string> = {
   "/": "Dashboard",
   "/posts": "Posts",
   "/tags": "Tags",
@@ -14,7 +14,9 @@ const TITLES = {
 
 export default function AdminLayout() {
   const { pathname } = useLocation()
-  const title = TITLES[pathname] ?? "Admin"
+  const title = pathname.startsWith("/posts/")
+    ? "Editor"
+    : (TITLES[pathname] ?? "Admin")
 
   return (
     <TooltipProvider>

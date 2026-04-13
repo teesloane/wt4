@@ -1,10 +1,13 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate } from "react-router-dom"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
 import pb from "@/lib/pb"
 
 const TYPE_FILTERS = [
@@ -22,14 +25,18 @@ const STATUS_FILTERS = [
   { label: "Draft",     value: "draft" },
 ]
 
-function buildFilter(type, status) {
-  const parts = []
+function buildFilter(type: string, status: string) {
+  const parts: string[] = []
   if (type)   parts.push(`post_type='${type}'`)
   if (status) parts.push(`status='${status}'`)
   return parts.join(" && ") || undefined
 }
 
-function FilterBar({ filters, active, onChange }) {
+function FilterBar({ filters, active, onChange }: {
+  filters: { label: string; value: string }[]
+  active: string
+  onChange: (v: string) => void
+}) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {filters.map(f => (
@@ -50,7 +57,7 @@ function FilterBar({ filters, active, onChange }) {
   )
 }
 
-function formatDate(str) {
+function formatDate(str: string | null) {
   if (!str) return "—"
   return new Date(str).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
 }
@@ -58,6 +65,7 @@ function formatDate(str) {
 export default function PostsPage() {
   const [type, setType] = useState("")
   const [status, setStatus] = useState("")
+  const navigate = useNavigate()
 
   const { data, isLoading } = useQuery({
     queryKey: ["posts", type, status],
@@ -73,10 +81,15 @@ export default function PostsPage() {
 
   return (
     <div className="p-6 space-y-4 text-foreground">
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 items-center">
         <FilterBar filters={TYPE_FILTERS}   active={type}   onChange={setType} />
         <div className="w-px bg-border self-stretch" />
         <FilterBar filters={STATUS_FILTERS} active={status} onChange={setStatus} />
+        <div className="flex-1" />
+        <Button size="sm" onClick={() => navigate("/posts/new")}>
+          <Plus className="size-3.5 mr-1" />
+          New post
+        </Button>
       </div>
 
       <div className="rounded-md border">
@@ -106,8 +119,14 @@ export default function PostsPage() {
                 </TableCell>
               </TableRow>
             ) : posts.map(post => (
-              <TableRow key={post.id} className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-medium">{post.title || <span className="text-muted-foreground italic">Untitled</span>}</TableCell>
+              <TableRow
+                key={post.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => navigate(`/posts/${post.id}`)}
+              >
+                <TableCell className="font-medium">
+                  {post.title || <span className="text-muted-foreground italic">Untitled</span>}
+                </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="capitalize">{post.post_type}</Badge>
                 </TableCell>

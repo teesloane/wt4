@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from './components/theme-provider'
+import { Toaster } from './components/ui/sonner'
 import AuthGuard from './components/AuthGuard'
 import AdminLayout from './components/AdminLayout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import PostsPage from './pages/PostsPage'
+import PostEditorPage from './pages/PostEditorPage'
 import TagsPage from './pages/TagsPage'
 import EntitiesPage from './pages/EntitiesPage'
 import MediaPage from './pages/MediaPage'
@@ -22,6 +24,7 @@ export default function App() {
           <Route element={<AuthGuard><AdminLayout /></AuthGuard>}>
             <Route index element={<Dashboard />} />
             <Route path="posts"    element={<PostsPage />} />
+            <Route path="posts/:id" element={<PostEditorPage />} />
             <Route path="tags"     element={<TagsPage />} />
             <Route path="entities" element={<EntitiesPage />} />
             <Route path="media"    element={<MediaPage />} />
@@ -30,6 +33,7 @@ export default function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
+      <Toaster richColors />
     </ThemeProvider>
   )
 }
