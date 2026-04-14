@@ -6,6 +6,7 @@ import { ArrowLeft, PanelRight } from "lucide-react"
 import pb from "@/lib/pb"
 import PostEditor from "@/components/editor/PostEditor"
 import PostSidebar from "@/components/editor/PostSidebar"
+import { slugify } from "@/lib/utils"
 
 export interface PostData {
   id?: string
@@ -38,15 +39,6 @@ const EMPTY_POST: PostData = {
   attribution_url: "",
   tags: [],
   featured_image: null,
-}
-
-function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
 }
 
 export default function PostEditorPage() {

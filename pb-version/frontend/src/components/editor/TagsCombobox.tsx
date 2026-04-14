@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { CheckIcon, ChevronsUpDownIcon, XIcon, PlusIcon, LoaderIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn, slugify } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -37,7 +37,7 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
 
   const createTag = useMutation({
     mutationFn: (name: string) =>
-      pb.collection("tags").create({ name }) as Promise<Tag>,
+      pb.collection("tags").create({ name, slug: slugify(name) }) as Promise<Tag>,
     onSuccess: (tag) => {
       queryClient.invalidateQueries({ queryKey: ["tags"] })
       onChange([...selectedIds, tag.id])
@@ -60,6 +60,8 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
   const filtered = allTags.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase())
   )
+
+  console.log("filtered is ", filtered)
 
   const trimmedSearch = search.trim()
   const canCreate =
@@ -129,9 +131,6 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
                       data-checked={selectedIds.includes(tag.id)}
                     >
                       <span className="truncate">{tag.name}</span>
-                      {selectedIds.includes(tag.id) && (
-                        <CheckIcon className="ml-auto size-3.5" />
-                      )}
                     </CommandItem>
                   ))}
                 </CommandGroup>
