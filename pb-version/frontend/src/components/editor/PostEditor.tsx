@@ -7,6 +7,7 @@ import { useEffect, useRef } from "react"
 import { toast } from "sonner"
 import pb from "@/lib/pb"
 import EditorToolbar from "./EditorToolbar"
+import "prosemirror-view/style/prosemirror.css"
 import "./editor.css"
 
 interface Props {

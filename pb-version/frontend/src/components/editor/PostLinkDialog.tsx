@@ -59,7 +59,7 @@ export default function PostLinkDialog({ open, onClose, onSelect }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o: boolean) => !o && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-m h-96">
         <DialogHeader className="">
           <DialogTitle className="">Link to post</DialogTitle>
         </DialogHeader>

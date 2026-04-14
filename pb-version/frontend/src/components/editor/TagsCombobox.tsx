@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { CheckIcon, ChevronsUpDownIcon, XIcon, PlusIcon, LoaderIcon } from "lucide-react"
+import { ChevronsUpDownIcon, XIcon, PlusIcon, LoaderIcon } from "lucide-react"
 import { cn, slugify } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -30,8 +30,11 @@ interface Props {
   onChange: (ids: string[]) => void
 }
 
+const MAX_SHOWN = 2
+
 export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) {
   const [open, setOpen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const [search, setSearch] = useState("")
   const queryClient = useQueryClient()
 
@@ -56,12 +59,12 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
   const remove = (id: string) => onChange(selectedIds.filter(t => t !== id))
 
   const selectedTags = allTags.filter(t => selectedIds.includes(t.id))
+  const visibleTags = expanded ? selectedTags : selectedTags.slice(0, MAX_SHOWN)
+  const hiddenCount = selectedTags.length - visibleTags.length
 
   const filtered = allTags.filter(t =>
     t.name.toLowerCase().includes(search.toLowerCase())
   )
-
-  console.log("filtered is ", filtered)
 
   const trimmedSearch = search.trim()
   const canCreate =
@@ -77,25 +80,39 @@ export default function TagsCombobox({ allTags, selectedIds, onChange }: Props) 
             "h-auto min-h-8 w-full justify-between font-normal hover:bg-transparent"
           )}
         >
-          <div className="flex flex-wrap items-center gap-1 text-left">
+          <div className="flex flex-wrap items-center gap-1 text-left pr-1">
             {selectedTags.length > 0 ? (
-              selectedTags.map(tag => (
-                <Badge key={tag.id} variant="outline" className="rounded-sm gap-1 pr-0.5">
-                  <span>{tag.name}</span>
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={e => e.key === "Enter" && (e.stopPropagation(), remove(tag.id))}
+              <>
+                {visibleTags.map(tag => (
+                  <Badge key={tag.id} variant="outline" className="rounded-sm gap-1 pr-0.5">
+                    <span>{tag.name}</span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => e.key === "Enter" && (e.stopPropagation(), remove(tag.id))}
+                      onClick={e => {
+                        e.stopPropagation()
+                        remove(tag.id)
+                      }}
+                      className="inline-flex items-center rounded-sm hover:bg-muted px-0.5 cursor-pointer"
+                    >
+                      <XIcon className="size-3" />
+                    </span>
+                  </Badge>
+                ))}
+                {(hiddenCount > 0 || expanded) && (
+                  <Badge
+                    variant="outline"
+                    className="rounded-sm cursor-pointer"
                     onClick={e => {
                       e.stopPropagation()
-                      remove(tag.id)
+                      setExpanded(prev => !prev)
                     }}
-                    className="inline-flex items-center rounded-sm hover:bg-muted px-0.5 cursor-pointer"
                   >
-                    <XIcon className="size-3" />
-                  </span>
-                </Badge>
-              ))
+                    {expanded ? "Less" : `+${hiddenCount} more`}
+                  </Badge>
+                )}
+              </>
             ) : (
               <span className="text-muted-foreground text-sm">Add tags…</span>
             )}
