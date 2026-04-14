@@ -1,4 +1,4 @@
-import { Separator as SeparatorPrimitive } from "@/components/ui/separator"
+import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
 
 import { cn } from "@/lib/utils"
 

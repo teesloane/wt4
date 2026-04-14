@@ -1,4 +1,4 @@
-import { Toggle as TogglePrimitive } from "@/components/ui/toggle"
+import { Toggle as TogglePrimitive, type ToggleProps } from "@base-ui/react/toggle"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -30,7 +30,7 @@ function Toggle({
   variant = "default",
   size = "default",
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: ToggleProps<string> & VariantProps<typeof toggleVariants>) {
   return (
     <TogglePrimitive
       data-slot="toggle"

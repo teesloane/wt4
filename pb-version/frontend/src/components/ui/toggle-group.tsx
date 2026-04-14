@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Toggle as TogglePrimitive } from "@/components/ui/toggle"
-import { ToggleGroup as ToggleGroupPrimitive } from "@/components/ui/toggle-group"
+import { Toggle as TogglePrimitive, type ToggleProps } from "@base-ui/react/toggle"
+import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group"
 import { type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -62,7 +62,7 @@ function ToggleGroupItem({
   variant = "default",
   size = "default",
   ...props
-}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+}: ToggleProps<string> & VariantProps<typeof toggleVariants>) {
   const context = React.useContext(ToggleGroupContext)
 
   return (
