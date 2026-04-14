@@ -300,7 +300,7 @@ func buildNowPage(app *pocketbase.PocketBase, rec *core.Record) NowDetailPage {
 
 	// All update posts for the sidebar list
 	updateRecs, _ := fetchAndExpand(app, "posts",
-		"public=true && status='published' && post_type='update'", "-published_at", 200)
+		"status='published' && post_type='update'", "-published_at", 200)
 	updates := make([]EntityItem, 0, len(updateRecs))
 	for _, r := range updateRecs {
 		item := postToEntityItem(r)
@@ -331,7 +331,7 @@ func renderNowDetail(app *pocketbase.PocketBase, e *core.RequestEvent, slug stri
 
 func renderNowLatest(app *pocketbase.PocketBase, e *core.RequestEvent) error {
 	records, err := app.FindRecordsByFilter("posts",
-		"public=true && status='published' && post_type='update'", "-published_at", 1, 0)
+		"status='published' && post_type='update'", "-published_at", 1, 0)
 	if err != nil || len(records) == 0 {
 		return notFound("no updates found")
 	}
@@ -341,7 +341,7 @@ func renderNowLatest(app *pocketbase.PocketBase, e *core.RequestEvent) error {
 func renderHome(app *pocketbase.PocketBase, e *core.RequestEvent) error {
 	// Recent non-fiction posts
 	postRecs, _ := fetchAndExpand(app, "posts",
-		"public=true && status='published' && post_type='post'", "-published_at", 5)
+		"status='published' && post_type='post'", "-published_at", 5)
 	posts := make([]EntityItem, 0, len(postRecs))
 	for _, r := range postRecs {
 		posts = append(posts, postToEntityItem(r))
@@ -349,7 +349,7 @@ func renderHome(app *pocketbase.PocketBase, e *core.RequestEvent) error {
 
 	// Recent fiction
 	fictionRecs, _ := fetchAndExpand(app, "posts",
-		"public=true && status='published' && post_type='fiction'", "-published_at", 3)
+		"status='published' && post_type='fiction'", "-published_at", 3)
 	recentFiction := make([]EntityItem, 0, len(fictionRecs))
 	for _, r := range fictionRecs {
 		recentFiction = append(recentFiction, postToEntityItem(r))
@@ -385,7 +385,7 @@ func renderHome(app *pocketbase.PocketBase, e *core.RequestEvent) error {
 	// Latest update post preview
 	var update *NowPreview
 	updateRecs, _ := app.FindRecordsByFilter("posts",
-		"public=true && status='published' && post_type='update'", "-published_at", 1, 0)
+		"status='published' && post_type='update'", "-published_at", 1, 0)
 	if len(updateRecs) > 0 {
 		u := updateRecs[0]
 		slug := u.GetString("slug")

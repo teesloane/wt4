@@ -76,8 +76,7 @@ func initPostsCollection(app *pocketbase.PocketBase, tagsColID string) error {
 		Values:    []string{"update", "post", "page", "til", "quote", "fiction", "process"},
 		MaxSelect: 1,
 	})
-	col.Fields.Add(&core.SelectField{Name: "status", Values: []string{"draft", "published"}, MaxSelect: 1})
-	col.Fields.Add(&core.BoolField{Name: "public"})
+	col.Fields.Add(&core.SelectField{Name: "status", Values: []string{"draft", "published", "private", "archived"}, MaxSelect: 1})
 	col.Fields.Add(&core.BoolField{Name: "featured"})
 	col.Fields.Add(&core.FileField{
 		Name:      "featured_image",

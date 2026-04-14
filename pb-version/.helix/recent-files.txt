@@ -1,3 +1,5 @@
+"/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/frontend/src/components/ui/button.tsx"
+"/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/frontend/input.css"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/.ignore"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/pb_data/storage/pbc_1125843985/1n899oyxfcdfvxo/e6c0ec67_8aea_4c49_ba1d_73780b50e8e9_ds1hhtor93.webp"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/_nav.html"
@@ -11,7 +13,6 @@
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/post-list.html"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/_content-item.html"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/archive.html"
-"/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/frontend/input.css"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/static/app.css"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/now-list.html"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/project-list.html"
@@ -22,4 +23,3 @@
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/templates/post-detail.html"
 "/Users/ty/Sync/PARA/projects/development/weakty4/lib/weakty_web/components/layouts/root.html.heex"
 "/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/migrate.go"
-"/Users/ty/Sync/PARA/projects/development/weakty4/pb-version/backend/main.go"

@@ -15,6 +15,7 @@ func main() {
 	app := pocketbase.New()
 
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
+		applyMigrations(app)
 		if err := initCollections(app); err != nil {
 			return fmt.Errorf("initCollections: %w", err)
 		}

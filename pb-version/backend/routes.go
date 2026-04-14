@@ -228,7 +228,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 // renderPostList is shared by /posts, /til, /now, /quotes, /fiction.
 // hideLabel strips the TypeLabel from items before rendering (e.g. /posts doesn't need "post" badges).
 func renderPostList(app *pocketbase.PocketBase, e *core.RequestEvent, typeFilter, pageTitle string, hideLabel bool) error {
-	filter := "public=true && status='published' && " + typeFilter
+	filter := "status='published' && " + typeFilter
 	records, err := fetchAndExpand(app, "posts", filter, "-published_at", 200)
 	if err != nil {
 		records = []*core.Record{}

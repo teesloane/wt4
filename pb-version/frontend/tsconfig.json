@@ -17,8 +17,8 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./admin/src/*"]
     }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["admin/src", "vite.config.ts"]
 }

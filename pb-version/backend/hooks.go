@@ -102,7 +102,12 @@ func syncEntity(app *pocketbase.PocketBase, rec *core.Record, entityType, subtyp
 	entity.Set("title", rec.GetString("title"))
 	entity.Set("slug", slug)
 	entity.Set("url", entityURL(entityType, subtype, slug))
-	entity.Set("public", rec.GetBool("public"))
+	// Posts no longer have a public field — derive visibility from status.
+	if entityType == "post" {
+		entity.Set("public", rec.GetString("status") == "published")
+	} else {
+		entity.Set("public", rec.GetBool("public"))
+	}
 	entity.Set("subtype", subtype)
 	entity.Set("favourite", rec.GetBool("favourite"))
 	entity.Set("tags", rec.GetStringSlice("tags"))

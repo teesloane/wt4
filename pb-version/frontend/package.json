@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "css:build": "tailwindcss -i input.css -o ../backend/static/app.css --minify",
-    "css:watch": "tailwindcss -i input.css -o ../backend/static/app.css --watch",
+    "css:build": "tailwindcss -i public_site/public.css -o ../backend/static/public_site/app.css --minify",
+    "css:watch": "tailwindcss -i public_site/public.css -o ../backend/static/public_site/app.css --watch",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"

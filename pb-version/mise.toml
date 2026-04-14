@@ -9,49 +9,61 @@ SOURCE_DB = "../../weakty_dev.db"
 SERVER = "weakty@100.104.105.83"
 REMOTE_DIR = "/home/weakty/server/bin/weakty"
 
-[tasks."css:install"]
-description = "Install frontend npm dependencies"
+[tasks."frontend:install"]
+description = "Install node dependencies (shared by admin SPA and public site CSS)"
 run = "npm install"
 dir = "{{config_root}}/frontend"
 
-[tasks."css:build"]
-description = "Compile Tailwind CSS (one-shot, minified)"
+# ── Public site CSS (Tailwind → backend/static/app.css) ─────────────────────
+# These build the CSS for the server-rendered public site (weakty.com).
+# The source lives in frontend/ but is unrelated to the admin React SPA.
+
+[tasks."public:css:build"]
+description = "Compile public site Tailwind CSS (one-shot, minified)"
 run = "npm run css:build"
 dir = "{{config_root}}/frontend"
-depends = ["css:install"]
+depends = ["frontend:install"]
 
-[tasks."css:watch"]
-description = "Compile Tailwind CSS and watch for changes"
+[tasks."public:css:watch"]
+description = "Watch and recompile public site Tailwind CSS"
 run = "npm run css:watch"
 dir = "{{config_root}}/frontend"
-depends = ["css:install"]
+depends = ["frontend:install"]
+
+# ── Admin SPA (React/Vite → backend/static/admin/) ──────────────────────────
 
 [tasks."admin:build"]
 description = "Build the React admin SPA to backend/static/admin/"
 run = "npm run build"
 dir = "{{config_root}}/frontend"
-depends = ["css:install"]
+depends = ["frontend:install"]
 
 [tasks."admin:dev"]
 description = "Run Vite dev server for the admin SPA (proxies /api to PocketBase on :8091)"
 run = "npm run dev"
 dir = "{{config_root}}/frontend"
-depends = ["css:install"]
+depends = ["frontend:install"]
 
 [tasks.build]
-description = "Build the PocketBase binary (CSS + admin SPA must be built first)"
+description = "Build the PocketBase binary (public CSS + admin SPA must be built first)"
 run = "go build -o pb-weakty ."
 dir = "{{config_root}}/backend"
-depends = ["css:build", "admin:build"]
+depends = ["public:css:build", "admin:build"]
 
 [tasks.dev]
-description = "Build once, then run CSS watcher + dev server in parallel"
+description = "Full dev mode: public CSS watch + admin Vite dev server + Go backend"
 depends = ["build"]
 dir = "{{config_root}}/backend"
 run = """
-npm --prefix {{config_root}}/frontend run watch &
-CSS_WATCH_PID=$!
-trap 'kill $CSS_WATCH_PID 2>/dev/null' EXIT
+# Watch public site CSS
+npm --prefix {{config_root}}/frontend run css:watch &
+CSS_PID=$!
+
+# Run admin Vite dev server
+npm --prefix {{config_root}}/frontend run dev &
+VITE_PID=$!
+
+trap 'kill $CSS_PID $VITE_PID 2>/dev/null' EXIT
 TEMPLATE_DIR=./templates ./pb-weakty serve --dir pb_data --dev --http 127.0.0.1:{{vars.BACKEND_PORT}}
 """
 
@@ -81,7 +93,7 @@ depends = ["build"]
 
 [tasks."build:linux-amd64"]
 description = "Build CSS + admin SPA and compile Go binary for linux/amd64"
-depends = ["css:build", "admin:build"]
+depends = ["public:css:build", "admin:build"]
 run = "GOOS=linux GOARCH=amd64 go build -o pb-weakty-linux-amd64 ."
 dir = "{{config_root}}/backend"
 

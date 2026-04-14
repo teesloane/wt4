@@ -1,0 +1,22 @@
+# ── Compiled Go binaries ─────────────────────────────────────────
+backend/pb-weakty
+backend/pb-weakty-linux-amd64
+
+# ── Compiled static assets (embedded in binary at build time) ────
+backend/static/admin/
+backend/static/public_site/
+backend/static/app.css
+
+# ── PocketBase runtime data ───────────────────────────────────────
+backend/pb_data/
+
+# ── Node ─────────────────────────────────────────────────────────
+frontend/node_modules/
+node_modules
+
+# ── Editor state ─────────────────────────────────────────────────
+.helix/
+frontend/.helix/
+
+# ── OS ───────────────────────────────────────────────────────────
+.DS_Store
