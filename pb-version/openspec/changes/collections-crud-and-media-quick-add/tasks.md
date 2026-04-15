@@ -21,21 +21,21 @@
 
 ## 3. Media Log CRUD — Frontend
 
-- [ ] 3.1 Add "New" button to `MediaPage.tsx` header
-- [ ] 3.2 Build `MediaLogFormDialog` component with all fields (title, creator, media_type, status, rating, dates, external_url, thumbnail_url, public)
-- [ ] 3.3 Wire create submit to `pb.collection('media_logs').create(...)`
-- [ ] 3.4 Add row actions (edit, delete) to each media log row
-- [ ] 3.5 Wire edit action to open `MediaLogFormDialog` pre-filled
-- [ ] 3.6 Wire edit submit to `pb.collection('media_logs').update(id, ...)`
-- [ ] 3.7 Add delete confirm dialog; wire to `pb.collection('media_logs').delete(id)`
-- [ ] 3.8 Invalidate the `["media", type]` query on any successful mutation
+- [x] 3.1 Add "New" button to `MediaPage.tsx` header
+- [x] 3.2 Build `MediaLogFormDialog` component with all fields (title, creator, media_type, status, rating, dates, external_url, thumbnail_url, public)
+- [x] 3.3 Wire create submit to `pb.collection('media_logs').create(...)`
+- [x] 3.4 Add row actions (edit, delete) to each media log row
+- [x] 3.5 Wire edit action to open `MediaLogFormDialog` pre-filled
+- [x] 3.6 Wire edit submit to `pb.collection('media_logs').update(id, ...)`
+- [x] 3.7 Add delete confirm dialog; wire to `pb.collection('media_logs').delete(id)`
+- [x] 3.8 Invalidate the `["media", type]` query on any successful mutation
 
 ## 4. Media Quick Add — Frontend
 
-- [ ] 4.1 Add "Quick Add" button to `MediaPage.tsx` header (alongside "New")
-- [ ] 4.2 Build `MediaSearchDialog` component with type selector, query input, and results list (cover thumbnail, title, creator, year)
-- [ ] 4.3 Wire search to `GET /api/admin/search?q=...&type=...` on form submit
-- [ ] 4.4 On result click: close search dialog, open `MediaLogFormDialog` with pre-filled values (title, creator, thumbnail_url, date_published from year)
+- [x] 4.1 Add "Quick Add" button to `MediaPage.tsx` header (alongside "New")
+- [x] 4.2 Build `MediaSearchDialog` component with type selector, query input, and results list (cover thumbnail, title, creator, year)
+- [x] 4.3 Wire search to `GET /api/admin/search?q=...&type=...` on form submit
+- [x] 4.4 On result click: close search dialog, open `MediaLogFormDialog` with pre-filled values (title, creator, thumbnail_url, date_published from year)
 - [ ] 4.5 Verify quick-add → create flow end-to-end
 
 ## 5. Project CRUD — Frontend
