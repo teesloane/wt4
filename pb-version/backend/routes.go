@@ -15,6 +15,9 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 
 	r := se.Router
 
+	// Admin API: media search proxy (proxies OpenLibrary, MusicBrainz, TMDB)
+	r.GET("/api/admin/search", handleMediaSearch)
+
 	// Home — handled inside catch-all below to avoid ServeMux conflict with /{path...}
 
 	// Archive — all public entities sorted by date
