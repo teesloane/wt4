@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { Plus, MoreHorizontal, Pencil, Trash2, ImageIcon, X } from "lucide-react"
 import pb from "@/lib/pb"
 import { toast } from "sonner"
 import {
@@ -38,6 +38,7 @@ interface TagRecord {
   name: string
   slug: string
   public: boolean
+  featured_image: string
 }
 
 interface TagFormState {
@@ -47,6 +48,11 @@ interface TagFormState {
 }
 
 const EMPTY_FORM: TagFormState = { name: "", slug: "", public: false }
+
+function tagImageUrl(tag: TagRecord, thumb = "100x100") {
+  if (!tag.id || !tag.featured_image) return null
+  return `/api/files/tags/${tag.id}/${tag.featured_image}?thumb=${thumb}`
+}
 
 interface TagFormDialogProps {
   open: boolean
@@ -60,42 +66,65 @@ function TagFormDialog({ open, onOpenChange, initial, onSaved }: TagFormDialogPr
   const [form, setForm] = useState<TagFormState>(
     initial ? { name: initial.name, slug: initial.slug, public: initial.public } : EMPTY_FORM
   )
+  const [stagedFile, setStagedFile] = useState<File | null>(null)
+  const [stagedPreview, setStagedPreview] = useState<string | null>(null)
+  const [clearImage, setClearImage] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Re-initialise when dialog opens with new data.
   const handleOpenChange = (open: boolean) => {
     if (open) {
       setForm(initial ? { name: initial.name, slug: initial.slug, public: initial.public } : EMPTY_FORM)
+      setStagedFile(null)
+      setStagedPreview(null)
+      setClearImage(false)
       setError(null)
     }
     onOpenChange(open)
   }
 
   const handleNameChange = (name: string) => {
-    setForm(f => ({
-      ...f,
-      name,
-      // Only auto-fill slug when creating and slug hasn't been manually edited.
-      slug: isEdit ? f.slug : toSlug(name),
-    }))
+    setForm(f => ({ ...f, name, slug: isEdit ? f.slug : toSlug(name) }))
   }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setStagedFile(file)
+    setStagedPreview(URL.createObjectURL(file))
+    setClearImage(false)
+  }
+
+  const handleClearImage = () => {
+    setStagedFile(null)
+    setStagedPreview(null)
+    setClearImage(true)
+  }
+
+  const existingImageUrl = initial ? tagImageUrl(initial) : null
+  const showExistingImage = isEdit && initial?.featured_image && !clearImage && !stagedPreview
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError(null)
     try {
-      const payload = {
-        name: form.name.trim(),
-        slug: form.slug.trim() || toSlug(form.name.trim()),
-        public: form.public,
+      const formData = new FormData()
+      formData.append("name", form.name.trim())
+      formData.append("slug", form.slug.trim() || toSlug(form.name.trim()))
+      formData.append("public", String(form.public))
+
+      if (stagedFile) {
+        formData.append("featured_image", stagedFile)
+      } else if (clearImage && initial?.featured_image) {
+        formData.append("featured_image-", initial.featured_image)
       }
+
       if (isEdit) {
-        await pb.collection("tags").update(initial!.id, payload)
+        await pb.collection("tags").update(initial!.id, formData)
         toast.success("Tag updated")
       } else {
-        await pb.collection("tags").create(payload)
+        await pb.collection("tags").create(formData)
         toast.success("Tag created")
       }
       onSaved()
@@ -142,6 +171,46 @@ function TagFormDialog({ open, onOpenChange, initial, onSaved }: TagFormDialogPr
             />
             <Label htmlFor="tag-public">Public</Label>
           </div>
+
+          {/* Image upload */}
+          <div className="space-y-2">
+            <Label>Image</Label>
+            {(showExistingImage || stagedPreview) && (
+              <div className="relative w-fit">
+                <img
+                  src={stagedPreview ?? existingImageUrl!}
+                  alt="Tag image"
+                  className="h-20 w-20 rounded-md object-cover border"
+                />
+                <button
+                  type="button"
+                  onClick={handleClearImage}
+                  className="absolute -top-1.5 -right-1.5 bg-background border rounded-full p-0.5 shadow-sm hover:bg-muted transition-colors"
+                  title="Remove image"
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            )}
+            {!stagedPreview && (
+              <label className="flex items-center gap-2 w-fit cursor-pointer">
+                <span className="text-xs px-2.5 py-1.5 rounded-md border border-input hover:bg-muted transition-colors flex items-center gap-1.5">
+                  <ImageIcon className="size-3" />
+                  {showExistingImage ? "Replace" : "Upload image"}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  onChange={handleFileChange}
+                />
+              </label>
+            )}
+            {clearImage && (
+              <p className="text-xs text-muted-foreground">Image will be removed on save.</p>
+            )}
+          </div>
+
           {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
@@ -167,7 +236,7 @@ export default function TagsPage() {
     queryFn: () =>
       pb.collection("tags").getList(1, 500, {
         sort: "name",
-        fields: "id,name,slug,public",
+        fields: "id,name,slug,public,featured_image",
       }),
   })
 
