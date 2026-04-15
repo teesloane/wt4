@@ -13,6 +13,7 @@ import {
   Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from "@/components/ui/select"
 import { Plus, Zap, MoreHorizontal, Pencil, Trash2, Search } from "lucide-react"
+import DatePicker from "@/components/editor/DatePicker"
 import pb from "@/lib/pb"
 import { toast } from "sonner"
 import {
@@ -56,6 +57,7 @@ interface MediaLogRecord {
 
 interface MediaLogForm {
   title: string
+  slug: string
   creator: string
   media_type: MediaType
   status: Status
@@ -126,8 +128,12 @@ function formatDate(str: string | null) {
   return new Date(str).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
 }
 
+function toSlug(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+}
+
 const EMPTY_FORM: MediaLogForm = {
-  title: "", creator: "", media_type: "book", status: "want_to_consume",
+  title: "", slug: "", creator: "", media_type: "book", status: "want_to_consume",
   rating: "", date_finished: "", date_consumed: "", date_started: "",
   date_published: "", public: true, thumbnail_url: "", external_url: "",
 }
@@ -135,6 +141,7 @@ const EMPTY_FORM: MediaLogForm = {
 function recordToForm(r: MediaLogRecord): MediaLogForm {
   return {
     title: r.title ?? "",
+    slug: (r as any).slug ?? "",
     creator: r.creator ?? "",
     media_type: r.media_type ?? "book",
     status: r.status ?? "want_to_consume",
@@ -152,6 +159,7 @@ function recordToForm(r: MediaLogRecord): MediaLogForm {
 function formToPayload(f: MediaLogForm) {
   return {
     title: f.title.trim(),
+    slug: f.slug.trim() || toSlug([f.creator.trim(), f.title.trim()].filter(Boolean).join(" ")),
     creator: f.creator.trim() || null,
     media_type: f.media_type,
     status: f.status,
@@ -226,7 +234,19 @@ function MediaLogFormDialog({ open, onOpenChange, initial, prefill, onSaved }: M
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-1.5">
               <Label>Title</Label>
-              <Input value={form.title} onChange={e => set("title", e.target.value)} required autoFocus />
+              <Input value={form.title} onChange={e => {
+                const title = e.target.value
+                setForm(f => ({ ...f, title, slug: isEdit ? f.slug : toSlug([f.creator, title].filter(Boolean).join(" ")) }))
+              }} required autoFocus />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Slug</Label>
+              <Input
+                value={form.slug}
+                onChange={e => set("slug", e.target.value)}
+                placeholder="auto-generated"
+                className="font-mono text-sm"
+              />
             </div>
             <div className="space-y-1.5">
               <Label>Creator</Label>
@@ -260,15 +280,15 @@ function MediaLogFormDialog({ open, onOpenChange, initial, prefill, onSaved }: M
             </div>
             <div className="space-y-1.5">
               <Label>Date started</Label>
-              <Input type="date" value={form.date_started} onChange={e => set("date_started", e.target.value)} />
+              <DatePicker value={form.date_started} onChange={v => set("date_started", v)} />
             </div>
             <div className="space-y-1.5">
               <Label>Date finished</Label>
-              <Input type="date" value={form.date_finished} onChange={e => set("date_finished", e.target.value)} />
+              <DatePicker value={form.date_finished} onChange={v => set("date_finished", v)} />
             </div>
             <div className="space-y-1.5">
               <Label>Date consumed</Label>
-              <Input type="date" value={form.date_consumed} onChange={e => set("date_consumed", e.target.value)} />
+              <DatePicker value={form.date_consumed} onChange={v => set("date_consumed", v)} />
             </div>
             <div className="col-span-2 space-y-1.5">
               <Label>Thumbnail URL</Label>
