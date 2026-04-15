@@ -11,6 +11,7 @@ const TITLES: Record<string, string> = {
   "/entities": "Entities",
   "/media": "Media",
   "/projects": "Projects",
+  "/projects/new": "New project",
 }
 
 export default function AdminLayout() {

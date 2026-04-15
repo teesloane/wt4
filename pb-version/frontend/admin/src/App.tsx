@@ -12,6 +12,7 @@ import TagsPage from './pages/TagsPage'
 import EntitiesPage from './pages/EntitiesPage'
 import MediaPage from './pages/MediaPage'
 import ProjectsPage from './pages/ProjectsPage'
+import ProjectEditorPage from './pages/ProjectEditorPage'
 
 const queryClient = new QueryClient()
 
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="entities" element={<EntitiesPage />} />
             <Route path="media"    element={<MediaPage />} />
             <Route path="projects" element={<ProjectsPage />} />
+            <Route path="projects/:id" element={<ProjectEditorPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
