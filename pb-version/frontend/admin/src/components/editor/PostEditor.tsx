@@ -15,9 +15,10 @@ interface Props {
   onChange: (markdown: string) => void
   postId: string | null
   ensurePostExists: () => Promise<string | null>
+  collection?: string
 }
 
-export default function PostEditor({ content, onChange, postId, ensurePostExists }: Props) {
+export default function PostEditor({ content, onChange, postId, ensurePostExists, collection = "posts" }: Props) {
   const isInitialized = useRef(false)
   const postIdRef = useRef(postId)
   postIdRef.current = postId
@@ -83,7 +84,7 @@ export default function PostEditor({ content, onChange, postId, ensurePostExists
           try {
             const formData = new FormData()
             formData.append("content_images", file)
-            const updated = await pb.collection("posts").update(pid, formData)
+            const updated = await pb.collection(collection).update(pid, formData)
 
             const images = updated.content_images as string[]
             const filename = images[images.length - 1]
