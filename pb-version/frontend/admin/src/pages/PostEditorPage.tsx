@@ -7,6 +7,16 @@ import pb from "@/lib/pb"
 import PostEditor from "@/components/editor/PostEditor"
 import PostSidebar from "@/components/editor/PostSidebar"
 import { slugify } from "@/lib/utils"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 export interface PostData {
   id?: string
@@ -50,6 +60,7 @@ export default function PostEditorPage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // Fetch existing post
   const { data: fetchedPost, isLoading } = useQuery({
@@ -88,11 +99,15 @@ export default function PostEditorPage() {
   }, [post.title, isNew, slugManuallyEdited])
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  // Stable fallback slug for untitled posts — generated once per editor session
+  const fallbackSlugRef = useRef(`untitled-${Date.now()}`)
 
   const buildPayload = useCallback((data: PostData) => {
+    const title = data.title.trim() || "Untitled"
+    const slug = data.slug.trim() || fallbackSlugRef.current
     const payload: Record<string, any> = {
-      title: data.title,
-      slug: data.slug,
+      title,
+      slug,
       markdown: data.markdown,
       excerpt: data.excerpt,
       post_type: data.post_type,
@@ -205,6 +220,18 @@ export default function PostEditorPage() {
     await save(post, postId)
   }, [save, post, postId])
 
+  const handleDelete = useCallback(async () => {
+    if (!postId) return
+    try {
+      await pb.collection("posts").delete(postId)
+      queryClient.invalidateQueries({ queryKey: ["posts"] })
+      toast.success("Post deleted")
+      navigate("/posts")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Delete failed")
+    }
+  }, [postId, queryClient, navigate])
+
   if (!isNew && isLoading) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
@@ -263,7 +290,7 @@ export default function PostEditorPage() {
           </div>
 
           {/* TipTap editor */}
-          <div className="flex-1 px-12 pb-24 ">
+          <div className="flex-1 px-12 pb-12">
             <PostEditor
               content={post.markdown}
               onChange={handleContentChange}
@@ -271,6 +298,32 @@ export default function PostEditorPage() {
               ensurePostExists={ensurePostExists}
             />
           </div>
+
+          {/* Danger zone */}
+          {postId && (
+            <div className="px-12 pb-12 pt-4 border-t border-dashed border-border/50">
+              <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <button
+                  onClick={() => setDeleteDialogOpen(true)}
+                  className="text-xs text-muted-foreground/50 hover:text-destructive transition-colors"
+                >
+                  Delete this post…
+                </button>
+                <DialogContent showCloseButton={false}>
+                  <DialogHeader>
+                    <DialogTitle>Delete post?</DialogTitle>
+                    <DialogDescription>
+                      This cannot be undone. The post will be permanently deleted.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+                    <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}

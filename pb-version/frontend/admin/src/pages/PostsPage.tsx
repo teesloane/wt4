@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useState, useCallback } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -7,8 +7,24 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, MoreHorizontal, Trash2 } from "lucide-react"
 import pb from "@/lib/pb"
+import { toast } from "sonner"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 const TYPE_FILTERS = [
   { label: "All",     value: "" },
@@ -65,7 +81,22 @@ function formatDate(str: string | null) {
 export default function PostsPage() {
   const [type, setType] = useState("")
   const [status, setStatus] = useState("")
+  const [postToDelete, setPostToDelete] = useState<{ id: string; title: string } | null>(null)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const handleDelete = useCallback(async () => {
+    if (!postToDelete) return
+    try {
+      await pb.collection("posts").delete(postToDelete.id)
+      queryClient.invalidateQueries({ queryKey: ["posts"] })
+      toast.success("Post deleted")
+    } catch (err: any) {
+      toast.error(err?.message ?? "Delete failed")
+    } finally {
+      setPostToDelete(null)
+    }
+  }, [postToDelete, queryClient])
 
   const { data, isLoading } = useQuery({
     queryKey: ["posts", type, status],
@@ -100,6 +131,7 @@ export default function PostsPage() {
               <TableHead className="w-24">Type</TableHead>
               <TableHead className="w-28">Status</TableHead>
               <TableHead className="w-36">Date</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -110,11 +142,12 @@ export default function PostsPage() {
                   <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell />
                 </TableRow>
               ))
             ) : posts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                   No posts found.
                 </TableCell>
               </TableRow>
@@ -138,6 +171,26 @@ export default function PostsPage() {
                 <TableCell className="text-muted-foreground text-sm">
                   {formatDate(post.published_at)}
                 </TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <button className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground" />
+                      }
+                    >
+                      <MoreHorizontal className="size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setPostToDelete({ id: post.id, title: post.title })}
+                      >
+                        <Trash2 className="size-3.5 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -147,6 +200,21 @@ export default function PostsPage() {
       {!isLoading && (
         <p className="text-xs text-muted-foreground">{posts.length} record{posts.length !== 1 ? "s" : ""}</p>
       )}
+
+      <Dialog open={!!postToDelete} onOpenChange={open => !open && setPostToDelete(null)}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Delete post?</DialogTitle>
+            <DialogDescription>
+              &ldquo;{postToDelete?.title || "Untitled"}&rdquo; will be permanently deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
