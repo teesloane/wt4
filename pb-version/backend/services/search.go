@@ -1,4 +1,4 @@
-package main
+package services
 
 import (
 	"encoding/json"
@@ -22,8 +22,8 @@ type SearchResult struct {
 	ThumbnailURL *string `json:"thumbnail_url"`
 }
 
-// handleMediaSearch is the handler for GET /api/admin/search?q=...&type=...
-func handleMediaSearch(e *core.RequestEvent) error {
+// HandleMediaSearch is the handler for GET /api/admin/search?q=...&type=...
+func HandleMediaSearch(e *core.RequestEvent) error {
 	q := strings.TrimSpace(e.Request.URL.Query().Get("q"))
 	mediaType := strings.TrimSpace(e.Request.URL.Query().Get("type"))
 
@@ -48,7 +48,6 @@ func handleMediaSearch(e *core.RequestEvent) error {
 	}
 
 	if err != nil {
-		// Log the error but return an empty list to the client rather than a 500.
 		fmt.Printf("media search error (type=%s q=%s): %v\n", mediaType, q, err)
 		results = []SearchResult{}
 	}
@@ -135,7 +134,6 @@ func searchMusicBrainz(q string) ([]SearchResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	// MusicBrainz ToS requires a meaningful User-Agent.
 	req.Header.Set("User-Agent", "weakty-pb/1.0 (tylersloane@gmail.com)")
 
 	resp, err := http.DefaultClient.Do(req)
@@ -188,7 +186,7 @@ func searchMusicBrainz(q string) ([]SearchResult, error) {
 			Title:        rg.Title,
 			Creator:      creator,
 			Year:         year,
-			ThumbnailURL: nil, // MusicBrainz doesn't serve cover art directly from search
+			ThumbnailURL: nil,
 		})
 	}
 	return results, nil
@@ -199,7 +197,6 @@ func searchMusicBrainz(q string) ([]SearchResult, error) {
 func searchTMDB(q, tmdbType string) ([]SearchResult, error) {
 	apiKey := os.Getenv("TMDB_API_KEY")
 	if apiKey == "" {
-		// Graceful degradation: return empty results rather than an error.
 		return []SearchResult{}, nil
 	}
 
@@ -222,20 +219,15 @@ func searchTMDB(q, tmdbType string) ([]SearchResult, error) {
 	var payload struct {
 		Results []struct {
 			ID           int    `json:"id"`
-			Title        string `json:"title"`  // movies
-			Name         string `json:"name"`   // tv
-			ReleaseDate  string `json:"release_date"`   // movies
-			FirstAirDate string `json:"first_air_date"` // tv
+			Title        string `json:"title"`
+			Name         string `json:"name"`
+			ReleaseDate  string `json:"release_date"`
+			FirstAirDate string `json:"first_air_date"`
 			PosterPath   string `json:"poster_path"`
 		} `json:"results"`
 	}
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return nil, err
-	}
-
-	mediaType := tmdbType
-	if tmdbType == "movie" {
-		mediaType = "movie"
 	}
 
 	results := make([]SearchResult, 0, len(payload.Results))
@@ -262,7 +254,7 @@ func searchTMDB(q, tmdbType string) ([]SearchResult, error) {
 
 		results = append(results, SearchResult{
 			ExternalID:   fmt.Sprintf("%s:%d", tmdbType, item.ID),
-			Type:         mediaType,
+			Type:         tmdbType,
 			Title:        title,
 			Creator:      "",
 			Year:         year,

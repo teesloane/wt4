@@ -3,6 +3,8 @@ package main
 import (
 	"html/template"
 
+	"weakty-pb/services"
+
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -16,7 +18,7 @@ func registerRoutes(app *pocketbase.PocketBase, se *core.ServeEvent) {
 	r := se.Router
 
 	// Admin API: media search proxy (proxies OpenLibrary, MusicBrainz, TMDB)
-	r.GET("/api/admin/search", handleMediaSearch)
+	r.GET("/api/admin/search", services.HandleMediaSearch)
 
 	// Home — handled inside catch-all below to avoid ServeMux conflict with /{path...}
 
