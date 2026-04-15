@@ -40,11 +40,11 @@
 
 ## 5. Project CRUD — Frontend
 
-- [ ] 5.1 Create `ProjectsPage.tsx` with a table listing all projects (title, status, project_status, published_at)
-- [ ] 5.2 Register the page in the admin router and sidebar nav
-- [ ] 5.3 Build `ProjectFormDialog` component (fields: title, slug, excerpt, markdown body, status, project_status, public, start_date, end_date)
-- [ ] 5.4 Add "New Project" button; wire to `pb.collection('projects').create(...)` with slug auto-generation
-- [ ] 5.5 Add row actions (edit, delete)
-- [ ] 5.6 Wire edit to `pb.collection('projects').update(id, ...)` pre-filled
-- [ ] 5.7 Add delete confirm dialog; wire to `pb.collection('projects').delete(id)`
-- [ ] 5.8 Invalidate `["projects"]` query on any successful mutation
+- [x] 5.1 Create `ProjectsPage.tsx` with a table listing all projects (title, status, project_status, published_at)
+- [x] 5.2 Register the page in the admin router and sidebar nav
+- [x] 5.3 Build `ProjectFormDialog` component (fields: title, slug, excerpt, markdown body, status, project_status, public, start_date, end_date)
+- [x] 5.4 Add "New Project" button; wire to `pb.collection('projects').create(...)` with slug auto-generation
+- [x] 5.5 Add row actions (edit, delete)
+- [x] 5.6 Wire edit to `pb.collection('projects').update(id, ...)` pre-filled
+- [x] 5.7 Add delete confirm dialog; wire to `pb.collection('projects').delete(id)`
+- [x] 5.8 Invalidate `["projects"]` query on any successful mutation

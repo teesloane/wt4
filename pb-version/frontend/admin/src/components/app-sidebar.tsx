@@ -5,6 +5,7 @@ import {
   TagIcon,
   NetworkIcon,
   LibraryIcon,
+  FolderIcon,
   CommandIcon,
 } from "lucide-react"
 import {
@@ -23,11 +24,12 @@ import { NavUser } from "@/components/nav-user"
 import pb from "@/lib/pb"
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboardIcon, end: true },
+  { title: "Dashboard", url: "/",         icon: LayoutDashboardIcon, end: true },
   { title: "Posts",     url: "/posts",    icon: FileTextIcon },
   { title: "Tags",      url: "/tags",     icon: TagIcon },
   { title: "Entities",  url: "/entities", icon: NetworkIcon },
   { title: "Media",     url: "/media",    icon: LibraryIcon },
+  { title: "Projects",  url: "/projects", icon: FolderIcon },
 ]
 
 function NavItem({ item }) {

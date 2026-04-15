@@ -10,6 +10,7 @@ const TITLES: Record<string, string> = {
   "/tags": "Tags",
   "/entities": "Entities",
   "/media": "Media",
+  "/projects": "Projects",
 }
 
 export default function AdminLayout() {
