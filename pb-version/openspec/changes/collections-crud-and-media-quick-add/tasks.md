@@ -10,14 +10,14 @@
 
 ## 2. Tag CRUD — Frontend
 
-- [ ] 2.1 Add "New Tag" button to `TagsPage.tsx` header
-- [ ] 2.2 Build `TagFormDialog` component (fields: name, slug, public toggle) with create mode
-- [ ] 2.3 Wire create submit to `pb.collection('tags').create(...)` with slug auto-generation
-- [ ] 2.4 Add row actions (edit, delete) to each tag row in the table
-- [ ] 2.5 Wire edit action to open `TagFormDialog` in edit mode pre-filled with current values
-- [ ] 2.6 Wire edit submit to `pb.collection('tags').update(id, ...)`
-- [ ] 2.7 Add delete confirm dialog; wire confirm to `pb.collection('tags').delete(id)`
-- [ ] 2.8 Invalidate the `["tags"]` query on any successful mutation so the list refreshes
+- [x] 2.1 Add "New Tag" button to `TagsPage.tsx` header
+- [x] 2.2 Build `TagFormDialog` component (fields: name, slug, public toggle) with create mode
+- [x] 2.3 Wire create submit to `pb.collection('tags').create(...)` with slug auto-generation
+- [x] 2.4 Add row actions (edit, delete) to each tag row in the table
+- [x] 2.5 Wire edit action to open `TagFormDialog` in edit mode pre-filled with current values
+- [x] 2.6 Wire edit submit to `pb.collection('tags').update(id, ...)`
+- [x] 2.7 Add delete confirm dialog; wire confirm to `pb.collection('tags').delete(id)`
+- [x] 2.8 Invalidate the `["tags"]` query on any successful mutation so the list refreshes
 
 ## 3. Media Log CRUD — Frontend
 
